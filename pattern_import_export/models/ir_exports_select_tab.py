@@ -29,9 +29,9 @@ class IrExportsSelectTab(models.Model):
         # Allows you to generate an excel or csv file to be used as
         # a template for the import.
         pattern_file = io.BytesIO()
-        writer = csv.writer(pattern_file, delimiter=";")
+        writer = csv.writer(pattern_file)
         for export_line in self.fields:
-            writer.writerow(export_line.name)
+            writer.writerow([export_line.name])
         self.pattern_file = base64.encodestring(pattern_file.getvalue())
         self.pattern_last_generation_date = fields.Datetime.now()
         return True
