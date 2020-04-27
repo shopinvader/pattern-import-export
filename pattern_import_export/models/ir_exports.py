@@ -1,7 +1,38 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+import base64
+from io import BytesIO
+
+import xlsxwriter
+
+from odoo import api, fields, models
+
+
+class IrExports(models.Model):
+    _inherit = "ir.exports"
+
+    pattern_file = fields.Binary(string="Pattern file", readonly=True)
+    pattern_last_generation_date = fields.Datetime(
+        string="Pattern last generation date", readonly=True
+    )
+
+    @api.multi
+    def generate_pattern(self):
+        # Allows you to generate an excel or csv file to be used as
+        # a template for the import.
+        pattern_file = BytesIO()
+        book = xlsxwriter.Workbook(pattern_file)
+        sheet1 = book.add_worksheet()
+        row = 0
+        col = 0
+        for export_line in self.export_fields:
+            sheet1.write(row, col, export_line.name)
+            col += 1
+        book.close()
+        self.pattern_file = base64.encodebytes(pattern_file.getvalue())
+        self.pattern_last_generation_date = fields.Datetime.now()
+        return True
 
 
 class IrExportsLine(models.Model):
