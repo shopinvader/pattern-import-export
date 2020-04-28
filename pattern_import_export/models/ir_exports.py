@@ -24,13 +24,14 @@ class IrExports(models.Model):
         pattern_file = BytesIO()
         book = xlsxwriter.Workbook(pattern_file)
         sheet1 = book.add_worksheet()
+        bold = book.add_format({"bold": True})
         row = 0
         col = 0
         for export_line in self.export_fields:
-            sheet1.write(row, col, export_line.name)
+            sheet1.write(row, col, export_line.name, bold)
             col += 1
         book.close()
-        self.pattern_file = base64.encodebytes(pattern_file.getvalue())
+        self.pattern_file = base64.b64encode(pattern_file.getvalue())
         self.pattern_last_generation_date = fields.Datetime.now()
         return True
 
