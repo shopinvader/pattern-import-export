@@ -10,9 +10,10 @@
     "license": "AGPL-3",
     "depends": [
         "base",
-        # "base_export_manager",
+        "base_export_manager",
         # "report_xlsx",
     ],
+    "external_dependencies": {"python": ["xlsxwriter", "xlrd"]},
     "data": ["security/ir.model.access.csv"],
     "installable": True,
 }

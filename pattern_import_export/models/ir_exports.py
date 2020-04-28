@@ -23,7 +23,7 @@ class IrExports(models.Model):
         # a template for the import.
         pattern_file = BytesIO()
         book = xlsxwriter.Workbook(pattern_file)
-        sheet1 = book.add_worksheet()
+        sheet1 = book.add_worksheet(self.resource)
         bold = book.add_format({"bold": True})
         row = 0
         col = 0

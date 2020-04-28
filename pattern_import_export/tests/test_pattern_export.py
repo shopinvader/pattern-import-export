@@ -29,6 +29,7 @@ class TestPatternExport(SavepointCase):
         self.assertNotEqual(self.ir_exports.pattern_last_generation_date, False)
         decoded_data = base64.b64decode(self.ir_exports.pattern_file)
         wb = open_workbook(file_contents=decoded_data)
+        self.assertEqual(wb.sheet_by_index(0).name, self.exports_vals["resource"])
         self.assertEqual(
             wb.sheets()[0].cell_value(0, 0), self.exports_line_vals[0]["name"]
         )
