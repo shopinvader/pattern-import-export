@@ -14,9 +14,37 @@ class TestPatternExport(SavepointCase):
         super(TestPatternExport, cls).setUpClass()
         cls.exports_vals = {"name": "Partner Export Test", "resource": "res.partner"}
         cls.ir_exports = cls.env["ir.exports"].create(cls.exports_vals)
+        cls.partner_model = cls.env.ref("base.model_res_partner")
+        cls.country_model = cls.env.ref("base.model_res_country")
+        cls.field_name = cls.env["ir.model.fields"].search(
+            [("name", "=", "name"), ("model_id", "=", cls.partner_model.id)]
+        )
+        cls.field_street = cls.env["ir.model.fields"].search(
+            [("name", "=", "street"), ("model_id", "=", cls.partner_model.id)]
+        )
+        cls.field_country = cls.env["ir.model.fields"].search(
+            [("name", "=", "country_id"), ("model_id", "=", cls.partner_model.id)]
+        )
+        cls.field_country_name = cls.env["ir.model.fields"].search(
+            [("name", "=", "name"), ("model_id", "=", cls.country_model.id)]
+        )
         cls.exports_line_vals = [
-            {"name": "name", "export_id": cls.ir_exports.id},
-            {"name": "street", "export_id": cls.ir_exports.id},
+            {
+                "name": "name",
+                "field1_id": cls.field_name.id,
+                "export_id": cls.ir_exports.id,
+            },
+            {
+                "name": "street",
+                "field1_id": cls.field_street.id,
+                "export_id": cls.ir_exports.id,
+            },
+            {
+                "name": "country_id/name",
+                "field1_id": cls.field_country.id,
+                "field2_id": cls.field_country_name.id,
+                "export_id": cls.ir_exports.id,
+            },
         ]
         cls.ir_exports_line = cls.env["ir.exports.line"].create(cls.exports_line_vals)
 
@@ -30,9 +58,14 @@ class TestPatternExport(SavepointCase):
         decoded_data = base64.b64decode(self.ir_exports.pattern_file)
         wb = open_workbook(file_contents=decoded_data)
         self.assertEqual(wb.sheet_by_index(0).name, self.exports_vals["resource"])
+        self.assertEqual(wb.sheet_by_index(1).name, self.country_model.model)
         self.assertEqual(
             wb.sheets()[0].cell_value(0, 0), self.exports_line_vals[0]["name"]
         )
         self.assertEqual(
             wb.sheets()[0].cell_value(0, 1), self.exports_line_vals[1]["name"]
         )
+        self.assertEqual(
+            wb.sheets()[0].cell_value(0, 2), self.exports_line_vals[2]["name"]
+        )
+        self.assertEqual(wb.sheets()[1].cell_value(0, 0), self.field_country_name.name)

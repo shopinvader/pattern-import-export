@@ -25,11 +25,17 @@ class IrExports(models.Model):
         book = xlsxwriter.Workbook(pattern_file)
         sheet1 = book.add_worksheet(self.resource)
         bold = book.add_format({"bold": True})
-        row = 0
-        col = 0
+        row1 = row2 = 0
+        col1 = col2 = 0
         for export_line in self.export_fields:
-            sheet1.write(row, col, export_line.name, bold)
-            col += 1
+            sheet1.write(row1, col1, export_line.name, bold)
+            if export_line.field1_id.ttype in ["many2one", "many2many"]:
+                if export_line.model2_id:
+                    sheet2 = book.add_worksheet(export_line.model2_id.model)
+                    if export_line.field2_id:
+                        sheet2.write(row2, col2, export_line.field2_id.name, bold)
+                        col2 += 1
+            col1 += 1
         book.close()
         self.pattern_file = base64.b64encode(pattern_file.getvalue())
         self.pattern_last_generation_date = fields.Datetime.now()
