@@ -9,8 +9,5 @@ class IrExportsSelectTab(models.Model):
     _description = "Exports Select Tab"
 
     name = fields.Char(string="Name")
-    field_id = fields.Many2one(
-        "ir.model.fields", string="Field", domain="[('model_id', '=', model_id)]"
-    )
     domain = fields.Char(string="Domain")
     model_id = fields.Many2one("ir.model", string="Model")
