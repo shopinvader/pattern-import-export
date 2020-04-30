@@ -17,32 +17,25 @@ class IrExports(models.Model):
         string="Pattern last generation date", readonly=True
     )
 
+    def generate_additional_sheet(self):
+        # sheet = book.add_worksheet()
+        # sheet.write(row, col, export_line.name, bold)
+        return True
+
     @api.multi
     def generate_pattern(self):
-        # Allows you to generate an excel or csv file to be used as
+        # Allows you to generate an excel file to be used as
         # a template for the import.
         pattern_file = BytesIO()
         book = xlsxwriter.Workbook(pattern_file)
         sheet1 = book.add_worksheet(self.resource)
         bold = book.add_format({"bold": True})
-        row1 = row2 = 0
-        col1 = col2 = 0
+        row1 = 0
+        col1 = 0
         for export_line in self.export_fields:
             sheet1.write(row1, col1, export_line.name, bold)
-            if export_line.field1_id.ttype in ["many2one", "many2many"]:
-                if export_line.model2_id:
-                    select_tab_vals = {
-                        "name": export_line.model2_id.model,
-                        "model_id": export_line.model2_id.id,
-                    }
-                    select_tab = self.env["ir.exports.select.tab"].create(
-                        select_tab_vals
-                    )
-                    export_line.select_tab_id = select_tab.id
-                    sheet2 = book.add_worksheet(export_line.model2_id.model)
-                    if export_line.field2_id:
-                        sheet2.write(row2, col2, export_line.field2_id.name, bold)
-                        col2 += 1
+            if export_line.is_many2x:
+                self.generate_additional_sheet()
             col1 += 1
         book.close()
         self.pattern_file = base64.b64encode(pattern_file.getvalue())
@@ -55,3 +48,42 @@ class IrExportsLine(models.Model):
 
     select_tab_id = fields.Many2one("ir.exports.select.tab", string="Select tab")
     split_nbr = fields.Integer(string="Split nbr")
+    is_many2x = fields.Boolean(
+        string="Is Many2x field", compute="_compute_is_many2x", store=True
+    )
+    related_model_id = fields.Many2one(
+        "ir.model",
+        string="Related model",
+        compute="_compute_related_model_id",
+        store=True,
+    )
+
+    def get_last_field(self, model, path):
+        field, path = path.split("/", 1)
+        model = model._fields[field]._related_comodel_name
+        if path:
+            return super(IrExportsLine, self).get_last_field(model, path)
+        else:
+            return field
+
+    @api.multi
+    @api.depends("name")
+    def _compute_is_many2x(self):
+        for export_line in self:
+            field = export_line.get_last_field(
+                export_line.export_id.resource, export_line.name
+            )
+            if field.type in ["many2one", "many2many"]:
+                export_line.is_many2x = True
+
+    @api.multi
+    @api.depends("name")
+    def _compute_related_model_id(self):
+        for export_line in self:
+            model = (
+                self.env[export_line.export_id.resource]
+                ._fields[export_line.name]
+                ._related_comodel_name
+            )
+            if model:
+                export_line.related_model_id = model.id
