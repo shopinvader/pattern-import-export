@@ -31,6 +31,14 @@ class IrExports(models.Model):
             sheet1.write(row1, col1, export_line.name, bold)
             if export_line.field1_id.ttype in ["many2one", "many2many"]:
                 if export_line.model2_id:
+                    select_tab_vals = {
+                        "name": export_line.model2_id.model,
+                        "model_id": export_line.model2_id.id,
+                    }
+                    select_tab = self.env["ir.exports.select.tab"].create(
+                        select_tab_vals
+                    )
+                    export_line.select_tab_id = select_tab.id
                     sheet2 = book.add_worksheet(export_line.model2_id.model)
                     if export_line.field2_id:
                         sheet2.write(row2, col2, export_line.field2_id.name, bold)
