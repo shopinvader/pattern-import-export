@@ -17,11 +17,10 @@ class TestPatternExport(SavepointCase):
         cls.exports_line_vals = [
             {"name": "name", "export_id": cls.ir_exports.id},
             {"name": "street", "export_id": cls.ir_exports.id},
-            {"name": "country_id", "export_id": cls.ir_exports.id},
         ]
         cls.ir_exports_line = cls.env["ir.exports.line"].create(cls.exports_line_vals)
 
-    def test_generate_pattern(self):
+    def test_generate_pattern_with_basic_fields(self):
         self.ir_exports.pattern_last_generation_date = False
         self.ir_exports.pattern_file = False
         res = self.ir_exports.generate_pattern()
@@ -30,13 +29,24 @@ class TestPatternExport(SavepointCase):
         self.assertNotEqual(self.ir_exports.pattern_last_generation_date, False)
         decoded_data = base64.b64decode(self.ir_exports.pattern_file)
         wb = open_workbook(file_contents=decoded_data)
-        self.assertEqual(wb.sheet_by_index(0).name, self.exports_vals["resource"])
-        self.assertEqual(
-            wb.sheets()[0].cell_value(0, 0), self.exports_line_vals[0]["name"]
+        sheet1 = wb.sheet_by_index(0)
+        self.assertEqual(sheet1.name, "res.partner")
+        self.assertEqual(sheet1.cell_value(0, 0), "name")
+        self.assertEqual(sheet1.cell_value(0, 1), "street")
+
+    def test_generate_pattern_with_many2one_fields(self):
+        self.env["ir.exports.line"].create(
+            [{"name": "country_id", "export_id": self.ir_exports.id}]
         )
-        self.assertEqual(
-            wb.sheets()[0].cell_value(0, 1), self.exports_line_vals[1]["name"]
-        )
-        self.assertEqual(
-            wb.sheets()[0].cell_value(0, 2), self.exports_line_vals[2]["name"]
-        )
+        self.ir_exports.generate_pattern()
+        decoded_data = base64.b64decode(self.ir_exports.pattern_file)
+        wb = open_workbook(file_contents=decoded_data)
+        self.assertEqual(len(wb.sheets()), 2)
+        sheet1 = wb.sheet_by_index(0)
+        self.assertEqual(sheet1.cell_value(0, 2), "country_id")
+        sheet2 = wb.sheet_by_index(1)
+        self.assertEqual(sheet2.name, "res.country")
+        self.assertEqual(sheet2.cell_value(0, 0), "country_id")
+        countries = self.env["res.country"].search([])
+        countries_names = countries.name_get()
+        self.assertEqual(sheet2.col(0), countries_names)
