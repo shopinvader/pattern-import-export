@@ -17,11 +17,6 @@ class IrExports(models.Model):
         string="Pattern last generation date", readonly=True
     )
 
-    def generate_additional_sheet(self):
-        # sheet = book.add_worksheet()
-        # sheet.write(row, col, export_line.name, bold)
-        return True
-
     @api.multi
     def generate_pattern(self):
         # Allows you to generate an excel file to be used as
@@ -35,7 +30,17 @@ class IrExports(models.Model):
         for export_line in self.export_fields:
             sheet.write(row, col, export_line.name, bold)
             if export_line.is_many2x:
-                self.generate_additional_sheet()
+                if not export_line.select_tab_id:
+                    select_tab_vals = {
+                        "name": export_line.related_model_id.model,
+                        "model_id": export_line.related_model_id.id,
+                    }
+                    res = self.env["ir.exports.select.tab"].create(select_tab_vals)
+                    export_line.select_tab_id = res.id
+                add_sheet = export_line.select_tab_id._generate_additional_sheet(
+                    book, bold
+                )
+                export_line._add_excel_constraint(add_sheet, sheet, col)
             col += 1
         book.close()
         self.pattern_file = base64.b64encode(pattern_file.getvalue())
@@ -58,13 +63,13 @@ class IrExportsLine(models.Model):
         store=True,
     )
 
-    def get_last_field(self, model, path):
+    def _get_last_field(self, model, path):
         if "/" not in path:
             path = path + "/"
         field, path = path.split("/", 1)
         if path:
             model = self.env[model]._fields[field]._related_comodel_name
-            return self.get_last_field(model, path)
+            return self._get_last_field(model, path)
         else:
             return field, model
 
@@ -72,7 +77,7 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_is_many2x(self):
         for export_line in self:
-            field, model = export_line.get_last_field(
+            field, model = export_line._get_last_field(
                 export_line.export_id.resource, export_line.name
             )
             if self.env[model]._fields[field].type in ["many2one", "many2many"]:
@@ -82,7 +87,7 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_related_model_id(self):
         for export_line in self:
-            field, model = export_line.get_last_field(
+            field, model = export_line._get_last_field(
                 export_line.export_id.resource, export_line.name
             )
             related_comodel = self.env[model]._fields[field]._related_comodel_name
@@ -91,3 +96,9 @@ class IrExportsLine(models.Model):
                     [("model", "=", related_comodel)], limit=1
                 )
                 export_line.related_model_id = comodel.id
+
+    def _add_excel_constraint(self, add_sheet, sheet, col):
+        sheet.data_validation(
+            1, col, 1048576, col, {"validate": "list", "source": add_sheet}
+        )
+        return True

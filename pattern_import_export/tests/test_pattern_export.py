@@ -35,8 +35,22 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet1.cell_value(0, 1), "street")
 
     def test_generate_pattern_with_many2one_fields(self):
+        field = self.env.ref("base.field_res_country__name")
+        model = self.env.ref("base.model_res_country")
+        select_tab_vals = {
+            "name": "res.country",
+            "model_id": model.id,
+            "field_id": field.id,
+        }
+        select_tab = self.env["ir.exports.select.tab"].create(select_tab_vals)
         self.env["ir.exports.line"].create(
-            [{"name": "country_id", "export_id": self.ir_exports.id}]
+            [
+                {
+                    "name": "country_id",
+                    "export_id": self.ir_exports.id,
+                    "select_tab_id": select_tab.id,
+                }
+            ]
         )
         self.ir_exports.generate_pattern()
         decoded_data = base64.b64decode(self.ir_exports.pattern_file)
@@ -46,7 +60,12 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet1.cell_value(0, 2), "country_id")
         sheet2 = wb.sheet_by_index(1)
         self.assertEqual(sheet2.name, "res.country")
-        self.assertEqual(sheet2.cell_value(0, 0), "country_id")
-        countries = self.env["res.country"].search([])
-        countries_names = countries.name_get()
-        self.assertEqual(sheet2.col(0), countries_names)
+        country_names = []
+        for country in self.env["res.country"].read_group(
+            [], ["name"], ["name"], orderby="name"
+        ):
+            country_names.append(country["name"])
+        sheet2_list_values = []
+        for row in range(1, sheet2.nrows):
+            sheet2_list_values.append(sheet2.cell_value(row, 0))
+        self.assertEqual(sheet2_list_values, country_names)
