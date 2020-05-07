@@ -12,7 +12,7 @@ class TestPatternExport(SavepointCase):
     @classmethod
     def setUpClass(cls):
         super(TestPatternExport, cls).setUpClass()
-        cls.exports_vals = {"name": "Partner Export Test", "resource": "res.partner"}
+        cls.exports_vals = {"name": "Partner list", "resource": "res.partner"}
         cls.ir_exports = cls.env["ir.exports"].create(cls.exports_vals)
         cls.exports_line_vals = [
             {"name": "name", "export_id": cls.ir_exports.id},
@@ -30,17 +30,18 @@ class TestPatternExport(SavepointCase):
         decoded_data = base64.b64decode(self.ir_exports.pattern_file)
         wb = open_workbook(file_contents=decoded_data)
         sheet1 = wb.sheet_by_index(0)
-        self.assertEqual(sheet1.name, "res.partner")
+        self.assertEqual(sheet1.name, "Partner list")
         self.assertEqual(sheet1.cell_value(0, 0), "name")
         self.assertEqual(sheet1.cell_value(0, 1), "street")
 
     def test_generate_pattern_with_many2one_fields(self):
-        field = self.env.ref("base.field_res_country__name")
+        field = self.env.ref("base.field_res_country__code")
         model = self.env.ref("base.model_res_country")
         select_tab_vals = {
-            "name": "res.country",
+            "name": "Country list",
             "model_id": model.id,
             "field_id": field.id,
+            "domain": "[('code', 'in', ['FR', 'BE', 'US'])]",
         }
         select_tab = self.env["ir.exports.select.tab"].create(select_tab_vals)
         self.env["ir.exports.line"].create(
@@ -59,13 +60,7 @@ class TestPatternExport(SavepointCase):
         sheet1 = wb.sheet_by_index(0)
         self.assertEqual(sheet1.cell_value(0, 2), "country_id")
         sheet2 = wb.sheet_by_index(1)
-        self.assertEqual(sheet2.name, "res.country")
-        country_names = []
-        for country in self.env["res.country"].read_group(
-            [], ["name"], ["name"], orderby="name"
-        ):
-            country_names.append(country["name"])
-        sheet2_list_values = []
-        for row in range(1, sheet2.nrows):
-            sheet2_list_values.append(sheet2.cell_value(row, 0))
-        self.assertEqual(sheet2_list_values, country_names)
+        self.assertEqual(sheet2.name, "Country list")
+        self.assertEqual(sheet2.cell_value(1, 0), "BE")
+        self.assertEqual(sheet2.cell_value(2, 0), "FR")
+        self.assertEqual(sheet2.cell_value(3, 0), "US")

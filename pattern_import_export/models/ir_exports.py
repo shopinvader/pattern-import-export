@@ -23,24 +23,17 @@ class IrExports(models.Model):
         # a template for the import.
         pattern_file = BytesIO()
         book = xlsxwriter.Workbook(pattern_file)
-        sheet = book.add_worksheet(self.resource)
+        sheet = book.add_worksheet(self.name)
         bold = book.add_format({"bold": True})
         row = 0
         col = 0
         for export_line in self.export_fields:
             sheet.write(row, col, export_line.name, bold)
-            if export_line.is_many2x:
-                if not export_line.select_tab_id:
-                    select_tab_vals = {
-                        "name": export_line.related_model_id.model,
-                        "model_id": export_line.related_model_id.id,
-                    }
-                    select_tab = self.env["ir.exports.select.tab"].create(
-                        select_tab_vals
-                    )
-                    export_line.select_tab_id = select_tab.id
-                export_line.select_tab_id._generate_additional_sheet(book, bold)
-                export_line._add_excel_constraint(sheet, col)
+            if export_line.is_many2x and export_line.select_tab_id:
+                ad_sheet, ad_row = export_line.select_tab_id._generate_additional_sheet(
+                    book, bold
+                )
+                export_line._add_excel_constraint(sheet, col, ad_sheet, ad_row)
             col += 1
         book.close()
         self.pattern_file = base64.b64encode(pattern_file.getvalue())
@@ -97,21 +90,9 @@ class IrExportsLine(models.Model):
                 )
                 export_line.related_model_id = comodel.id
 
-    def _add_excel_constraint(self, sheet, col):
-        for export_line in self:
-            select_tab = export_line.select_tab_id
-            field = select_tab.field_id.name
-            model = select_tab.model_id.model
-            ad_sheet_list_values = []
-            for record in self.env[model].read_group(
-                [], [field], [field], orderby=field
-            ):
-                ad_sheet_list_values.append(record[field])
-            sheet.data_validation(
-                1,
-                col,
-                1048576,
-                col,
-                {"validate": "list", "source": ad_sheet_list_values},
-            )
+    def _add_excel_constraint(self, sheet, col, ad_sheet, ad_row):
+        source = "=" + ad_sheet.name + "!$A$2:$A$" + str(ad_row + 100)
+        sheet.data_validation(
+            1, col, 1048576, col, {"validate": "list", "source": source}
+        )
         return True
