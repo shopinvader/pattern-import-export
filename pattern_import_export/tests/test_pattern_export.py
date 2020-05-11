@@ -63,6 +63,7 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet2.cell_value(3, 0), "US")
 
     def test_export_with_record(self):
+        self.ir_exports.generate_pattern()
         partner_1 = self.env.ref("base.res_partner_1")
         partner_2 = self.env.ref("base.res_partner_2")
         partner_3 = self.env.ref("base.res_partner_3")
