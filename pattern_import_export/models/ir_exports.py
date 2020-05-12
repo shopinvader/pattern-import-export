@@ -18,9 +18,7 @@ class IrExports(models.Model):
     )
 
     @api.multi
-    def generate_pattern(self):
-        # Allows you to generate an excel file to be used as
-        # a template for the import.
+    def _create_excel_file(self):
         pattern_file = BytesIO()
         book = xlsxwriter.Workbook(pattern_file)
         sheet = book.add_worksheet(self.name)
@@ -35,10 +33,36 @@ class IrExports(models.Model):
                 )
                 export_line._add_excel_constraint(sheet, col, ad_sheet, ad_row)
             col += 1
-        book.close()
-        self.pattern_file = base64.b64encode(pattern_file.getvalue())
-        self.pattern_last_generation_date = fields.Datetime.now()
+        return book, sheet, pattern_file
+
+    @api.multi
+    def generate_pattern(self):
+        # Allows you to generate an excel file to be used as
+        # a template for the import.
+        for export in self:
+            book, sheet, pattern_file = export._create_excel_file()
+            book.close()
+            export.pattern_file = base64.b64encode(pattern_file.getvalue())
+            export.pattern_last_generation_date = fields.Datetime.now()
         return True
+
+    @api.multi
+    def _export_with_record(self, records):
+        for export in self:
+            book, sheet, pattern_file = export._create_excel_file()
+            row = 1
+            for record in records:
+                col = 0
+                for export_line in self.export_fields:
+                    value = record[export_line.name]
+                    if export_line.is_many2x and export_line.select_tab_id:
+                        field_name = export_line.select_tab_id.field_id.name
+                        value = record[export_line.name][field_name]
+                    sheet.write(row, col, value)
+                    col += 1
+                row += 1
+            book.close()
+        return base64.b64encode(pattern_file.getvalue())
 
 
 class IrExportsLine(models.Model):

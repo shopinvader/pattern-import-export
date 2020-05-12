@@ -24,6 +24,7 @@ class TestPatternExport(SavepointCase):
         }
         cls.select_tab = cls.env["ir.exports.select.tab"].create(select_tab_vals)
         exports_line_vals = [
+            {"name": "id", "export_id": cls.ir_exports.id},
             {"name": "name", "export_id": cls.ir_exports.id},
             {"name": "street", "export_id": cls.ir_exports.id},
             {
@@ -37,6 +38,7 @@ class TestPatternExport(SavepointCase):
     def test_generate_pattern_with_basic_fields(self):
         self.ir_exports.pattern_last_generation_date = False
         self.ir_exports.pattern_file = False
+        self.ir_exports.export_fields[0].unlink()
         self.ir_exports.export_fields[2].unlink()
         res = self.ir_exports.generate_pattern()
         self.assertEqual(res, True)
@@ -50,6 +52,7 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet1.cell_value(0, 1), "street")
 
     def test_generate_pattern_with_many2one_fields(self):
+        self.ir_exports.export_fields[0].unlink()
         self.ir_exports.generate_pattern()
         decoded_data = base64.b64decode(self.ir_exports.pattern_file)
         wb = open_workbook(file_contents=decoded_data)
@@ -63,7 +66,6 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet2.cell_value(3, 0), "US")
 
     def test_export_with_record(self):
-        self.ir_exports.generate_pattern()
         partner_1 = self.env.ref("base.res_partner_1")
         partner_2 = self.env.ref("base.res_partner_2")
         partner_3 = self.env.ref("base.res_partner_3")
