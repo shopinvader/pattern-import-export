@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ir_exports_select_tab_user,ir.exports.select.tab.user,model_ir_exports_select_tab,base.group_user,1,0,0,0
 access_ir_exports_select_tab_manager,ir.exports.select.tab.manager,model_ir_exports_select_tab,base.group_system,1,1,1,1
+access_export_pattern_wizard_user,export.pattern.wizard.user,model_export_pattern_wizard,base.group_user,1,0,0,0
+access_export_pattern_wizard_manager,export.pattern.wizard.manager,model_export_pattern_wizard,base.group_system,1,1,1,1

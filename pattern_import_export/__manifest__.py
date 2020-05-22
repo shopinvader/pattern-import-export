@@ -8,12 +8,8 @@
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "http://www.akretion.com",
     "license": "AGPL-3",
-    "depends": [
-        "base",
-        # "base_export_manager",
-        # "report_xlsx",
-    ],
+    "depends": ["base"],
     "external_dependencies": {"python": ["xlsxwriter", "xlrd"]},
-    "data": ["security/ir.model.access.csv"],
+    "data": ["security/ir.model.access.csv", "wizard/export_with_pattern.xml"],
     "installable": True,
 }
