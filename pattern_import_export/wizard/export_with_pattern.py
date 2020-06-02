@@ -1,7 +1,7 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 
 class ExportPatternWizard(models.Model):
@@ -11,12 +11,13 @@ class ExportPatternWizard(models.Model):
         string="Model to export",
         default=lambda s: s.env.context.get("active_model", False),
     )
-    ir_exports_id = fields.Many2one("ir.exports", string="Export")
+    ir_exports_id = fields.Many2one("ir.exports", string="Export Pattern")
     no_export_pattern = fields.Boolean(
         string="No Export Pattern", compute="_compute_no_export_pattern"
     )
 
     @api.depends("model")
+    @api.multi
     def _compute_no_export_pattern(self):
         for wiz in self:
             ir_exports = wiz.env["ir.exports"].search(
@@ -27,4 +28,14 @@ class ExportPatternWizard(models.Model):
 
     @api.multi
     def run(self):
-        return True
+        for wiz in self:
+            description = _("Generate export '%s' with export pattern '%s'") % (
+                wiz.model,
+                wiz.ir_exports_id.name,
+            )
+            job_uuid = (
+                self.env[wiz.model]
+                .with_delay(description=description)
+                ._generate_export_with_pattern_job(wiz.ir_exports_id)
+            )
+        return job_uuid

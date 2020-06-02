@@ -18,29 +18,39 @@ class IrExports(models.Model):
     )
 
     @api.multi
-    def _create_excel_file(self):
+    def _create_xlsx_file(self):
         pattern_file = BytesIO()
         book = xlsxwriter.Workbook(pattern_file)
         sheet = book.add_worksheet(self.name)
         bold = book.add_format({"bold": True})
         row = 0
         col = 0
+        add_sheet_list = {}
         for export_line in self.export_fields:
             sheet.write(row, col, export_line.name, bold)
             if export_line.is_many2x and export_line.select_tab_id:
-                ad_sheet, ad_row = export_line.select_tab_id._generate_additional_sheet(
-                    book, bold
-                )
-                export_line._add_excel_constraint(sheet, col, ad_sheet, ad_row)
+                select_tab_name = export_line.select_tab_id.name
+                field_name = export_line.select_tab_id.field_id.name
+                ad_sheet_name = select_tab_name + " (" + field_name + ")"
+                if ad_sheet_name not in add_sheet_list:
+                    select_tab_id = export_line.select_tab_id
+                    ad_sheet, ad_row = select_tab_id._generate_additional_sheet(
+                        book, bold
+                    )
+                    add_sheet_list[ad_sheet.name] = (ad_sheet, ad_row)
+                else:
+                    ad_sheet = add_sheet_list[ad_sheet.name][0]
+                    ad_row = add_sheet_list[ad_sheet.name][1]
+                export_line._add_xlsx_constraint(sheet, col, ad_sheet, ad_row)
             col += 1
         return book, sheet, pattern_file
 
     @api.multi
     def generate_pattern(self):
-        # Allows you to generate an excel file to be used as
-        # a template for the import.
+        # Allows you to generate an xlsx file to be used as
+        # a pattern for the export.
         for export in self:
-            book, sheet, pattern_file = export._create_excel_file()
+            book, sheet, pattern_file = export._create_xlsx_file()
             book.close()
             export.pattern_file = base64.b64encode(pattern_file.getvalue())
             export.pattern_last_generation_date = fields.Datetime.now()
@@ -49,20 +59,35 @@ class IrExports(models.Model):
     @api.multi
     def _export_with_record(self, records):
         for export in self:
-            book, sheet, pattern_file = export._create_excel_file()
+            book, sheet, pattern_file = export._create_xlsx_file()
             row = 1
             for record in records:
-                col = 0
+                fields_to_export = []
                 for export_line in self.export_fields:
-                    value = record[export_line.name]
                     if export_line.is_many2x and export_line.select_tab_id:
                         field_name = export_line.select_tab_id.field_id.name
-                        value = record[export_line.name][field_name]
+                        field = export_line.name + "/" + field_name
+                        fields_to_export.append(field)
+                    else:
+                        fields_to_export.append(export_line.name)
+                res = record.export_data(fields_to_export, raw_data=False)
+                col = 0
+                for value in res["datas"][0]:
                     sheet.write(row, col, value)
                     col += 1
                 row += 1
             book.close()
-        return base64.b64encode(pattern_file.getvalue())
+            attachment_datas = base64.b64encode(pattern_file.getvalue())
+            self.env["ir.attachment"].create(
+                {
+                    "name": export.name + ".xlsx",
+                    "type": "binary",
+                    "res_id": export.id,
+                    "res_model": "ir.exports",
+                    "datas": attachment_datas,
+                }
+            )
+        return True
 
 
 class IrExportsLine(models.Model):
@@ -114,7 +139,7 @@ class IrExportsLine(models.Model):
                 )
                 export_line.related_model_id = comodel.id
 
-    def _add_excel_constraint(self, sheet, col, ad_sheet, ad_row):
+    def _add_xlsx_constraint(self, sheet, col, ad_sheet, ad_row):
         source = "=" + ad_sheet.name + "!$A$2:$A$" + str(ad_row + 100)
         sheet.data_validation(
             1, col, 1048576, col, {"validate": "list", "source": source}

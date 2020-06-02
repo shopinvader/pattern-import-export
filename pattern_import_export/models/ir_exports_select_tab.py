@@ -18,10 +18,11 @@ class IrExportsSelectTab(models.Model):
     @api.multi
     def _generate_additional_sheet(self, book, bold):
         for select_tab in self:
-            sheet = book.add_worksheet(select_tab.name)
             field = select_tab.field_id.name
             model = select_tab.model_id.model
             domain = select_tab.domain
+            sheet_name = select_tab.name + " (" + field + ")"
+            sheet = book.add_worksheet(sheet_name)
             sheet.write(0, 0, field, bold)
             row = 1
             for record in self.env[model].read_group(

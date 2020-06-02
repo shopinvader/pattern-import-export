@@ -32,14 +32,19 @@ class TestPatternExport(SavepointCase):
                 "export_id": cls.ir_exports.id,
                 "select_tab_id": cls.select_tab.id,
             },
+            {
+                "name": "child_ids/country_id",
+                "export_id": cls.ir_exports.id,
+                "select_tab_id": cls.select_tab.id,
+            },
         ]
-        cls.ir_exports_line = cls.env["ir.exports.line"].create(exports_line_vals)
+        cls.env["ir.exports.line"].create(exports_line_vals)
 
     def test_generate_pattern_with_basic_fields(self):
         self.ir_exports.pattern_last_generation_date = False
         self.ir_exports.pattern_file = False
         self.ir_exports.export_fields[0].unlink()
-        self.ir_exports.export_fields[2].unlink()
+        self.ir_exports.export_fields[2:].unlink()
         res = self.ir_exports.generate_pattern()
         self.assertEqual(res, True)
         self.assertNotEqual(self.ir_exports.pattern_file, False)
@@ -52,31 +57,38 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet1.cell_value(0, 1), "street")
 
     def test_generate_pattern_with_many2one_fields(self):
-        self.ir_exports.export_fields[0].unlink()
+        self.ir_exports.export_fields[0:3].unlink()
+        self.ir_exports.export_fields[1].unlink()
         self.ir_exports.generate_pattern()
         decoded_data = base64.b64decode(self.ir_exports.pattern_file)
         wb = open_workbook(file_contents=decoded_data)
         self.assertEqual(len(wb.sheets()), 2)
         sheet1 = wb.sheet_by_index(0)
-        self.assertEqual(sheet1.cell_value(0, 2), "country_id")
+        self.assertEqual(sheet1.cell_value(0, 0), "country_id")
         sheet2 = wb.sheet_by_index(1)
-        self.assertEqual(sheet2.name, "Country list")
+        self.assertEqual(sheet2.name, "Country list (code)")
         self.assertEqual(sheet2.cell_value(1, 0), "BE")
         self.assertEqual(sheet2.cell_value(2, 0), "FR")
         self.assertEqual(sheet2.cell_value(3, 0), "US")
 
     def test_export_with_record(self):
+        self.ir_exports.export_fields[4].unlink()
         partner_1 = self.env.ref("base.res_partner_1")
         partner_2 = self.env.ref("base.res_partner_2")
         partner_3 = self.env.ref("base.res_partner_3")
         records = [partner_1, partner_2, partner_3]
-        export_file = self.ir_exports._export_with_record(records)
-        decoded_data = base64.b64decode(export_file)
+        self.ir_exports._export_with_record(records)
+        attachment = self.env["ir.attachment"].search(
+            [("res_model", "=", "ir.exports"), ("res_id", "=", self.ir_exports.id)],
+            limit=1,
+        )
+        self.assertEqual(attachment.name, "Partner list.xlsx")
+        decoded_data = base64.b64decode(attachment.datas)
         wb = open_workbook(file_contents=decoded_data)
         sheet1 = wb.sheet_by_index(0)
-        self.assertEqual(sheet1.cell_value(1, 0), partner_1.id)
-        self.assertEqual(sheet1.cell_value(2, 0), partner_2.id)
-        self.assertEqual(sheet1.cell_value(3, 0), partner_3.id)
+        self.assertEqual(sheet1.cell_value(1, 0), "base.res_partner_1")
+        self.assertEqual(sheet1.cell_value(2, 0), "base.res_partner_2")
+        self.assertEqual(sheet1.cell_value(3, 0), "base.res_partner_3")
         self.assertEqual(sheet1.cell_value(1, 1), "Wood Corner")
         self.assertEqual(sheet1.cell_value(2, 1), "Deco Addict")
         self.assertEqual(sheet1.cell_value(3, 1), "Gemini Furniture")
@@ -86,3 +98,39 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet1.cell_value(1, 3), "US")
         self.assertEqual(sheet1.cell_value(2, 3), "US")
         self.assertEqual(sheet1.cell_value(3, 3), "US")
+
+    def test_export_multi_level_fields(self):
+        partner_2 = self.env.ref("base.res_partner_2")
+        records = [partner_2]
+        self.ir_exports._export_with_record(records)
+        attachment = self.env["ir.attachment"].search(
+            [("res_model", "=", "ir.exports"), ("res_id", "=", self.ir_exports.id)],
+            limit=1,
+        )
+        self.assertEqual(attachment.name, "Partner list.xlsx")
+        decoded_data = base64.b64decode(attachment.datas)
+        wb = open_workbook(file_contents=decoded_data)
+        sheet1 = wb.sheet_by_index(0)
+        self.assertEqual(sheet1.cell_value(1, 0), "base.res_partner_2")
+        self.assertEqual(sheet1.cell_value(1, 1), "Deco Addict")
+        self.assertEqual(sheet1.cell_value(1, 2), "325 Elsie Drive")
+        self.assertEqual(sheet1.cell_value(1, 3), "US")
+        self.assertEqual(sheet1.cell_value(1, 4), "US")
+
+    def test_export_with_record_wizard(self):
+        self.ir_exports.generate_pattern()
+        partner_1 = self.env.ref("base.res_partner_1")
+        partner_2 = self.env.ref("base.res_partner_2")
+        partner_3 = self.env.ref("base.res_partner_3")
+        record_ids = [partner_1.id, partner_2.id, partner_3.id]
+        wiz = (
+            self.env["export.pattern.wizard"]
+            .with_context(active_ids=record_ids, active_model="res.partner")
+            .create({"model": "res.partner", "ir_exports_id": self.ir_exports.id})
+        )
+        job_uuid = wiz.run()
+        self.assertEqual(
+            job_uuid.description,
+            "Generate export 'res.partner' with export pattern 'Partner list'",
+        )
+        self.assertEqual(job_uuid.model_name, "res.partner")
