@@ -16,6 +16,13 @@ class IrExports(models.Model):
     pattern_last_generation_date = fields.Datetime(
         string="Pattern last generation date", readonly=True
     )
+    model_id = fields.Many2one("ir.model", string="Model")
+
+    @api.multi
+    @api.onchange("model_id")
+    def onchange_model(self):
+        for rec in self:
+            rec.resource = rec.model_id.model
 
     @api.multi
     def _create_xlsx_file(self):
@@ -25,22 +32,22 @@ class IrExports(models.Model):
         bold = book.add_format({"bold": True})
         row = 0
         col = 0
-        add_sheet_list = {}
+        ad_sheet_list = {}
         for export_line in self.export_fields:
             sheet.write(row, col, export_line.name, bold)
             if export_line.is_many2x and export_line.select_tab_id:
                 select_tab_name = export_line.select_tab_id.name
                 field_name = export_line.select_tab_id.field_id.name
                 ad_sheet_name = select_tab_name + " (" + field_name + ")"
-                if ad_sheet_name not in add_sheet_list:
+                if ad_sheet_name not in ad_sheet_list:
                     select_tab_id = export_line.select_tab_id
                     ad_sheet, ad_row = select_tab_id._generate_additional_sheet(
                         book, bold
                     )
-                    add_sheet_list[ad_sheet.name] = (ad_sheet, ad_row)
+                    ad_sheet_list[ad_sheet.name] = (ad_sheet, ad_row)
                 else:
-                    ad_sheet = add_sheet_list[ad_sheet.name][0]
-                    ad_row = add_sheet_list[ad_sheet.name][1]
+                    ad_sheet = ad_sheet_list[ad_sheet.name][0]
+                    ad_row = ad_sheet_list[ad_sheet.name][1]
                 export_line._add_xlsx_constraint(sheet, col, ad_sheet, ad_row)
             col += 1
         return book, sheet, pattern_file
@@ -94,7 +101,6 @@ class IrExportsLine(models.Model):
     _inherit = "ir.exports.line"
 
     select_tab_id = fields.Many2one("ir.exports.select.tab", string="Select tab")
-    split_nbr = fields.Integer(string="Split nbr")
     is_many2x = fields.Boolean(
         string="Is Many2x field", compute="_compute_is_many2x", store=True
     )
@@ -104,6 +110,28 @@ class IrExportsLine(models.Model):
         compute="_compute_related_model_id",
         store=True,
     )
+    model_id = fields.Many2one("ir.model", related="export_id.model_id", readonly=True)
+    field_id = fields.Many2one("ir.model.fields", string="Field")
+
+    @api.multi
+    @api.onchange("field_id")
+    def onchange_field(self):
+        for rec in self:
+            rec.name = rec.field_id.name
+
+    @api.model
+    def create(self, vals):
+        if "field_id" in vals and "name" not in vals:
+            field = self.env["ir.model.fields"].browse(vals["field_id"])
+            vals["name"] = field.name
+        return super(IrExportsLine, self).create(vals)
+
+    @api.multi
+    def write(self, vals):
+        if "field_id" in vals and "name" not in vals:
+            field = self.env["ir.model.fields"].browse(vals["field_id"])
+            vals["name"] = field.name
+        return super(IrExportsLine, self).write(vals)
 
     def _get_last_field(self, model, path):
         if "/" not in path:
@@ -119,25 +147,27 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_is_many2x(self):
         for export_line in self:
-            field, model = export_line._get_last_field(
-                export_line.export_id.resource, export_line.name
-            )
-            if self.env[model]._fields[field].type in ["many2one", "many2many"]:
-                export_line.is_many2x = True
+            if export_line.export_id.resource and export_line.name:
+                field, model = export_line._get_last_field(
+                    export_line.export_id.resource, export_line.name
+                )
+                if self.env[model]._fields[field].type in ["many2one", "many2many"]:
+                    export_line.is_many2x = True
 
     @api.multi
     @api.depends("name")
     def _compute_related_model_id(self):
         for export_line in self:
-            field, model = export_line._get_last_field(
-                export_line.export_id.resource, export_line.name
-            )
-            related_comodel = self.env[model]._fields[field]._related_comodel_name
-            if related_comodel:
-                comodel = self.env["ir.model"].search(
-                    [("model", "=", related_comodel)], limit=1
+            if export_line.export_id.resource and export_line.name:
+                field, model = export_line._get_last_field(
+                    export_line.export_id.resource, export_line.name
                 )
-                export_line.related_model_id = comodel.id
+                related_comodel = self.env[model]._fields[field]._related_comodel_name
+                if related_comodel:
+                    comodel = self.env["ir.model"].search(
+                        [("model", "=", related_comodel)], limit=1
+                    )
+                    export_line.related_model_id = comodel.id
 
     def _add_xlsx_constraint(self, sheet, col, ad_sheet, ad_row):
         source = "=" + ad_sheet.name + "!$A$2:$A$" + str(ad_row + 100)

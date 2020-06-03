@@ -12,7 +12,7 @@ class IrExportsSelectTab(models.Model):
 
     name = fields.Char(string="Name", required=True)
     domain = fields.Char(string="Domain")
-    model_id = fields.Many2one("ir.model", string="Model", required=True, readonly=True)
+    model_id = fields.Many2one("ir.model", string="Model", required=True)
     field_id = fields.Many2one("ir.model.fields", string="Field", required=True)
 
     @api.multi
@@ -20,13 +20,15 @@ class IrExportsSelectTab(models.Model):
         for select_tab in self:
             field = select_tab.field_id.name
             model = select_tab.model_id.model
-            domain = select_tab.domain
+            domain = []
+            if select_tab.domain:
+                domain = ast.literal_eval(select_tab.domain)
             sheet_name = select_tab.name + " (" + field + ")"
             sheet = book.add_worksheet(sheet_name)
             sheet.write(0, 0, field, bold)
             row = 1
             for record in self.env[model].read_group(
-                ast.literal_eval(domain), [field], [field], orderby=field
+                domain, [field], [field], orderby=field
             ):
                 sheet.write(row, 0, record[field])
                 row += 1
