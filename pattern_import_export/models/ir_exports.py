@@ -16,13 +16,6 @@ class IrExports(models.Model):
     pattern_last_generation_date = fields.Datetime(
         string="Pattern last generation date", readonly=True
     )
-    model_id = fields.Many2one("ir.model", string="Model")
-
-    @api.multi
-    @api.onchange("model_id")
-    def onchange_model(self):
-        for rec in self:
-            rec.resource = rec.model_id.model
 
     @api.multi
     def _create_xlsx_file(self):
@@ -110,28 +103,6 @@ class IrExportsLine(models.Model):
         compute="_compute_related_model_id",
         store=True,
     )
-    model_id = fields.Many2one("ir.model", related="export_id.model_id", readonly=True)
-    field_id = fields.Many2one("ir.model.fields", string="Field")
-
-    @api.multi
-    @api.onchange("field_id")
-    def onchange_field(self):
-        for rec in self:
-            rec.name = rec.field_id.name
-
-    @api.model
-    def create(self, vals):
-        if "field_id" in vals and "name" not in vals:
-            field = self.env["ir.model.fields"].browse(vals["field_id"])
-            vals["name"] = field.name
-        return super(IrExportsLine, self).create(vals)
-
-    @api.multi
-    def write(self, vals):
-        if "field_id" in vals and "name" not in vals:
-            field = self.env["ir.model.fields"].browse(vals["field_id"])
-            vals["name"] = field.name
-        return super(IrExportsLine, self).write(vals)
 
     def _get_last_field(self, model, path):
         if "/" not in path:

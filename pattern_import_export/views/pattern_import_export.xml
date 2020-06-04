@@ -1,54 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Patterns Tree View-->
-    <record id="ir_exports_tree_view" model="ir.ui.view">
-        <field name="name">ir.exports.tree</field>
-        <field name="model">ir.exports</field>
-        <field name="arch" type="xml">
-            <tree string="Patterns">
-                <field name="name"/>
-                <field name="resource"/>
-            </tree>
-        </field>
-    </record>
-
     <!-- Patterns Form View-->
     <record id="ir_exports_form_view" model="ir.ui.view">
-        <field name="name">ir.exports.form</field>
         <field name="model">ir.exports</field>
+        <field name="inherit_id" ref="base_export_manager.ir_exports_form_view"/>
         <field name="arch" type="xml">
-            <form string="Pattern">
-                <sheet>
-                    <group>
-                        <group>
-                            <field name="name" attrs="{'required': True}"/>
-                            <field name="model_id" attrs="{'required': True}"/>
-                            <field name="resource" attrs="{'readonly': True}"/>
-                        </group>
-                        <group>
-                            <field name="pattern_file"/>
-                            <field name="pattern_last_generation_date"/>
-                        </group>
-                    </group>
-                    <notebook>
-                        <page string="Export Lines">
-                            <field name="export_fields" nolabel="1" widget="section_and_note_one2many" mode="tree">
-                                <tree string="Invoice Lines" editable="bottom">
-                                   <control>
-                                       <create string="Add a line"/>
-                                   </control>
-                                   <field name="model_id" invisible="1"/>
-                                   <field name="field_id" domain="[('model_id','=',model_id)]"/>
-                                   <field name="is_many2x"/>
-                                   <field name="related_model_id"/>
-                                   <field name="select_tab_id" attrs="{'readonly': [('is_many2x', '!=', True)]}"/>
-                                </tree>
-                            </field>
-                        </page>
-                    </notebook>
-                </sheet>
-            </form>
+            <xpath expr="//form/group[1]" position="after">
+                <group>
+                    <field name="pattern_file"/>
+                    <field name="pattern_last_generation_date"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='field4_id']" position="after">
+                <field name="is_many2x"/>
+                <field name="related_model_id"/>
+                <field name="select_tab_id"/>
+            </xpath>
         </field>
     </record>
 
@@ -63,20 +31,6 @@
                 <field name="create_date"/>
                 <field name="create_uid"/>
             </tree>
-        </field>
-    </record>
-
-    <record id="pattern_action" model="ir.actions.act_window">
-        <field name="name">Patterns</field>
-        <field name="type">ir.actions.act_window</field>
-        <field name="res_model">ir.exports</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_type">form</field>
-        <field name="view_id" ref="ir_exports_tree_view"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create a new export pattern
-            </p>
         </field>
     </record>
 
@@ -101,7 +55,7 @@
         parent="import_export_menu_root"
         sequence="1"
         groups="base.group_user"
-        action="pattern_action"/>
+        action="base_export_manager.ir_exports_action"/>
 
     <menuitem id="export_menu"
         name="Exports"
