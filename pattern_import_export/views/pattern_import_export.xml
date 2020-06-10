@@ -14,6 +14,8 @@
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
                 <field name="is_many2x"/>
+                <field name="is_many2many" invisible="True"/>
+                <field name="number_occurence" attrs="{'required': [('is_many2many', '=', True)], 'readonly': [('is_many2many', '!=', True)], 'invisible': [('is_many2many', '!=', True)]}"/>
                 <field name="related_model_id"/>
                 <field name="select_tab_id"/>
             </xpath>

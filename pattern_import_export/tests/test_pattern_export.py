@@ -7,19 +7,24 @@ from xlrd import open_workbook
 
 from odoo.tests.common import SavepointCase
 
+from ..models.ir_exports import COLUMN_M2M_SEPARATOR
+
 
 class TestPatternExport(SavepointCase):
     @classmethod
     def setUpClass(cls):
-        super(TestPatternExport, cls).setUpClass()
+        super().setUpClass()
+        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
         exports_vals = {"name": "Partner list", "resource": "res.partner"}
         cls.ir_exports = cls.env["ir.exports"].create(exports_vals)
-        field = cls.env.ref("base.field_res_country__code")
-        model = cls.env.ref("base.model_res_country")
+        country_code_field = cls.env.ref("base.field_res_country__code")
+        country_model = cls.env.ref("base.model_res_country")
+        company_model = cls.env.ref("base.model_res_company")
+        company_name_field = cls.env.ref("base.field_res_company__name")
         select_tab_vals = {
             "name": "Country list",
-            "model_id": model.id,
-            "field_id": field.id,
+            "model_id": country_model.id,
+            "field_id": country_code_field.id,
             "domain": "[('code', 'in', ['FR', 'BE', 'US'])]",
         }
         cls.select_tab = cls.env["ir.exports.select.tab"].create(select_tab_vals)
@@ -39,6 +44,35 @@ class TestPatternExport(SavepointCase):
             },
         ]
         cls.env["ir.exports.line"].create(exports_line_vals)
+        # M2M part
+        select_tab_vals = {
+            "name": "Company list",
+            "model_id": company_model.id,
+            "field_id": company_name_field.id,
+        }
+        cls.select_tab_company = cls.env["ir.exports.select.tab"].create(
+            select_tab_vals
+        )
+        cls.ir_exports_m2m = cls.env["ir.exports"].create(
+            {
+                "name": "Users list - M2M",
+                "resource": "res.users",
+                "export_fields": [
+                    (0, False, {"name": "id"}),
+                    (0, False, {"name": "name"}),
+                    (
+                        0,
+                        False,
+                        {
+                            "name": "company_ids",
+                            "number_occurence": 1,
+                            "select_tab_id": cls.select_tab_company.id,
+                        },
+                    ),
+                ],
+            }
+        )
+        cls.separator = COLUMN_M2M_SEPARATOR
 
     def test_generate_pattern_with_basic_fields(self):
         self.ir_exports.pattern_last_generation_date = False
@@ -70,6 +104,140 @@ class TestPatternExport(SavepointCase):
         self.assertEqual(sheet2.cell_value(1, 0), "BE")
         self.assertEqual(sheet2.cell_value(2, 0), "FR")
         self.assertEqual(sheet2.cell_value(3, 0), "US")
+
+    def _check_is_many2many(self, export_lines):
+        """
+        Ensure the is_many2many is correct for given export lines.
+        """
+        for export_line in export_lines:
+            expected_result = False
+            if (
+                export_line.is_many2x
+                and export_line.export_id.resource
+                and export_line.name
+            ):
+                field, model = export_line._get_last_field(
+                    export_line.export_id.resource, export_line.name
+                )
+                if self.env[model]._fields[field].type == "many2many":
+                    expected_result = True
+            if expected_result:
+                self.assertTrue(export_line.is_many2many)
+            else:
+                self.assertFalse(export_line.is_many2many)
+
+    def test_generate_pattern_is_many2many(self):
+        """
+        Ensure the is_many2many boolean field on the ir.exports.line
+        is correctly set.
+        """
+        self._check_is_many2many(self.ir_exports.export_fields)
+        self._check_is_many2many(self.ir_exports_m2m.export_fields)
+
+    def test_generate_pattern_with_many2many_fields1(self):
+        """
+        Test the excel generation for M2M fields with 1 occurence.
+        Only header part
+        """
+        for export_line in self.ir_exports_m2m.export_fields:
+            if not export_line.is_many2many:
+                export_line.unlink()
+        # Ensure still at least 1 line!
+        self.assertTrue(self.ir_exports_m2m.export_fields)
+        self.ir_exports_m2m.generate_pattern()
+        decoded_data = base64.b64decode(self.ir_exports_m2m.pattern_file)
+        wb = open_workbook(file_contents=decoded_data)
+        self.assertEqual(len(wb.sheets()), 2)
+        sheet1 = wb.sheet_by_index(0)
+        column_name = "{name}{sep}{nb}".format(
+            name="company_ids", sep=self.separator, nb=1
+        )
+        self.assertEquals(column_name, sheet1.cell_value(0, 0))
+        sheet2 = wb.sheet_by_index(1)
+        companies = self.env["res.company"].search([])
+        expected_sheet_name = "{name} ({field})".format(
+            name=self.select_tab_company.name, field="name"
+        )
+        self.assertEquals(expected_sheet_name, sheet2.name)
+        # Start at 1 because 0 is the header
+        for ind, company in enumerate(companies, start=1):
+            self.assertEquals(company.name, sheet2.cell_value(ind, 0))
+
+    def test_generate_pattern_with_many2many_fields2(self):
+        """
+        Test the excel generation for M2M fields with more than 1 occurence.
+        Only header part!
+        """
+        for export_line in self.ir_exports_m2m.export_fields:
+            if not export_line.is_many2many:
+                export_line.unlink()
+        # Ensure still at least 1 line!
+        self.assertTrue(self.ir_exports_m2m.export_fields)
+        self.ir_exports_m2m.export_fields.write({"number_occurence": 5})
+        self.ir_exports_m2m.generate_pattern()
+        decoded_data = base64.b64decode(self.ir_exports_m2m.pattern_file)
+        wb = open_workbook(file_contents=decoded_data)
+        self.assertEqual(len(wb.sheets()), 2)
+        sheet1 = wb.sheet_by_index(0)
+        for nb in range(self.ir_exports_m2m.export_fields.number_occurence):
+            column_name = "{name}{sep}{nb}".format(
+                name="company_ids", sep=self.separator, nb=nb + 1
+            )
+            self.assertEquals(column_name, sheet1.cell_value(0, nb))
+        sheet2 = wb.sheet_by_index(1)
+        companies = self.env["res.company"].search([])
+        expected_sheet_name = "{name} ({field})".format(
+            name=self.select_tab_company.name, field="name"
+        )
+        self.assertEquals(expected_sheet_name, sheet2.name)
+        # Start at 1 because 0 is the header
+        for ind, company in enumerate(companies, start=1):
+            self.assertEquals(company.name, sheet2.cell_value(ind, 0))
+
+    def test_generate_pattern_with_many2many_fields3(self):
+        """
+        Test the excel generation for M2M fields with more than 1 occurence.
+        Test only the content part
+        """
+        self.env["res.company"].create(
+            {"name": "Awesome company", "user_ids": [(4, self.env.user.id)]}
+        )
+        self.env["res.company"].create(
+            {"name": "Bad company", "user_ids": [(4, self.env.user.id)]}
+        )
+        # Ensure still at least 1 line!
+        nb_occurence = 4
+        export_fields_m2m = self.ir_exports_m2m.export_fields.filtered(
+            lambda l: l.is_many2many
+        )
+        self.assertTrue(export_fields_m2m)
+        export_fields_m2m.write({"number_occurence": nb_occurence})
+        users = self.env["res.users"].search([])
+        self.ir_exports_m2m._export_with_record(users)
+        attachment = self.env["ir.attachment"].search(
+            [("res_model", "=", "ir.exports"), ("res_id", "=", self.ir_exports_m2m.id)],
+            limit=1,
+        )
+        expected_attachment_name = "{name}{ext}".format(
+            name=self.ir_exports_m2m.name, ext=".xlsx"
+        )
+        self.assertEquals(expected_attachment_name, attachment.name)
+        decoded_data = base64.b64decode(attachment.datas)
+        wb = open_workbook(file_contents=decoded_data)
+        sheet1 = wb.sheet_by_index(0)
+        for ind, user in enumerate(users, start=1):
+            xml_id = user.get_xml_id().get(user.id, "")
+            self.assertEquals(xml_id, sheet1.cell_value(ind, 0))
+            self.assertEquals(user.name or "", sheet1.cell_value(ind, 1))
+            for ind_company, company in enumerate(user.company_ids, start=2):
+                self.assertEquals(
+                    company.name or "", sheet1.cell_value(ind, ind_company)
+                )
+            ind_already_checked = max(1, ind_company + 1)
+            ind_to_check = nb_occurence + ind_company
+            # Ensure others are empty
+            for ind_company in range(ind_already_checked, ind_to_check):
+                self.assertEquals("", sheet1.cell_value(ind, ind_company))
 
     def test_export_with_record(self):
         self.ir_exports.export_fields[4].unlink()

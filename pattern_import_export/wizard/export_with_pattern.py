@@ -20,7 +20,9 @@ class ExportPatternWizard(models.Model):
     @api.multi
     def _compute_no_export_pattern(self):
         for wiz in self:
-            ir_exports = wiz.env["ir.exports"].search([("resource", "=", wiz.model)])
+            ir_exports = wiz.env["ir.exports"].search_count(
+                [("resource", "=", wiz.model)]
+            )
             if not ir_exports:
                 wiz.no_export_pattern = True
 

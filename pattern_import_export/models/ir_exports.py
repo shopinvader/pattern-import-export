@@ -8,6 +8,8 @@ import xlsxwriter
 
 from odoo import api, fields, models
 
+COLUMN_M2M_SEPARATOR = "|"
+
 
 class IrExports(models.Model):
     _inherit = "ir.exports"
@@ -27,7 +29,21 @@ class IrExports(models.Model):
         col = 0
         ad_sheet_list = {}
         for export_line in self.export_fields:
-            sheet.write(row, col, export_line.name, bold)
+            base_column_name = column_name = export_line.name
+            nb_occurence = 1
+            if export_line.is_many2many:
+                nb_occurence = max(1, export_line.number_occurence)
+            line_added = 0
+            while line_added < nb_occurence:
+                if export_line.is_many2many:
+                    column_name = "{column_name}{separator}{nb}".format(
+                        column_name=base_column_name,
+                        separator=COLUMN_M2M_SEPARATOR,
+                        nb=line_added + 1,
+                    )
+                sheet.write(row, col, column_name, bold)
+                col += 1
+                line_added += 1
             if export_line.is_many2x and export_line.select_tab_id:
                 select_tab_name = export_line.select_tab_id.name
                 field_name = export_line.select_tab_id.field_id.name
@@ -42,7 +58,6 @@ class IrExports(models.Model):
                     ad_sheet = ad_sheet_list[ad_sheet.name][0]
                     ad_row = ad_sheet_list[ad_sheet.name][1]
                 export_line._add_xlsx_constraint(sheet, col, ad_sheet, ad_row)
-            col += 1
         return book, sheet, pattern_file
 
     @api.multi
@@ -63,18 +78,40 @@ class IrExports(models.Model):
             row = 1
             for record in records:
                 fields_to_export = []
-                for export_line in self.export_fields:
+                nb_field_column = {}
+                for export_line in export.export_fields:
+                    nb_column = 1
                     if export_line.is_many2x and export_line.select_tab_id:
                         field_name = export_line.select_tab_id.field_id.name
                         field = export_line.name + "/" + field_name
-                        fields_to_export.append(field)
+                        if export_line.is_many2many:
+                            nb_column = max(1, export_line.number_occurence)
                     else:
-                        fields_to_export.append(export_line.name)
+                        field = export_line.name
+                    fields_to_export.append(field)
+                    nb_field_column.update({field: nb_column})
+                # The data-structure returned by export_data is different
+                # that the one used to export.
+                # export_data(...) return a dict with a keys named 'datas'
+                # and it contains a list of list.
+                # Each list item is a line (for M2M) but for the export,
+                # we want to display these lines as column.
+                # So we have to convert
                 res = record.export_data(fields_to_export, raw_data=False)
+                list_dict_values = []
+                for data in res.get("datas", []):
+                    data_dict = {}
+                    for field, value in zip(fields_to_export, data):
+                        data_dict.update({field: value})
+                    list_dict_values.append(data_dict)
                 col = 0
-                for value in res["datas"][0]:
-                    sheet.write(row, col, value)
-                    col += 1
+                for field, nb_occurence in nb_field_column.items():
+                    for current_occurence in range(0, nb_occurence):
+                        value = ""
+                        if len(list_dict_values) >= current_occurence + 1:
+                            value = list_dict_values[current_occurence].get(field)
+                        sheet.write(row, col, value)
+                        col += 1
                 row += 1
             book.close()
             attachment_datas = base64.b64encode(pattern_file.getvalue())
@@ -87,62 +124,4 @@ class IrExports(models.Model):
                     "datas": attachment_datas,
                 }
             )
-        return True
-
-
-class IrExportsLine(models.Model):
-    _inherit = "ir.exports.line"
-
-    select_tab_id = fields.Many2one("ir.exports.select.tab", string="Select tab")
-    is_many2x = fields.Boolean(
-        string="Is Many2x field", compute="_compute_is_many2x", store=True
-    )
-    related_model_id = fields.Many2one(
-        "ir.model",
-        string="Related model",
-        compute="_compute_related_model_id",
-        store=True,
-    )
-
-    def _get_last_field(self, model, path):
-        if "/" not in path:
-            path = path + "/"
-        field, path = path.split("/", 1)
-        if path:
-            model = self.env[model]._fields[field]._related_comodel_name
-            return self._get_last_field(model, path)
-        else:
-            return field, model
-
-    @api.multi
-    @api.depends("name")
-    def _compute_is_many2x(self):
-        for export_line in self:
-            if export_line.export_id.resource and export_line.name:
-                field, model = export_line._get_last_field(
-                    export_line.export_id.resource, export_line.name
-                )
-                if self.env[model]._fields[field].type in ["many2one", "many2many"]:
-                    export_line.is_many2x = True
-
-    @api.multi
-    @api.depends("name")
-    def _compute_related_model_id(self):
-        for export_line in self:
-            if export_line.export_id.resource and export_line.name:
-                field, model = export_line._get_last_field(
-                    export_line.export_id.resource, export_line.name
-                )
-                related_comodel = self.env[model]._fields[field]._related_comodel_name
-                if related_comodel:
-                    comodel = self.env["ir.model"].search(
-                        [("model", "=", related_comodel)], limit=1
-                    )
-                    export_line.related_model_id = comodel.id
-
-    def _add_xlsx_constraint(self, sheet, col, ad_sheet, ad_row):
-        source = "=" + ad_sheet.name + "!$A$2:$A$" + str(ad_row + 100)
-        sheet.data_validation(
-            1, col, 1048576, col, {"validate": "list", "source": source}
-        )
         return True
