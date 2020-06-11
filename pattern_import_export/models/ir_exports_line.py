@@ -1,6 +1,6 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-from odoo import api, exceptions, fields, models, _
+from odoo import _, api, exceptions, fields, models
 
 
 class IrExportsLine(models.Model):
@@ -11,9 +11,7 @@ class IrExportsLine(models.Model):
         string="Is Many2x field", compute="_compute_is_many2x", store=True
     )
     is_many2many = fields.Boolean(
-        string="Is Many2many field",
-        compute="_compute_is_many2many",
-        store=True,
+        string="Is Many2many field", compute="_compute_is_many2many", store=True
     )
     related_model_id = fields.Many2one(
         "ir.model",
@@ -25,11 +23,11 @@ class IrExportsLine(models.Model):
         string="# Occurence",
         default=1,
         help="Number of column to create to display this Many2many field.\n"
-             "Value should be >= 1",
+        "Value should be >= 1",
     )
 
     @api.multi
-    @api.constrains('number_occurence', 'is_many2many')
+    @api.constrains("number_occurence", "is_many2many")
     def _constrains_number_occurence(self):
         """
         Constrain function for the field number_occurence.
@@ -39,12 +37,18 @@ class IrExportsLine(models.Model):
         bad_records = self.filtered(lambda r: r.is_many2many and r.number_occurence < 1)
         if bad_records:
             details = "\n- ".join(bad_records.mapped("display_name"))
-            message = _("Number of occurence for Many2many fields should be "
-                        "greater or equals to 1.\n"
-                        "These lines have an invalid number of "
-                        "occurence:\n- %s") % details
+            message = (
+                _(
+                    "Number of occurence for Many2many fields should be "
+                    "greater or equals to 1.\n"
+                    "These lines have an invalid number of "
+                    "occurence:\n- %s"
+                )
+                % details
+            )
             raise exceptions.ValidationError(message)
 
+    @api.model
     def _get_last_field(self, model, path):
         if "/" not in path:
             path = path + "/"
@@ -71,7 +75,11 @@ class IrExportsLine(models.Model):
     def _compute_is_many2many(self):
         for export_line in self:
             is_many2many = False
-            if export_line.is_many2x and export_line.export_id.resource and export_line.name:
+            if (
+                export_line.is_many2x
+                and export_line.export_id.resource
+                and export_line.name
+            ):
                 field, model = export_line._get_last_field(
                     export_line.export_id.resource, export_line.name
                 )

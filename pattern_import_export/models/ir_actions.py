@@ -10,7 +10,7 @@ class IrActions(models.Model):
     @api.model
     def get_bindings(self, model_name):
         """ Add an action to all Model objects of the ERP """
-        res = super(IrActions, self).get_bindings(model_name)
+        res = super().get_bindings(model_name)
         action = self.env.ref("pattern_import_export.action_export_with_pattern")
         res["action"].append(action.read()[0])
         return res
