@@ -3,7 +3,7 @@
 
 import base64
 
-from odoo import api, fields, models
+from odoo import api, fields, models, tools
 
 COLUMN_X2M_SEPARATOR = "|"
 
