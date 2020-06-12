@@ -23,21 +23,19 @@ class IrExports(models.Model):
         for col, header in enumerate(self._get_header()):
             sheet.write(0, col, header, cell_style)
         # Manage others tab of Excel file!
-        for export_line in self.export_fields:
-            if export_line.is_many2x and export_line.select_tab_id:
-                select_tab_name = export_line.select_tab_id.name
-                field_name = export_line.select_tab_id.field_id.name
-                ad_sheet_name = select_tab_name + " (" + field_name + ")"
-                if ad_sheet_name not in ad_sheet_list:
-                    select_tab_id = export_line.select_tab_id
-                    ad_sheet, ad_row = select_tab_id._generate_additional_sheet(
-                        book, cell_style
-                    )
-                    ad_sheet_list[ad_sheet.name] = (ad_sheet, ad_row)
-                else:
-                    ad_sheet = ad_sheet_list[ad_sheet.name][0]
-                    ad_row = ad_sheet_list[ad_sheet.name][1]
-                export_line._add_xlsx_constraint(sheet, col, ad_sheet, ad_row)
+        for select_tab in self._get_select_tab():
+            select_tab_name = select_tab.name
+            field_name = select_tab.field_id.name
+            ad_sheet_name = select_tab_name + " (" + field_name + ")"
+            if ad_sheet_name not in ad_sheet_list:
+                ad_sheet, ad_row = select_tab._generate_additional_sheet(
+                    book, cell_style
+                )
+                ad_sheet_list[ad_sheet.name] = (ad_sheet, ad_row)
+            else:
+                ad_sheet = ad_sheet_list[ad_sheet.name][0]
+                ad_row = ad_sheet_list[ad_sheet.name][1]
+            select_tab._add_xlsx_constraint(sheet, col, ad_sheet, ad_row)
         return book, sheet, pattern_file
 
     @api.multi

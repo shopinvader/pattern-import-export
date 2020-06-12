@@ -1,8 +1,10 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+from odoo.tests import new_test_user
+
 from odoo.addons.queue_job.tests.common import JobMixin
 
-from ..models.ir_exports import COLUMN_M2M_SEPARATOR
+from ..models.ir_exports import COLUMN_X2M_SEPARATOR
 
 
 class ExportPatternCommon(JobMixin):
@@ -21,10 +23,47 @@ class ExportPatternCommon(JobMixin):
         country_code_field = cls.env.ref("base.field_res_country__code")
         country_model = cls.env.ref("base.model_res_country")
         company_model = cls.env.ref("base.model_res_company")
+        cls.partner_1 = cls.env.ref("base.res_partner_1")
+        cls.partner_2 = cls.env.ref("base.res_partner_2")
+        cls.partner_3 = cls.env.ref("base.res_partner_3")
+        # Todo: attach some partners to partner.user_ids
+        cls.user1 = new_test_user(
+            cls.env, login="tonic", name=cls.partner_1.name, partner_id=cls.partner_1.id
+        )
+        cls.user2 = new_test_user(
+            cls.env, login="tazz", name=cls.partner_1.name, partner_id=cls.partner_1.id
+        )
+        cls.user3 = new_test_user(
+            cls.env,
+            login="tenebre",
+            name=cls.partner_2.name,
+            partner_id=cls.partner_2.id,
+        )
+        cls.users = cls.user1 | cls.user2 | cls.user3
+        # Used to generate XML id automatically
+        cls.users.export_data(["id"])
+        cls.partners = cls.partner_1 | cls.partner_2 | cls.partner_3
         cls.company1 = cls.env.ref("base.main_company")
+        cls.company2 = cls.Company.create(
+            {
+                "name": "Awesome company",
+                "user_ids": [
+                    (4, cls.env.user.id),
+                    (4, cls.user1.id),
+                    (4, cls.user2.id),
+                ],
+            }
+        )
+        cls.company3 = cls.Company.create(
+            {
+                "name": "Bad company",
+                "user_ids": [(4, cls.env.user.id), (4, cls.user1.id)],
+            }
+        )
+        cls.companies = cls.company1 | cls.company2 | cls.company3
         company_name_field = cls.env.ref("base.field_res_company__name")
         exports_vals = {"name": "Partner list", "resource": "res.partner"}
-        cls.separator = COLUMN_M2M_SEPARATOR
+        cls.separator = COLUMN_X2M_SEPARATOR
         cls.ir_exports = cls.Exports.create(exports_vals)
         select_tab_vals = {
             "name": "Country list",
@@ -75,15 +114,24 @@ class ExportPatternCommon(JobMixin):
                 ],
             }
         )
-        cls.partner_1 = cls.env.ref("base.res_partner_1")
-        cls.partner_2 = cls.env.ref("base.res_partner_2")
-        cls.partner_3 = cls.env.ref("base.res_partner_3")
-        cls.partners = cls.partner_1 | cls.partner_2 | cls.partner_3
-        cls.company2 = cls.Company.create(
-            {"name": "Awesome company", "user_ids": [(4, cls.env.user.id)]}
-        )
-        cls.company3 = cls.Company.create(
-            {"name": "Bad company", "user_ids": [(4, cls.env.user.id)]}
+        cls.ir_exports_o2m = cls.Exports.create(
+            {
+                "name": "Partner - O2M",
+                "resource": "res.partner",
+                "export_fields": [
+                    (0, False, {"name": "id"}),
+                    (0, False, {"name": "name"}),
+                    (
+                        0,
+                        False,
+                        {
+                            "name": "user_ids",
+                            "number_occurence": 3,
+                            "pattern_export_id": cls.ir_exports_m2m.id,
+                        },
+                    ),
+                ],
+            }
         )
         cls.companies = cls.company1 | cls.company2 | cls.company3
 
@@ -103,7 +151,7 @@ class ExportPatternCommon(JobMixin):
                 if export_line.is_many2many:
                     column_name = "{column_name}{separator}{nb}".format(
                         column_name=base_column_name,
-                        separator=COLUMN_M2M_SEPARATOR,
+                        separator=COLUMN_X2M_SEPARATOR,
                         nb=line_added + 1,
                     )
                 header.append(column_name)
