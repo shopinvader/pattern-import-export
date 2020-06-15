@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Patterns Form View-->
+    <record id="ir_exports_form_view" model="ir.ui.view">
+        <field name="model">ir.exports</field>
+        <field name="inherit_id" ref="base_export_manager.ir_exports_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/group[1]" position="after">
+                <group>
+                    <field name="pattern_file"/>
+                    <field name="pattern_last_generation_date"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='field4_id']" position="after">
+                <field name="is_many2x"/>
+                <field name="related_model_id"/>
+                <field name="select_tab_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Exports Attachment Tree View-->
+    <record id="ir_exports_attachment_tree_view" model="ir.ui.view">
+        <field name="name">ir.exports.attachment.tree</field>
+        <field name="model">ir.attachment</field>
+        <field name="arch" type="xml">
+            <tree string="Exports">
+                <field name="name"/>
+                <field name="res_name" string="Pattern name"/>
+                <field name="create_date"/>
+                <field name="create_uid"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="export_action" model="ir.actions.act_window">
+        <field name="name">Exports</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">ir.attachment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_type">form</field>
+        <field name="domain">[('res_model', '=', 'ir.exports')]</field>
+        <field name="view_id" ref="ir_exports_attachment_tree_view"/>
+    </record>
+
+    <menuitem id="import_export_menu_root"
+        name="Import/Export"
+        active="True"
+        sequence="100"
+        groups="base.group_user"/>
+
+    <menuitem id="pattern_menu"
+        name="Patterns"
+        parent="import_export_menu_root"
+        sequence="1"
+        groups="base.group_user"
+        action="base_export_manager.ir_exports_action"/>
+
+    <menuitem id="export_menu"
+        name="Exports"
+        parent="import_export_menu_root"
+        sequence="2"
+        groups="base.group_user"
+        action="export_action"/>
+
+</odoo>
