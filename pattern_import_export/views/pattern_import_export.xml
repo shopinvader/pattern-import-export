@@ -13,9 +13,10 @@
                 </group>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
-                <field name="is_many2x"/>
-                <field name="related_model_id"/>
-                <field name="select_tab_id"/>
+                <field name="is_many2x" invisible="1"/>
+                <field name="related_model_id" invisible="1"/>
+                <field name="last_field_id" invisible="1"/>
+                <field name="select_tab_id" attrs="{'readonly': [('is_many2x', '!=', True)]}" context="{'default_model_id': related_model_id, 'default_field_id': last_field_id}"/>
             </xpath>
         </field>
     </record>

@@ -93,7 +93,11 @@ class IrExports(models.Model):
 class IrExportsLine(models.Model):
     _inherit = "ir.exports.line"
 
-    select_tab_id = fields.Many2one("ir.exports.select.tab", string="Select tab")
+    select_tab_id = fields.Many2one(
+        "ir.exports.select.tab",
+        string="Select tab",
+        domain="[('model_id','=',related_model_id), ('field_id','=',last_field_id)]",
+    )
     is_many2x = fields.Boolean(
         string="Is Many2x field", compute="_compute_is_many2x", store=True
     )
@@ -103,46 +107,91 @@ class IrExportsLine(models.Model):
         compute="_compute_related_model_id",
         store=True,
     )
+    last_field_id = fields.Many2one(
+        "ir.model.fields",
+        string="Last Field",
+        compute="_compute_last_field_id",
+        store=True,
+    )
 
     def _get_last_field(self, model, path):
         if "/" not in path:
             path = path + "/"
         field, path = path.split("/", 1)
         if path:
+            prev_model = model
             model = self.env[model]._fields[field]._related_comodel_name
-            return self._get_last_field(model, path)
+            return self.with_context(
+                prev_field=field, prev_model=prev_model
+            )._get_last_field(model=model, path=path)
         else:
-            return field, model
+            prev_field = self.env.context.get("prev_field", False)
+            prev_model = self.env.context.get("prev_model", False)
+            return field, model, prev_field, prev_model
 
     @api.multi
     @api.depends("name")
     def _compute_is_many2x(self):
         for export_line in self:
             if export_line.export_id.resource and export_line.name:
-                field, model = export_line._get_last_field(
+                field, model, prev_field, prev_model = export_line._get_last_field(
                     export_line.export_id.resource, export_line.name
                 )
-                if self.env[model]._fields[field].type in ["many2one", "many2many"]:
-                    export_line.is_many2x = True
+                is_many2x = False
+                if self.env[model]._fields[field].type in [
+                    "many2one",
+                    "many2many",
+                    "one2many",
+                ]:
+                    is_many2x = True
+                elif (
+                    prev_model
+                    and prev_field
+                    and self.env[prev_model]._fields[prev_field].type
+                    in ["many2one", "many2many", "one2many"]
+                ):
+                    is_many2x = True
+                export_line.is_many2x = is_many2x
 
     @api.multi
     @api.depends("name")
     def _compute_related_model_id(self):
         for export_line in self:
             if export_line.export_id.resource and export_line.name:
-                field, model = export_line._get_last_field(
+                field, model, prev_field, prev_model = export_line._get_last_field(
                     export_line.export_id.resource, export_line.name
                 )
-                related_comodel = self.env[model]._fields[field]._related_comodel_name
+                if prev_model and prev_field:
+                    related_comodel = (
+                        self.env[model]._fields[field]._related_comodel_name
+                        or self.env[prev_model]
+                        ._fields[prev_field]
+                        ._related_comodel_name
+                    )
+                else:
+                    related_comodel = (
+                        self.env[model]._fields[field]._related_comodel_name
+                    )
                 if related_comodel:
                     comodel = self.env["ir.model"].search(
                         [("model", "=", related_comodel)], limit=1
                     )
                     export_line.related_model_id = comodel.id
 
+    @api.multi
+    @api.depends("name")
+    def _compute_last_field_id(self):
+        for export_line in self:
+            if export_line.export_id.resource and export_line.name:
+                field, model, prev_field, prev_model = export_line._get_last_field(
+                    export_line.export_id.resource, export_line.name
+                )
+                last_field = self.env["ir.model.fields"].search(
+                    [("model", "=", model), ("name", "=", field)], limit=1
+                )
+                export_line.last_field_id = last_field.id
+
     def _add_xlsx_constraint(self, sheet, col, ad_sheet, ad_row):
-        source = "=" + ad_sheet.name + "!$A$2:$A$" + str(ad_row + 100)
-        sheet.data_validation(
-            1, col, 1048576, col, {"validate": "list", "source": source}
-        )
+        val = "=" + "'" + ad_sheet.name + "'" + "!$A$2:$A$" + str(ad_row + 100)
+        sheet.data_validation(1, col, 1048576, col, {"validate": "list", "source": val})
         return True

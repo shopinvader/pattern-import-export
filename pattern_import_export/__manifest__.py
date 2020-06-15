@@ -9,11 +9,11 @@
     "website": "http://www.akretion.com",
     "license": "AGPL-3",
     "depends": ["base", "queue_job", "document", "base_export_manager"],
-    "external_dependencies": {"python": ["xlsxwriter", "xlrd"]},
+    "external_dependencies": {"python": ["xlsxwriter"]},
     "data": [
         "security/ir.model.access.csv",
-        "wizard/export_with_pattern.xml",
         "views/pattern_import_export.xml",
+        "wizard/export_with_pattern.xml",
     ],
     "installable": True,
 }

@@ -12,8 +12,10 @@ class IrExportsSelectTab(models.Model):
 
     name = fields.Char(string="Name", required=True)
     domain = fields.Char(string="Domain")
-    model_id = fields.Many2one("ir.model", string="Model", required=True)
-    field_id = fields.Many2one("ir.model.fields", string="Field", required=True)
+    model_id = fields.Many2one("ir.model", string="Model", required=True, readonly=True)
+    field_id = fields.Many2one(
+        "ir.model.fields", string="Field", required=True, readonly=True
+    )
 
     @api.multi
     def _generate_additional_sheet(self, book, bold):
