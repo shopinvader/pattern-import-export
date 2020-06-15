@@ -1,5 +1,8 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import base64
+from contextlib import contextmanager
+
 from odoo.tests import new_test_user
 
 from odoo.addons.queue_job.tests.common import JobMixin
@@ -26,7 +29,11 @@ class ExportPatternCommon(JobMixin):
         cls.partner_1 = cls.env.ref("base.res_partner_1")
         cls.partner_2 = cls.env.ref("base.res_partner_2")
         cls.partner_3 = cls.env.ref("base.res_partner_3")
-        # Todo: attach some partners to partner.user_ids
+        cls.country_be = cls.env.ref("base.be")
+        cls.country_us = cls.env.ref("base.us")
+        cls.group_manager = cls.env.ref("base.group_erp_manager")
+        cls.group_no_one = cls.env.ref("base.group_no_one")
+        cls.group_job = cls.env.ref("queue_job.group_queue_job_manager")
         cls.user1 = new_test_user(
             cls.env, login="tonic", name=cls.partner_1.name, partner_id=cls.partner_1.id
         )
@@ -61,6 +68,8 @@ class ExportPatternCommon(JobMixin):
             }
         )
         cls.companies = cls.company1 | cls.company2 | cls.company3
+        # Used to generate XML id automatically
+        cls.companies.export_data(["id"])
         company_name_field = cls.env.ref("base.field_res_company__name")
         exports_vals = {"name": "Partner list", "resource": "res.partner"}
         cls.separator = COLUMN_X2M_SEPARATOR
@@ -133,29 +142,13 @@ class ExportPatternCommon(JobMixin):
                 ],
             }
         )
-        cls.companies = cls.company1 | cls.company2 | cls.company3
-
-    def _get_header_from_export(self, export):
-        """
-        Get the header of given export
-        @param export: ir.exports recordset
-        @return: list of str
-        """
-        header = []
-        for export_line in export.export_fields:
-            column_name = base_column_name = export_line.name
-            nb_occurence = 1
-            if export_line.is_many2many:
-                nb_occurence = max(1, export_line.number_occurence)
-            for line_added in range(0, nb_occurence):
-                if export_line.is_many2many:
-                    column_name = "{column_name}{separator}{nb}".format(
-                        column_name=base_column_name,
-                        separator=COLUMN_X2M_SEPARATOR,
-                        nb=line_added + 1,
-                    )
-                header.append(column_name)
-        return header
+        cls.empty_attachment = cls.Attachment.create(
+            {
+                "name": "a_file_name",
+                "datas": base64.b64encode(b"a"),
+                "datas_fname": "a_file_name",
+            }
+        )
 
     def _get_attachment(self, record):
         """
@@ -166,3 +159,18 @@ class ExportPatternCommon(JobMixin):
         return self.Attachment.search(
             [("res_model", "=", record._name), ("res_id", "=", record.id)], limit=1
         )
+
+    @contextmanager
+    def _mock_read_import_data(self, main_data):
+        """
+        Mock the _read_import_data from Exports to return directly
+        received datafile
+        @return:
+        """
+
+        def _read_import_data(self, datafile):
+            return main_data
+
+        self.Exports._patch_method("_read_import_data", _read_import_data)
+        yield
+        self.Exports._revert_method("_read_import_data")

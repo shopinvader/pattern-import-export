@@ -46,6 +46,6 @@ class IrExportsSelectTab(models.Model):
         """
         for record in self._get_records_to_export():
             data = {}
-            for header in record._get_header():
+            for header in self._get_header():
                 data.update({header: record[header]})
             yield data

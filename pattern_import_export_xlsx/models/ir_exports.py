@@ -1,7 +1,9 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import base64
 from io import BytesIO
 
+import xlrd
 import xlsxwriter
 
 from odoo import api, fields, models
@@ -48,7 +50,26 @@ class IrExports(models.Model):
         self.ensure_one()
         book, sheet, pattern_file = self._create_xlsx_file()
         for row, values in enumerate(self._get_data_to_export(records), start=1):
-            for col, value in enumerate(values.values()):
+            for col, header in enumerate(self._get_header()):
+                value = values.get(header, "")
                 sheet.write(row, col, value)
         book.close()
         return pattern_file.getvalue()
+
+    def _read_xlsx_file(self, datafile):
+        workbook = xlrd.open_workbook(
+            file_contents=base64.b64decode(BytesIO(datafile).read())
+        )
+        return workbook.sheet_by_index(0)
+
+    @api.multi
+    def _read_import_data_xlsx(self, datafile):
+        worksheet = self._read_xlsx_file(datafile)
+        headers = []
+        for col in range(worksheet.ncols):
+            headers.append(worksheet.cell_value(0, col))
+        for row in range(1, worksheet.nrows):
+            elm = {}
+            for col in range(worksheet.ncols):
+                elm[headers[col]] = worksheet.cell_value(row, col)
+            yield elm
