@@ -13,9 +13,9 @@ Pattern Import Export XLSX
 .. |badge2| image:: https://img.shields.io/badge/licence-AGPL--3-blue.png
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
-.. |badge3| image:: https://img.shields.io/badge/github-shopinvader%2Fpattern--import--export-lightgray.png?logo=github
-    :target: https://github.com/shopinvader/pattern-import-export/tree/12.0/pattern_import_export_xlsx
-    :alt: shopinvader/pattern-import-export
+.. |badge3| image:: https://img.shields.io/badge/github-akretion%2Fpattern--import--export-lightgray.png?logo=github
+    :target: https://github.com/akretion/pattern-import-export/tree/12.0/pattern_import_export_xlsx
+    :alt: akretion/pattern-import-export
 
 |badge1| |badge2| |badge3| 
 
@@ -29,10 +29,10 @@ This module allows to create patterns for import or export from or to excel file
 Bug Tracker
 ===========
 
-Bugs are tracked on `GitHub Issues <https://github.com/shopinvader/pattern-import-export/issues>`_.
+Bugs are tracked on `GitHub Issues <https://github.com/akretion/pattern-import-export/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us smashing it by providing a detailed and welcomed
-`feedback <https://github.com/shopinvader/pattern-import-export/issues/new?body=module:%20pattern_import_export_xlsx%0Aversion:%2012.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/akretion/pattern-import-export/issues/new?body=module:%20pattern_import_export_xlsx%0Aversion:%2012.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -54,6 +54,6 @@ Contributors
 Maintainers
 ~~~~~~~~~~~
 
-This module is part of the `shopinvader/pattern-import-export <https://github.com/shopinvader/pattern-import-export/tree/12.0/pattern_import_export_xlsx>`_ project on GitHub.
+This module is part of the `akretion/pattern-import-export <https://github.com/akretion/pattern-import-export/tree/12.0/pattern_import_export_xlsx>`_ project on GitHub.
 
 You are welcome to contribute.

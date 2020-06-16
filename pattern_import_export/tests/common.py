@@ -1,7 +1,8 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-from ..models.ir_exports import COLUMN_M2M_SEPARATOR
 from odoo.addons.queue_job.tests.common import JobMixin
+
+from ..models.ir_exports import COLUMN_M2M_SEPARATOR
 
 
 class ExportPatternCommon(JobMixin):
@@ -9,18 +10,18 @@ class ExportPatternCommon(JobMixin):
     def setUpClass(cls):
         super().setUpClass()
         cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
-        cls.Exports = cls.env['ir.exports']
-        cls.ExportsLine = cls.env['ir.exports.line']
-        cls.ExportsTab = cls.env['ir.exports.select.tab']
-        cls.Company = cls.env['res.company']
-        cls.Attachment = cls.env['ir.attachment']
-        cls.ExportPatternWizard = cls.env['export.pattern.wizard']
-        cls.Users = cls.env['res.users']
-        cls.Partner = cls.env['res.partner']
+        cls.Exports = cls.env["ir.exports"]
+        cls.ExportsLine = cls.env["ir.exports.line"]
+        cls.ExportsTab = cls.env["ir.exports.select.tab"]
+        cls.Company = cls.env["res.company"]
+        cls.Attachment = cls.env["ir.attachment"]
+        cls.ExportPatternWizard = cls.env["export.pattern.wizard"]
+        cls.Users = cls.env["res.users"]
+        cls.Partner = cls.env["res.partner"]
         country_code_field = cls.env.ref("base.field_res_country__code")
         country_model = cls.env.ref("base.model_res_country")
         company_model = cls.env.ref("base.model_res_company")
-        cls.company1 = cls.env.ref('base.main_company')
+        cls.company1 = cls.env.ref("base.main_company")
         company_name_field = cls.env.ref("base.field_res_company__name")
         exports_vals = {"name": "Partner list", "resource": "res.partner"}
         cls.separator = COLUMN_M2M_SEPARATOR
@@ -54,9 +55,7 @@ class ExportPatternCommon(JobMixin):
             "model_id": company_model.id,
             "field_id": company_name_field.id,
         }
-        cls.select_tab_company = cls.ExportsTab.create(
-            select_tab_vals
-        )
+        cls.select_tab_company = cls.ExportsTab.create(select_tab_vals)
         cls.ir_exports_m2m = cls.Exports.create(
             {
                 "name": "Users list - M2M",
@@ -86,7 +85,7 @@ class ExportPatternCommon(JobMixin):
         cls.company3 = cls.Company.create(
             {"name": "Bad company", "user_ids": [(4, cls.env.user.id)]}
         )
-        cls.companies = cls.company1 | cls.company2 |cls.company3
+        cls.companies = cls.company1 | cls.company2 | cls.company3
 
     def _get_header_from_export(self, export):
         """
@@ -116,7 +115,6 @@ class ExportPatternCommon(JobMixin):
         @param record: recordset
         @return: ir.attachment
         """
-        return self.Attachment.search([
-            ("res_model", "=", record._name),
-            ("res_id", "=", record.id),
-        ], limit=1)
+        return self.Attachment.search(
+            [("res_model", "=", record._name), ("res_id", "=", record.id)], limit=1
+        )

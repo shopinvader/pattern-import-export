@@ -1,6 +1,7 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from io import BytesIO
+
 import xlsxwriter
 
 from odoo import api, fields, models
@@ -9,7 +10,7 @@ from odoo import api, fields, models
 class IrExports(models.Model):
     _inherit = "ir.exports"
 
-    export_format = fields.Selection(selection_add=[('xlsx', 'Excel')],)
+    export_format = fields.Selection(selection_add=[("xlsx", "Excel")])
 
     @api.multi
     def _create_xlsx_file(self):

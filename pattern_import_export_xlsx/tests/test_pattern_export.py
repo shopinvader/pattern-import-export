@@ -11,7 +11,6 @@ from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
 
 
 class TestPatternExport(ExportPatternCommon, SavepointCase):
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -79,6 +78,30 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self._check_is_many2many(self.ir_exports.export_fields)
         self._check_is_many2many(self.ir_exports_m2m.export_fields)
 
+    def test_generate_pattern_with_many2many_select_tab(self):
+        """
+        Ensure there is a second tab about companies and ensure the content
+        is correct.
+        """
+        for export_line in self.ir_exports_m2m.export_fields:
+            if not export_line.is_many2many:
+                export_line.unlink()
+        # Ensure still at least 1 line!
+        self.assertTrue(self.ir_exports_m2m.export_fields)
+        self.ir_exports_m2m.generate_pattern()
+        decoded_data = base64.b64decode(self.ir_exports_m2m.pattern_file)
+        wb = open_workbook(file_contents=decoded_data)
+        self.assertEqual(len(wb.sheets()), 2)
+        sheet2 = wb.sheet_by_index(1)
+        companies = self.Company.search([])
+        expected_sheet_name = "{name} ({field})".format(
+            name=self.select_tab_company.name, field="name"
+        )
+        self.assertEquals(expected_sheet_name, sheet2.name)
+        # Start at 1 because 0 is the header
+        for ind, company in enumerate(companies, start=1):
+            self.assertEquals(company.name, sheet2.cell_value(ind, 0))
+
     def test_generate_pattern_with_many2many_fields1(self):
         """
         Test the excel generation for M2M fields with 1 occurence.
@@ -98,15 +121,6 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             name="company_ids", sep=self.separator, nb=1
         )
         self.assertEquals(column_name, sheet1.cell_value(0, 0))
-        sheet2 = wb.sheet_by_index(1)
-        companies = self.Company.search([])
-        expected_sheet_name = "{name} ({field})".format(
-            name=self.select_tab_company.name, field="name"
-        )
-        self.assertEquals(expected_sheet_name, sheet2.name)
-        # Start at 1 because 0 is the header
-        for ind, company in enumerate(companies, start=1):
-            self.assertEquals(company.name, sheet2.cell_value(ind, 0))
 
     def test_generate_pattern_with_many2many_fields2(self):
         """
@@ -129,15 +143,6 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
                 name="company_ids", sep=self.separator, nb=nb + 1
             )
             self.assertEquals(column_name, sheet1.cell_value(0, nb))
-        sheet2 = wb.sheet_by_index(1)
-        companies = self.Company.search([])
-        expected_sheet_name = "{name} ({field})".format(
-            name=self.select_tab_company.name, field="name"
-        )
-        self.assertEquals(expected_sheet_name, sheet2.name)
-        # Start at 1 because 0 is the header
-        for ind, company in enumerate(companies, start=1):
-            self.assertEquals(company.name, sheet2.cell_value(ind, 0))
 
     def test_generate_pattern_with_many2many_fields3(self):
         """
@@ -211,14 +216,9 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
 
     def test_export_with_record_wizard(self):
         self.ir_exports.generate_pattern()
-        wiz = (
-            self.ExportPatternWizard
-            .with_context(
-                active_ids=self.partners.ids,
-                active_model=self.partners._name,
-            )
-            .create({"model": self.partners._name, "ir_exports_id": self.ir_exports.id})
-        )
+        wiz = self.ExportPatternWizard.with_context(
+            active_ids=self.partners.ids, active_model=self.partners._name
+        ).create({"model": self.partners._name, "ir_exports_id": self.ir_exports.id})
         job = self.job_counter()
         wiz.run()
         new_job = job.search_created()

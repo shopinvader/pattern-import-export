@@ -11,8 +11,7 @@ class IrExportsSelectTab(models.Model):
         for select_tab in self:
             field = select_tab.field_id.name
             sheet_name = "{record_name} ({field})".format(
-                record_name=select_tab.name,
-                field=field
+                record_name=select_tab.name, field=field
             )
             sheet = book.add_worksheet(sheet_name)
             for col, header in enumerate(select_tab._get_header()):

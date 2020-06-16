@@ -29,7 +29,7 @@ class IrExports(models.Model):
             column_name = base_column_name = export_line.name
             nb_occurence = 1
             if export_line.is_many2many:
-                nb_occurence = max(1, export_line.number_occurence)
+                nb_occurence = export_line.number_occurence
             for line_added in range(0, nb_occurence):
                 if export_line.is_many2many:
                     column_name = "{column_name}{separator}{nb}".format(
@@ -43,20 +43,21 @@ class IrExports(models.Model):
     @api.multi
     def generate_pattern(self):
         """
-        Allows you to generate an (empty) xlsx file to be used a
+        Allows you to generate an (empty) file to be used a
         pattern for the export.
         @return: bool
         """
         for export in self:
             records = self.env[export.model_id.model].browse()
-            attachment = export._export_with_record(records)
+            data = export._generate_with_records(records)
+            if data:
+                data = data[0]
             export.write(
                 {
-                    "pattern_file": attachment.datas,
+                    "pattern_file": data,
                     "pattern_last_generation_date": fields.Datetime.now(),
                 }
             )
-            attachment.unlink()
         return True
 
     @api.multi
@@ -78,7 +79,7 @@ class IrExports(models.Model):
                     field_name = export_line.select_tab_id.field_id.name
                     field = export_line.name + "/" + field_name
                     if export_line.is_many2many:
-                        nb_column = max(1, export_line.number_occurence)
+                        nb_column = export_line.number_occurence
                 else:
                     field = export_line.name
                 for _i in range(0, nb_column):
@@ -105,13 +106,13 @@ class IrExports(models.Model):
             yield data
 
     @api.multi
-    def _export_with_record(self, records):
+    def _generate_with_records(self, records):
         """
         Export given recordset
         @param records: recordset
-        @return: ir.attachment recordset
+        @return: list of base64 encoded
         """
-        attachments = self.env["ir.attachment"].browse()
+        all_data = []
         for export in self:
             target_function = "_export_with_record_{format}".format(
                 format=export.export_format or ""
@@ -122,8 +123,21 @@ class IrExports(models.Model):
                 )
                 raise NotImplementedError(msg)
             attachment_data = getattr(export, target_function)(records)
-            if attachment_data and self.env.context.get("export_as_attachment", True):
-                attachment_data = base64.b64encode(attachment_data)
+            if attachment_data:
+                all_data.append(base64.b64encode(attachment_data))
+        return all_data
+
+    @api.multi
+    def _export_with_record(self, records):
+        """
+        Export given recordset
+        @param records: recordset
+        @return: ir.attachment recordset
+        """
+        attachments = self.env["ir.attachment"].browse()
+        all_data = self._generate_with_records(records)
+        if all_data and self.env.context.get("export_as_attachment", True):
+            for export, attachment_data in zip(self, all_data):
                 attachments |= export._attachment_document(attachment_data)
         return attachments
 
