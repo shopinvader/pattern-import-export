@@ -23,6 +23,8 @@ class ExportPatternCommon(JobMixin):
         cls.ExportPatternWizard = cls.env["export.pattern.wizard"]
         cls.Users = cls.env["res.users"]
         cls.Partner = cls.env["res.partner"]
+        cls.PartnerIndustry = cls.env["res.partner.industry"]
+        cls.PartnerCategory = cls.env["res.partner.category"]
         country_code_field = cls.env.ref("base.field_res_country__code")
         country_model = cls.env.ref("base.model_res_country")
         company_model = cls.env.ref("base.model_res_company")
@@ -34,6 +36,19 @@ class ExportPatternCommon(JobMixin):
         cls.group_manager = cls.env.ref("base.group_erp_manager")
         cls.group_no_one = cls.env.ref("base.group_no_one")
         cls.group_job = cls.env.ref("queue_job.group_queue_job_manager")
+        cls.field_user_name = cls.env.ref("base.field_res_users__name")
+        cls.field_user_id = cls.env.ref("base.field_res_users__id")
+        cls.field_user_login = cls.env.ref("base.field_res_users__login")
+        cls.industry1 = cls.PartnerIndustry.search([], limit=1)
+        cls.industry2 = cls.PartnerIndustry.search([], limit=1, offset=1)
+        cls.industries = cls.industry1 | cls.industry2
+        # Used to generate XML id automatically
+        cls.industries.export_data(["id"])
+        cls.partner_cat1 = cls.PartnerCategory.search([], limit=1)
+        cls.partner_cat2 = cls.PartnerCategory.search([], limit=1, offset=1)
+        cls.partner_catgs = cls.partner_cat1 | cls.partner_cat2
+        # Used to generate XML id automatically
+        cls.partner_catgs.export_data(["id"])
         cls.user1 = new_test_user(
             cls.env, login="tonic", name=cls.partner_1.name, partner_id=cls.partner_1.id
         )

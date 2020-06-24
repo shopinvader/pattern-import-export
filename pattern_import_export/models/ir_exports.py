@@ -1,12 +1,11 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import base64
-import csv
 import re
-from io import StringIO
 
-from odoo import _, api, exceptions, fields, models, registry, tools
-from odoo.tools import config
+from psycopg2 import IntegrityError
+
+from odoo import _, api, exceptions, fields, models
 
 from odoo.addons.queue_job.job import job
 
@@ -19,8 +18,8 @@ class IrExports(models.Model):
     """
     Todo: description:
     To implements:
-    _export_with_record_FORMAT
-    _read_import_data_FORMAT
+    _export_with_record_FORMAT (should use an iterator)
+    _read_import_data_FORMAT (should return an iterator)
     """
 
     _inherit = "ir.exports"
@@ -41,29 +40,7 @@ class IrExports(models.Model):
         self.ensure_one()
         header = []
         for export_line in self.export_fields:
-            column_name = base_column_name = export_line.name
-            nb_occurence = export_line._get_nb_occurence()
-            for line_added in range(0, nb_occurence):
-                if export_line.is_many2many or export_line.is_one2many:
-                    column_name = "{column_name}{separator}{nb}".format(
-                        column_name=base_column_name,
-                        separator=COLUMN_X2M_SEPARATOR,
-                        nb=line_added + 1,
-                    )
-                if export_line.is_one2many:
-                    sub_pattern = export_line.pattern_export_id
-                    sub_headers = sub_pattern._get_header()
-                    base_sub_header = column_name
-                    for sub_header in sub_headers:
-                        column_name = "{base}{sep}{sub_header}".format(
-                            base=base_sub_header,
-                            sep=COLUMN_X2M_SEPARATOR,
-                            sub_header=sub_header,
-                        )
-                        header.append(column_name)
-                    column_name = False
-                if column_name:
-                    header.append(column_name)
+            header.extend(export_line._get_header())
         return header
 
     @api.multi
@@ -141,11 +118,12 @@ class IrExports(models.Model):
                 if COLUMN_X2M_SEPARATOR in header:
                     to_update = False
                     base_name, ind = header.split(COLUMN_X2M_SEPARATOR, 1)
+                    sub_pattern = fields_sub_pattern.get(base_name)
+                    reg_result = re.findall(r"^\D*(\d+)", ind)
                     if ind.isdigit() and target_ind == int(ind):
                         to_update = True
                     # If no digits it's because header comes from a sub-pattern
-                    elif not ind.isdigit():
-                        sub_pattern = fields_sub_pattern.get(base_name)
+                    elif not ind.isdigit() and sub_pattern:
                         sub_records = record[base_name]
                         # Update current data with data from
                         # sub-pattern (and extend the key)
@@ -162,6 +140,13 @@ class IrExports(models.Model):
                                 for k, v in sub_data.items()
                             }
                             data.update(sub_data_replaced)
+                    # If there is a digit and the digit match with the target
+                    # do the update
+                    elif not ind.isdigit() and reg_result:
+                        to_update = target_ind == int(reg_result[0])
+                    # If no digit, do the update (field is not enumerated)
+                    elif not ind.isdigit() and not reg_result:
+                        to_update = True
                 if to_update:
                     data.update({header: value})
         return data
@@ -275,6 +260,8 @@ class IrExports(models.Model):
             export_tabs |= sub_patterns._get_select_tab()
         return export_tabs
 
+    # Import part
+
     @api.multi
     def _read_import_data(self, datafile):
         """
@@ -287,232 +274,191 @@ class IrExports(models.Model):
         )
         if not hasattr(self, target_function):
             raise NotImplementedError()
-        return getattr(self, target_function)(datafile)
+        yield from getattr(self, target_function)(datafile)
 
     @api.multi
-    def _build_data_to_import(self, main_data):
+    def _import_load_record(self, data_line, model):
         """
-        Iterator who build dict to write on a CSV compatible with
-        Standard Odoo import.
-        Recursive function.
-        main_data is a dict who contains every information related to a
-        recordset. The purpose of this function is to split values related
-        to O2M into a new dict (to represents a new CSV line) and
-        group M2M into a single cell (separated by ",")
-        @param main_data: dict
+        Load the record in given data_line dict by extracting the
+        id key (or empty key)
+        @param data_line: dict
+        @param model: str
+        @return: recordset
+        """
+        record = self.env[model].browse()
+        data_id = data_line.pop("id", data_line.pop("", False))
+        if data_id:
+            if data_id.isdigit():
+                record = record.browse(data_id)
+            else:
+                # add 'or record' to avoid None
+                record = self.env.ref(data_id, raise_if_not_found=False) or record
+        if record:
+            record = record.exists()
+        return record
+
+    @api.multi
+    def _get_max_occurrence(self):
+        """
+        Get the number of occurrence to manage.
+        Value should be > 1 otherwise it's disabled
+        @return: int
+        """
+        return 20
+
+    @api.multi
+    def _parse_import_data(self, data_line, model=""):
+        """
+        Recursive function used to read given data_line and build a dict
+        used to do create/write.
+        Recursive only for O2M, M2M and M2O fields.
+        @param data_line: dict
+        @param model: str
         @return: dict
         """
-        main_reg = re.compile(
-            r"((\w|[_]|[/])+[^|]\d*$)|((\w|[_]|[/])+[|]{1}\d*$)", re.IGNORECASE
+        data_line = dict(data_line)
+        model = model or self.model_id.model
+        model_obj = self.env[model]
+        all_fields = list(model_obj._fields.keys())
+        complex_fields_types = ("many2one", "one2many", "many2many")
+        ignore_fields = models.MAGIC_COLUMNS + [self.CONCURRENCY_CHECK_FIELD]
+        ignore_fields.remove("id")
+        # Remove these fields to ignore if there are into the data_line
+        # But we should keep ID if set
+        data_line = {k: v for k, v in data_line.items() if k not in ignore_fields}
+        simple_fields = [
+            f
+            for f in all_fields
+            if model_obj._fields.get(f).type not in complex_fields_types
+            and f not in ignore_fields
+        ]
+        complex_fields = [
+            f
+            for f in all_fields
+            if model_obj._fields.get(f).type in complex_fields_types
+            and f not in ignore_fields
+        ]
+        values = self._manage_import_simple_fields(data_line, simple_fields)
+        values.update(
+            self._manage_import_complex_fields(complex_fields, data_line, model)
         )
-        # Expected regex:
-        # company_ids => True
-        # company_ids|1 => True
-        # company_ids|2 => True
-        # company_ids|52 => True
-        # comp4ny_ids => True
-        # comp4ny_ids/id => True
-        # comp4ny_ids|3 => True
-        # user_ids|1|name => False
-        data = {k: v for k, v in main_data.items() if COLUMN_M2M_SEPARATOR not in k}
-        # Manage M2M
-        to_merge_data = {
-            k: v
-            for k, v in main_data.items()
-            if COLUMN_M2M_SEPARATOR in k and main_reg.match(k)
-        }
-        for key, value in to_merge_data.items():
-            # Todo: depending on the field exported, sometimes
-            #  we don't have to add the ID!
-            # Add the /id only if it's an external id!
-            field_name, ind = key.split(COLUMN_M2M_SEPARATOR, 1)
-            if ind.isdigit():
-                field_name += "/id"
-            else:
-                field_name += "/" + ind
-            m2m_value = data.setdefault(field_name, "")
-            if m2m_value:
-                m2m_value = ",".join([m2m_value, value])
-            else:
-                m2m_value = value
-            data.update({field_name: m2m_value})
-        if data:
-            yield data
-        others_data = {
-            k: v
-            for k, v in main_data.items()
-            if COLUMN_M2M_SEPARATOR in k and not main_reg.match(k)
-        }
-        keys_to_ignore = []
-        for key in others_data.keys():
-            if key not in keys_to_ignore:
-                field_name, sub_key = key.split(COLUMN_M2M_SEPARATOR, 1)
-                sub_startswith = field_name + COLUMN_M2M_SEPARATOR
-                # The else case (when sub_key.isdigit() is True) should never
-                # happens because already managed by the first part
-                if COLUMN_M2M_SEPARATOR in sub_key:
-                    ind, sub_key = sub_key.split(COLUMN_M2M_SEPARATOR, 1)
-                    sub_startswith += ind
-                    field_name += "/"
-                keys_to_ignore.extend(
-                    [k for k in others_data.keys() if k.startswith(sub_startswith)]
-                )
-                # Now we have to work on item starting with
-                # startwith + the separator
-                # Can not do if separator in k and k.startswith(...)
-                # because this example could match:
-                # startswith = "company_id"
-                # field1 = "company_id|1"
-                # field2 = "company_id_name|1"
-                # But the expected result is every field who
-                # starts with "company_id|..."
-                sub_data = {
-                    k.replace(sub_startswith, field_name): v
-                    for k, v in others_data.items()
-                    if k.startswith(sub_startswith)
-                }
-                yield from self._build_data_to_import(sub_data)
+        return values
 
-    @api.multi
-    def _get_target_fields_import(self, columns):
+    def _manage_import_simple_fields(self, data_line, target_fields):
         """
-        Get list of fields to import
-        @param columns: list of str
-        @return: list of str
+        Manage simple fields to import (char, int etc)
+        @param data_line: dict
+        @param target_fields: list of str
+        @return: dict
         """
-        fields = []
-        for column in columns:
-            field_name = column
-            if COLUMN_M2M_SEPARATOR in column:
-                field_name, sub_column = column.split(COLUMN_M2M_SEPARATOR, 1)
-                if COLUMN_M2M_SEPARATOR in sub_column:
-                    _ind, sub_column = sub_column.split(COLUMN_M2M_SEPARATOR, 1)
-                    field_name += "/" + sub_column
-                else:
-                    field_name += "/id"
-            if field_name not in fields:
-                fields.append(field_name)
-        return fields
+        values = {
+            k: data_line.pop(k)
+            for k in list(data_line.keys())
+            if COLUMN_X2M_SEPARATOR not in k and k in target_fields
+        }
+        return values
+
+    def _manage_import_complex_fields(self, target_fields, data_line, model):
+        """
+        Manage complex fields to import (M2M, O2M and M2O)
+        @param target_fields: list of str
+        @param data_line: dict
+        @param model: str
+        @return:
+        """
+        values = {}
+        model_obj = self.env[model]
+        for target_field in target_fields:
+            # break the loop if nothing to manage
+            if not data_line:
+                break
+            real_field = model_obj._fields.get(target_field)
+            if real_field.type in ("one2many", "many2many"):
+                template_starter = "{field_name}{sep}{nb}{sep}"
+                for nb in range(1, self._get_max_occurrence()):
+                    starter = template_starter.format(
+                        field_name=target_field, sep=COLUMN_X2M_SEPARATOR, nb=nb
+                    )
+                    sub_values = {
+                        k.replace(starter, ""): data_line.pop(k)
+                        for k in list(data_line.keys())
+                        if k.startswith(starter)
+                    }
+                    if sub_values:
+                        sub_values = self._parse_import_data(
+                            sub_values, model=real_field.comodel_name
+                        )
+                    if sub_values:
+                        write_code = 0
+                        record = self._import_load_record(
+                            sub_values, model=real_field.comodel_name
+                        )
+                        if real_field.type == "one2many":
+                            field_list = values.setdefault(
+                                target_field, [(6, False, [])]
+                            )
+                        else:  # M2M
+                            field_list = values.setdefault(
+                                target_field, [(5, False, False)]
+                            )
+                        if record:
+                            field_list.append((4, record.id, False))
+                            write_code = 1
+                        if sub_values:
+                            # In case of O2M, sub_values should contains
+                            # every required fields as previous values are deleted
+                            field_list.append((write_code, record.id, sub_values))
+                    else:
+                        # If no more sub-values found,
+                        # suppose no others values will be found for this field
+                        break
+            else:  # Is M2O
+                template_starter = "{field_name}{sep}"
+                starter = template_starter.format(
+                    field_name=target_field, sep=COLUMN_X2M_SEPARATOR
+                )
+                sub_values = {
+                    k.replace(starter, ""): data_line.pop(k)
+                    for k in list(data_line.keys())
+                    if k.startswith(starter) and COLUMN_X2M_SEPARATOR in k
+                }
+                if sub_values:
+                    sub_values = self._parse_import_data(
+                        sub_values, model=real_field.comodel_name
+                    )
+                if sub_values:
+                    record = self._import_load_record(
+                        sub_values, model=real_field.comodel_name
+                    )
+                    if record and sub_values:
+                        record.write(sub_values)
+                    elif not record and sub_values:
+                        record = record.create(sub_values)
+                    values.update({target_field: record.id})
+        return values
 
     @api.multi
     @job(default_channel="root.importwithpattern")
     def _generate_import_with_pattern_job(self, attachment):
-        """
-
-        @param datafile:
-        @return: bool
-        """
-        self.ensure_one()
-        if not attachment.exists():
-            raise exceptions.UserError(_("The file to import doesn't exist anymore!"))
-        filename = attachment.name
-        separator = config.get("csv_internal_sep", ",")
-        quoting = '"'
-        header, header_set = [], set()
-        with StringIO() as data_content:
-            # The CSV file create now doesn't contain headers.
-            # Because content returned by _build_data_to_import(...) doesn't
-            # contains full keys at each iteration.
-            csv_writer = csv.writer(
-                data_content,
-                delimiter=separator,
-                quotechar=quoting,
-                quoting=csv.QUOTE_NONNUMERIC,
-            )
-            csv_writer.writerow("")  # place holder for header
-            for raw_data in self._read_import_data(
-                base64.b64decode(attachment.datas.decode("utf-8"))
-            ):
-                for data in self._build_data_to_import(raw_data):
-                    for key in data:
-                        if key not in header_set:
-                            header_set.add(key)
-                            header.append(key)
-                    if data:
-                        csv_writer.writerow(data.get(col, "") for col in header)
-            # Reset to the beginning of the file
-            data_content.seek(0)
-            reader = csv.DictReader(
-                data_content,
-                fieldnames=header,
-                delimiter=separator,
-                quotechar=quoting,
-                quoting=csv.QUOTE_NONNUMERIC,
-            )
-            # Now create the final CSV file with headers
-            with StringIO() as data_content_with_header:
-                csv_writer = csv.DictWriter(
-                    data_content_with_header,
-                    header,
-                    delimiter=separator,
-                    quotechar=quoting,
-                    quoting=csv.QUOTE_NONNUMERIC,
-                )
-                csv_writer.writeheader()
-                csv_writer.writerows(reader)
-                filename = filename + ".csv"
-                import_record = self.env["base_import.import"].create(
-                    {
-                        "res_model": self.model_id.model,
-                        # Memo: we don't have to encode in b64
-                        "file": data_content_with_header.getvalue().encode("utf-8"),
-                        "file_type": "text/csv",
-                        "file_name": filename,
-                    }
-                )
-        self._attach_file_to_current_job(import_record.file, import_record.file_name)
-        options = {"quoting": quoting, "separator": separator, "headers": True}
-        result = import_record.do(header, header, options, dryrun=False)
-        messages = result.get("messages")
-        if messages:
-            self._attach_message_to_current_job(messages)
-        return True
-
-    @api.multi
-    def _get_current_job(self):
-        job_uuid = self.env.context.get("job_uuid")
-        if job_uuid:
-            return (
-                self.env["queue.job"].sudo().search([("uuid", "=", job_uuid)], limit=1)
-            )
-        return self.env["queue.job"].browse()
-
-    @api.multi
-    def _attach_message_to_current_job(self, messages):
-        """
-
-        @param messages: list of dict
-        @return:
-        """
-        decoded_msg = []
-        for error_nb, message in enumerate(messages, start=1):
-            details = "Error #{nb}: {msg}".format(
-                nb=error_nb, msg=message.get("message")
-            )
-            decoded_msg.append(details)
-        final_error_msg = _(
-            "Errors happens during import.\n"
-            "Please open the generated file related to "
-            "the job.\n- {details}"
-        ).format(details="\n- ".join(decoded_msg))
-        raise exceptions.UserError(final_error_msg)
-
-    @api.multi
-    def _attach_file_to_current_job(self, data, filename):
-        job = self._get_current_job()
-        if job:
-            # We have to create a new env otherwise the attachment
-            # is rollbacked in case of exception!
-            cr = registry(self._cr.dbname).cursor()
-            self = self.with_env(self.env(cr=cr))
-            attachment = self.env["ir.attachment"].create(
-                {
-                    "name": filename,
-                    "datas": base64.b64encode(data),
-                    "datas_fname": filename,
-                    "res_model": job._name,
-                    "res_id": job.id,
-                }
-            )
-            attachment.env.cr.commit()
-            return attachment
+        attachment_data = base64.b64decode(attachment.datas.decode("utf-8"))
+        for line_nb, raw_data in enumerate(
+            self._read_import_data(attachment_data), start=1
+        ):
+            error_message = ""
+            try:
+                record = self._import_load_record(raw_data, model=self.model_id.model)
+                values = self._parse_import_data(raw_data)
+                if record and values:
+                    record.write(values)
+                elif values and not record:
+                    record.create(values)
+            except IntegrityError as e:
+                error_message = _(
+                    "Error to write/create line {line_nb}: {ex_msg}"
+                ).format(line_nb=line_nb, ex_msg=e)
+            except exceptions.except_orm as e:
+                error_message = _(
+                    "Error to write/create line {line_nb}: {ex_msg}"
+                ).format(line_nb=line_nb, ex_msg=e)
+            if error_message:
+                raise exceptions.UserError(error_message)

@@ -2,6 +2,8 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from odoo import _, api, exceptions, fields, models
 
+from .ir_exports import COLUMN_X2M_SEPARATOR
+
 
 class IrExportsLine(models.Model):
     _inherit = "ir.exports.line"
@@ -152,6 +154,75 @@ class IrExportsLine(models.Model):
                         [("model", "=", related_comodel)], limit=1
                     )
                     export_line.related_model_id = comodel.id
+
+    @api.multi
+    def _get_header(self):
+        """
+
+        @return: list of str
+        """
+        self.ensure_one()
+        headers = []
+        model_obj = self.env[self.export_id.model_id.model]
+        real_field = model_obj._fields.get(self.field1_id.name)
+        # The current (main) field shouldn't be into the list
+        real_fields = []
+        previous_real_field = real_field
+        if self.field2_id:
+            previous_real_field = self.env[
+                previous_real_field.comodel_name
+            ]._fields.get(self.field2_id.name)
+            real_fields.append(previous_real_field.name)
+        if self.field3_id:
+            previous_real_field = self.env[
+                previous_real_field.comodel_name
+            ]._fields.get(self.field3_id.name)
+            real_fields.append(previous_real_field.name)
+        if self.field4_id:
+            previous_real_field = self.env[
+                previous_real_field.comodel_name
+            ]._fields.get(self.field4_id.name)
+            real_fields.append(previous_real_field.name)
+
+        field_name = real_field.name
+        if real_field.type in ("many2one", "one2many", "many2many"):
+            nb_occurence = self._get_nb_occurence()
+            for line_added in range(0, nb_occurence):
+                sub_name = "{sub_name}"
+                if real_fields:
+                    sub_name = COLUMN_X2M_SEPARATOR.join(real_fields)
+                    sub_name += COLUMN_X2M_SEPARATOR + "{sub_name}"
+                if real_field.type == "many2one":
+                    base_name = "{field_name}{sep}{sub_name}".format(
+                        field_name=field_name,
+                        sep=COLUMN_X2M_SEPARATOR,
+                        sub_name=sub_name,
+                    )
+                elif real_field.type in ("one2many", "many2many"):
+                    base_name = "{field_name}{sep}{ind}{sep}{sub_name}".format(
+                        field_name=field_name,
+                        sep=COLUMN_X2M_SEPARATOR,
+                        ind=line_added + 1,
+                        sub_name=sub_name,
+                    )
+                if self.select_tab_id:
+                    headers.extend(
+                        [
+                            base_name.format(sub_name=h)
+                            for h in self.select_tab_id._get_header()
+                        ]
+                    )
+                elif self.pattern_export_id:
+                    for sub_line in self.pattern_export_id.export_fields:
+                        headers.extend(
+                            [
+                                base_name.format(sub_name=h)
+                                for h in sub_line._get_header()
+                            ]
+                        )
+        else:
+            headers.append(field_name)
+        return headers
 
     @api.multi
     def _get_nb_occurence(self):

@@ -1,5 +1,6 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# pylint: disable=missing-manifest-dependency
 
 import base64
 
@@ -7,6 +8,7 @@ from xlrd import open_workbook
 
 from odoo.tests.common import SavepointCase
 
+# pylint: disable=odoo-addons-relative-import
 from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
 
 
@@ -42,7 +44,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         wb = open_workbook(file_contents=decoded_data)
         self.assertEqual(len(wb.sheets()), 2)
         sheet1 = wb.sheet_by_index(0)
-        self.assertEqual(sheet1.cell_value(0, 0), "country_id")
+        self.assertEqual(sheet1.cell_value(0, 0), "country_id|code")
         sheet2 = wb.sheet_by_index(1)
         self.assertEqual(sheet2.name, "Country list (code)")
         self.assertEqual(sheet2.cell_value(1, 0), "BE")
@@ -117,8 +119,8 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         wb = open_workbook(file_contents=decoded_data)
         self.assertEqual(len(wb.sheets()), 2)
         sheet1 = wb.sheet_by_index(0)
-        column_name = "{name}{sep}{nb}".format(
-            name="company_ids", sep=self.separator, nb=1
+        column_name = "{name}{sep}{nb}{sep}{f_name}".format(
+            name="company_ids", sep=self.separator, nb=1, f_name="name"
         )
         self.assertEquals(column_name, sheet1.cell_value(0, 0))
 
@@ -139,8 +141,8 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertEqual(len(wb.sheets()), 2)
         sheet1 = wb.sheet_by_index(0)
         for nb in range(self.ir_exports_m2m.export_fields.number_occurence):
-            column_name = "{name}{sep}{nb}".format(
-                name="company_ids", sep=self.separator, nb=nb + 1
+            column_name = "{name}{sep}{nb}{sep}{f_name}".format(
+                name="company_ids", sep=self.separator, nb=nb + 1, f_name="name"
             )
             self.assertEquals(column_name, sheet1.cell_value(0, nb))
 
