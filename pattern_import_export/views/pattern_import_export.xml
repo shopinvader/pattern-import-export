@@ -8,12 +8,15 @@
         <field name="arch" type="xml">
             <xpath expr="//form/group[1]" position="after">
                 <group>
+                    <field name="export_format" required="True"/>
                     <field name="pattern_file"/>
                     <field name="pattern_last_generation_date"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
                 <field name="is_many2x"/>
+                <field name="is_many2many" invisible="True"/>
+                <field name="number_occurence" attrs="{'required': [('is_many2many', '=', True)], 'readonly': [('is_many2many', '!=', True)], 'invisible': [('is_many2many', '!=', True)]}"/>
                 <field name="related_model_id"/>
                 <field name="select_tab_id"/>
             </xpath>
