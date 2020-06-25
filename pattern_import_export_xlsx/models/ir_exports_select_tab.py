@@ -21,3 +21,10 @@ class IrExportsSelectTab(models.Model):
                 for col, value in enumerate(values.values()):
                     sheet.write(row, col, value)
         return sheet, row
+
+    def _add_xlsx_constraint(self, sheet, col, ad_sheet, ad_row):
+        source = "=" + ad_sheet.name + "!$A$2:$A$" + str(ad_row + 100)
+        sheet.data_validation(
+            1, col, 1048576, col, {"validate": "list", "source": source}
+        )
+        return True

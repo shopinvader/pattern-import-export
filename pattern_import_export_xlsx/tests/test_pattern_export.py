@@ -175,9 +175,8 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
                     company.name or "", sheet1.cell_value(ind, ind_company)
                 )
             ind_already_checked = max(1, ind_company + 1)
-            ind_to_check = nb_occurence + ind_company
             # Ensure others are empty
-            for ind_company in range(ind_already_checked, ind_to_check):
+            for ind_company in range(ind_already_checked, nb_occurence):
                 self.assertEquals("", sheet1.cell_value(ind, ind_company))
 
     def test_export_with_record(self):
