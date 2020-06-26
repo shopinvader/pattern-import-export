@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ir cron Form View-->
+    <record id="ir_cron_view_form" model="ir.ui.view">
+        <field name="model">ir.cron</field>
+        <field name="inherit_id" ref="base.ir_cron_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='doall']" position="after">
+                <field name="export_attachment_number" attrs="{'invisible': [('model_id', '!=', %(base.model_ir_exports)d)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

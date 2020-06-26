@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import base64
+from datetime import timedelta
 from io import BytesIO
 
 import xlsxwriter
@@ -78,15 +79,32 @@ class IrExports(models.Model):
                 row += 1
             book.close()
             attachment_datas = base64.b64encode(pattern_file.getvalue())
-            self.env["ir.attachment"].create(
-                {
-                    "name": export.name + ".xlsx",
-                    "type": "binary",
-                    "res_id": export.id,
-                    "res_model": "ir.exports",
-                    "datas": attachment_datas,
-                }
-            )
+            data = {
+                "name": export.name + ".xlsx",
+                "type": "binary",
+                "res_id": export.id,
+                "res_model": "ir.exports",
+                "datas": attachment_datas,
+            }
+            self.env["ir.attachment"].create(data)
+        return True
+
+    @api.model
+    def autovacuum_export_attachment(self):
+        autovacuum_cron = self.env.ref(
+            "pattern_import_export.autovacuum_export_attachment_cron"
+        )
+        deadline = fields.Datetime.now() - timedelta(
+            days=autovacuum_cron.export_attachment_number
+        )
+        attachments = self.env["ir.attachment"].search(
+            [
+                ("res_model", "=", "ir.exports"),
+                ("create_date", "<", fields.Datetime.to_string(deadline)),
+            ]
+        )
+        if attachments:
+            attachments.unlink()
         return True
 
 
