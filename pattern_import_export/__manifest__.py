@@ -12,8 +12,6 @@
     "external_dependencies": {"python": ["xlsxwriter"]},
     "data": [
         "data/cron.xml",
-        "security/res_groups.xml",
-        "security/exports_security.xml",
         "security/ir.model.access.csv",
         "views/pattern_import_export.xml",
         "views/ir_cron.xml",
