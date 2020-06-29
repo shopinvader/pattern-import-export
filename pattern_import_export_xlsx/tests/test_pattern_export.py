@@ -60,7 +60,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
                 and export_line.export_id.resource
                 and export_line.name
             ):
-                field, model = export_line._get_last_field(
+                field, model, prev_field, prev_model = export_line._get_last_field(
                     export_line.export_id.resource, export_line.name
                 )
                 if self.env[model]._fields[field].type == "many2many":
@@ -97,10 +97,10 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         expected_sheet_name = "{name} ({field})".format(
             name=self.select_tab_company.name, field="name"
         )
-        self.assertEquals(expected_sheet_name, sheet2.name)
+        self.assertEqual(expected_sheet_name, sheet2.name)
         # Start at 1 because 0 is the header
         for ind, company in enumerate(companies, start=1):
-            self.assertEquals(company.name, sheet2.cell_value(ind, 0))
+            self.assertEqual(company.name, sheet2.cell_value(ind, 0))
 
     def test_generate_pattern_with_many2many_fields1(self):
         """
@@ -120,7 +120,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         column_name = "{name}{sep}{nb}".format(
             name="company_ids", sep=self.separator, nb=1
         )
-        self.assertEquals(column_name, sheet1.cell_value(0, 0))
+        self.assertEqual(column_name, sheet1.cell_value(0, 0))
 
     def test_generate_pattern_with_many2many_fields2(self):
         """
@@ -142,7 +142,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             column_name = "{name}{sep}{nb}".format(
                 name="company_ids", sep=self.separator, nb=nb + 1
             )
-            self.assertEquals(column_name, sheet1.cell_value(0, nb))
+            self.assertEqual(column_name, sheet1.cell_value(0, nb))
 
     def test_generate_pattern_with_many2many_fields3(self):
         """
@@ -162,22 +162,22 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         expected_attachment_name = "{name}{ext}".format(
             name=self.ir_exports_m2m.name, ext=".xlsx"
         )
-        self.assertEquals(expected_attachment_name, attachment.name)
+        self.assertEqual(expected_attachment_name, attachment.name)
         decoded_data = base64.b64decode(attachment.datas)
         wb = open_workbook(file_contents=decoded_data)
         sheet1 = wb.sheet_by_index(0)
         for ind, user in enumerate(users, start=1):
             xml_id = user.get_xml_id().get(user.id, "")
-            self.assertEquals(xml_id, sheet1.cell_value(ind, 0))
-            self.assertEquals(user.name or "", sheet1.cell_value(ind, 1))
+            self.assertEqual(xml_id, sheet1.cell_value(ind, 0))
+            self.assertEqual(user.name or "", sheet1.cell_value(ind, 1))
             for ind_company, company in enumerate(user.company_ids, start=2):
-                self.assertEquals(
+                self.assertEqual(
                     company.name or "", sheet1.cell_value(ind, ind_company)
                 )
             ind_already_checked = max(1, ind_company + 1)
             # Ensure others are empty
             for ind_company in range(ind_already_checked, nb_occurence):
-                self.assertEquals("", sheet1.cell_value(ind, ind_company))
+                self.assertEqual("", sheet1.cell_value(ind, ind_company))
 
     def test_export_with_record(self):
         self.ir_exports.export_fields[4].unlink()
@@ -221,7 +221,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         job = self.job_counter()
         wiz.run()
         new_job = job.search_created()
-        self.assertEquals(job.count_created(), 1)
+        self.assertEqual(job.count_created(), 1)
         self.assertIn(
             "Generate export 'res.partner' with export pattern 'Partner list'",
             new_job.name,

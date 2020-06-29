@@ -13,7 +13,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         headers = self.ir_exports._get_header()
         expected_header = ["id", "name", "street", "country_id", "child_ids/country_id"]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header2(self):
         """
@@ -22,7 +22,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         headers = self.ir_exports_m2m._get_header()
         expected_header = ["id", "name", "company_ids|1"]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header3(self):
         """
@@ -66,7 +66,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             "user_ids|3|name",
             "user_ids|3|company_ids|1",
         ]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header5(self):
         """
@@ -106,7 +106,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             "user_ids|3|company_ids|4",
             "user_ids|3|company_ids|5",
         ]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_data_to_export1(self):
         """
