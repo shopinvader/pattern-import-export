@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="base.ir_cron_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='doall']" position="after">
-                <field name="export_attachment_number" attrs="{'invisible': [('model_id', '!=', %(base.model_ir_exports)d)]}"/>
+                <field name="export_attachment_delay" attrs="{'invisible': [('model_id', '!=', %(base.model_ir_exports)d)]}"/>
             </xpath>
         </field>
     </record>

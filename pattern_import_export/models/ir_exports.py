@@ -268,7 +268,7 @@ class IrExports(models.Model):
             "pattern_import_export.autovacuum_export_attachment_cron"
         )
         deadline = fields.Datetime.now() - timedelta(
-            days=autovacuum_cron.export_attachment_number
+            days=autovacuum_cron.export_attachment_delay
         )
         attachments = self.env["ir.attachment"].search(
             [

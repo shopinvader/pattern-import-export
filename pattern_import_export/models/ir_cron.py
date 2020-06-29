@@ -7,7 +7,7 @@ from odoo import fields, models
 class IrCron(models.Model):
     _inherit = "ir.cron"
 
-    export_attachment_number = fields.Integer(
+    export_attachment_delay = fields.Integer(
         string="Export attachments created since",
         help=u"Autovacuum export attachments created a number of days ago",
     )
