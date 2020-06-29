@@ -134,7 +134,7 @@ class IrExportsLine(models.Model):
                 and export_line.export_id.resource
                 and export_line.name
             ):
-                field, model = export_line._get_last_field(
+                field, model, prev_field, prev_model = export_line._get_last_field(
                     export_line.export_id.resource, export_line.name
                 )
                 if self.env[model]._fields[field].type == "many2many":
@@ -151,7 +151,7 @@ class IrExportsLine(models.Model):
                 and export_line.export_id.resource
                 and export_line.name
             ):
-                field, model = export_line._get_last_field(
+                field, model, prev_field, prev_model = export_line._get_last_field(
                     export_line.export_id.resource, export_line.name
                 )
                 if self.env[model]._fields[field].type == "one2many":

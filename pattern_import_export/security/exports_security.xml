@@ -23,7 +23,7 @@
         <field name="perm_create" eval="True"/>
     </record>-->
 
-    <record id="pattern_exports_not_personal_rule" model="ir.rule">
+    <!--<record id="pattern_exports_not_personal_rule" model="ir.rule">
         <field name="name">Pattern exports not personal </field>
         <field name="model_id" ref="base.model_ir_exports"/>
         <field name="domain_force">[('create_uid', '!=', user.id)]</field>
@@ -43,6 +43,6 @@
         <field name="perm_write" eval="True"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_create" eval="True"/>
-    </record>
+    </record>-->
 
 </odoo>
