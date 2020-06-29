@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import base64
+from collections import OrderedDict
 
 from odoo import api, fields, models
 
@@ -115,7 +116,8 @@ class IrExports(models.Model):
         @return: dict
         """
         self.ensure_one()
-        data = {}
+        # The data to be exported must be in the same order as the headers.
+        data = OrderedDict({})
         fields_sub_pattern = self._get_sub_patterns()
         for target_ind, record_data in enumerate(raw_data, start=1):
             for header, value in zip(self._get_header(), record_data):
