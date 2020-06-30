@@ -233,16 +233,17 @@ class IrExports(models.Model):
         @return: ir.attachment recordset
         """
         self.ensure_one()
-        return self.env["ir.attachment"].create(
-            {
-                "name": "{name}.{format}".format(
-                    name=self.name, format=self.export_format
-                ),
-                "type": "binary",
-                "res_id": self.id,
-                "res_model": "ir.exports",
-                "datas": attachment_datas,
-            }
+        data = {
+            "name": "{name}.{format}".format(name=self.name, format=self.export_format),
+            "type": "binary",
+            "res_id": self.id,
+            "res_model": "ir.exports",
+            "datas": attachment_datas,
+        }
+        return (
+            self.env["ir.attachment"]
+            .with_context(no_check_access_rule=True)
+            .create(data)
         )
 
     @api.multi
@@ -260,3 +261,11 @@ class IrExports(models.Model):
         if sub_patterns:
             export_tabs |= sub_patterns._get_additionnal_info()
         return export_tabs
+
+    @api.model
+    def check_access_rule(self, mode):
+        # bypass the access rule check when create export attachment
+        # for users who have not write access on ir.exports.
+        if mode == "write" and self.env.context.get("no_check_access_rule", False):
+            return True
+        return super(IrExports, self).check_access_rule(mode)

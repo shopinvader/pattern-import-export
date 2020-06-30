@@ -10,6 +10,8 @@
     "license": "AGPL-3",
     "depends": ["base", "queue_job", "document", "base_export_manager"],
     "data": [
+        "security/res_groups.xml",
+        "security/exports_security.xml",
         "security/ir.model.access.csv",
         "wizard/export_with_pattern.xml",
         "views/pattern_import_export.xml",
