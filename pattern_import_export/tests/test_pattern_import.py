@@ -155,3 +155,45 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         # so the country is updated automatically on children.
         self.assertEquals(self.country_be, self.partner_3.country_id)
         self.assertEquals(self.partner_cat2, self.partner_3.category_id)
+
+    def test_import_replace_keys1(self):
+        """
+        Test the _import_replace_keys function.
+        For this test, we only have basic fields and without seperator
+        @return:
+        """
+        values = {
+            # Cast into str to ensure it's correctly converted into int
+            "id/key": str(self.partner_3.id)
+        }
+        expected_results = {"id": self.partner_3.id}
+        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
+        self.assertDictEqual(expected_results, values)
+
+    def test_import_replace_keys2(self):
+        """
+        Test the _import_replace_keys function.
+        For this test, we only have basic fields and without seperator
+        @return:
+        """
+        barcode = str(uuid4())
+        self.partner_3.write({"barcode": barcode})
+        values = {
+            # Cast into str to ensure it's correctly converted into int
+            "barcode/key": barcode
+        }
+        expected_results = {"id": self.partner_3.id}
+        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
+        self.assertDictEqual(expected_results, values)
+
+    def test_import_replace_keys3(self):
+        """
+        Test the _import_replace_keys function.
+        For this test the key shouldn't be replaced because there is the
+        separator.
+        @return:
+        """
+        values = {"parent_id|id/key": self.partner_3.id}
+        expected_results = {"parent_id|id/key": self.partner_3.id}
+        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
+        self.assertDictEqual(expected_results, values)

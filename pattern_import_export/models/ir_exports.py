@@ -3,6 +3,7 @@
 import base64
 import re
 
+from numpy import isnan
 from psycopg2 import IntegrityError
 
 from odoo import _, api, exceptions, fields, models
@@ -17,6 +18,7 @@ COLUMN_X2M_SEPARATOR = "|"
 class IrExports(models.Model):
     """
     Todo: description:
+    Add selection options on field export_format
     To implements:
     _export_with_record_FORMAT (should use an iterator)
     _read_import_data_FORMAT (should return an iterator)
@@ -286,16 +288,72 @@ class IrExports(models.Model):
         @return: recordset
         """
         record = self.env[model].browse()
-        data_id = data_line.pop("id", data_line.pop("", False))
+        self._import_replace_keys(data_line, model)
+        # Easy part: data_line contains ID
+        data_id = data_line.pop("id", data_line.pop("id/key", data_line.pop("", False)))
         if data_id:
-            if data_id.isdigit():
-                record = record.browse(data_id)
+            if isinstance(data_id, (int, float)) or data_id.isdigit():
+                record = record.browse(int(data_id))
             else:
                 # add 'or record' to avoid None
                 record = self.env.ref(data_id, raise_if_not_found=False) or record
         if record:
             record = record.exists()
         return record
+
+    def _import_replace_keys(self, data_line, model, raise_if_not_found=True):
+        """
+        Replace keys values by the ID of the target record.
+        Ex:
+        {"default_code/key": "test123"} => should load the current product
+        with default_code = "test123";
+        {"product_id/key": 4} => should load the current sale order line
+        where product_id is 4.
+        @param data_line: dict
+        @param model: str
+        @param raise_if_not_found: bool
+        @return: None
+        """
+        # Load keys with:
+        # - No separator
+        # - With only 1 "/"
+        # - With text before and after the "/"
+        record = self.env[model].browse()
+        regex_key_fields = re.compile(
+            r"[" + COLUMN_X2M_SEPARATOR + r"]{0}((\w|[_])+([/]{1})(\w|[_])+)",
+            re.IGNORECASE,
+        )
+        target_keys = [
+            k for k in data_line.keys() if regex_key_fields.match(k) and "/key" in k
+        ]
+        for target_key in target_keys:
+            field_name = target_key.replace("/key", "")
+            real_field = record._fields.get(field_name)
+            raw_value = data_line.pop(target_key)
+            if isinstance(raw_value, float) and isnan(raw_value):
+                if real_field.type in ("float", "integer", "monetary"):
+                    raw_value = 0
+                elif real_field.type in ("char", "text"):
+                    raw_value = ""
+                else:
+                    raw_value = False
+            target_value = real_field.convert_to_write(raw_value, record)
+            domain = [(field_name, "=", target_value)]
+            record = record.search(domain, limit=1)
+            # If the record is not found, raise an exception.
+            # Because not coherent to create a record if the user
+            # expect to have a result
+            if raise_if_not_found and not record:
+                # Update the dict with False value for target record.
+                # In case of the caller catch the exception
+                error_message = _(
+                    "The value '{raw_value}' on model {model_name} and "
+                    "field {field_name} couldn't be found.\n"
+                    "Please ensure the record exists and you have "
+                    "correct access rights!"
+                ).format(raw_value=raw_value, model_name=model, field_name=field_name)
+                raise exceptions.UserError(error_message)
+            data_line.update({"id": record.id})
 
     @api.multi
     def _get_max_occurrence(self):
@@ -338,6 +396,7 @@ class IrExports(models.Model):
             if model_obj._fields.get(f).type in complex_fields_types
             and f not in ignore_fields
         ]
+        self._import_replace_keys(data_line, model)
         values = self._manage_import_simple_fields(data_line, simple_fields)
         values.update(
             self._manage_import_complex_fields(complex_fields, data_line, model)
