@@ -264,3 +264,71 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         results = self.ir_exports_o2m._get_data_to_export(self.partners)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)
+
+    def test_get_data_to_export_is_key1(self):
+        """
+        Ensure the _get_data_to_export return expected data with correct header
+        when one export line is considered as key (on simple fields)
+        @return:
+        """
+        expected_results = [
+            {
+                "id": "base.res_partner_1",
+                "name/key": "Wood Corner",
+                "street": "1164 Cambridge Drive",
+                "country_id|code": "US",
+                "child_ids|1|country_id|code": "US",
+            },
+            {
+                "id": "base.res_partner_2",
+                "name/key": "Deco Addict",
+                "street": "325 Elsie Drive",
+                "country_id|code": "US",
+                "child_ids|1|country_id|code": "US",
+            },
+            {
+                "id": "base.res_partner_3",
+                "name/key": "Gemini Furniture",
+                "street": "1128 Lunetta Street",
+                "country_id|code": "US",
+                "child_ids|1|country_id|code": "US",
+            },
+        ]
+        self.ir_exports.export_fields.filtered(lambda l: l.name == "name").write({'is_key': True})
+        results = self.ir_exports._get_data_to_export(self.partners)
+        for result, expected_result in zip(results, expected_results):
+            self.assertDictEqual(expected_result, result)
+
+    def test_get_data_to_export_is_key2(self):
+        """
+        Ensure the _get_data_to_export return expected data with correct header
+        when one export line is considered as key (on relational fields)
+        @return:
+        """
+        expected_results = [
+            {
+                "id": "base.res_partner_1",
+                "name": "Wood Corner",
+                "street": "1164 Cambridge Drive",
+                "country_id/key|code": "US",
+                "child_ids|1|country_id|code": "US",
+            },
+            {
+                "id": "base.res_partner_2",
+                "name": "Deco Addict",
+                "street": "325 Elsie Drive",
+                "country_id/key|code": "US",
+                "child_ids|1|country_id|code": "US",
+            },
+            {
+                "id": "base.res_partner_3",
+                "name": "Gemini Furniture",
+                "street": "1128 Lunetta Street",
+                "country_id/key|code": "US",
+                "child_ids|1|country_id|code": "US",
+            },
+        ]
+        self.ir_exports.export_fields.filtered(lambda l: l.name == "country_id").write({'is_key': True})
+        results = self.ir_exports._get_data_to_export(self.partners)
+        for result, expected_result in zip(results, expected_results):
+            self.assertDictEqual(expected_result, result)

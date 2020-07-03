@@ -3,7 +3,7 @@
 from uuid import uuid4
 
 from odoo.tests.common import SavepointCase
-
+from odoo import exceptions
 from .common import ExportPatternCommon
 
 
@@ -179,7 +179,6 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         barcode = str(uuid4())
         self.partner_3.write({"barcode": barcode})
         values = {
-            # Cast into str to ensure it's correctly converted into int
             "barcode/key": barcode
         }
         expected_results = {"id": self.partner_3.id}
@@ -197,3 +196,53 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         expected_results = {"parent_id|id/key": self.partner_3.id}
         self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
         self.assertDictEqual(expected_results, values)
+
+    def test_import_replace_keys4(self):
+        """
+        Test the _import_replace_keys function.
+        For this test the key shouldn't be replaced because there is the
+        separator.
+        @return:
+        """
+        values = {"parent_id/key|id": self.partner_3.id}
+        expected_partner = self.Partner.search([("parent_id", "=", self.partner_3.id)], limit=1)
+        expected_results = {"id": expected_partner.id}
+        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
+        self.assertDictEqual(expected_results, values)
+
+    def test_import_key_not_found1(self):
+        """
+        Test the _import_replace_keys function.
+        For this test, the key is not found and no exception should be raised.
+        But the value should be into the dict and the ID should be empty
+        @return:
+        """
+        barcode = str(uuid4())
+        values = {
+            "barcode/key": barcode
+        }
+        expected_results = {"id": False, "barcode": barcode}
+        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model, raise_if_not_found=False)
+        self.assertDictEqual(expected_results, values)
+
+    def test_import_key_multi(self):
+        """
+        Test the _import_replace_keys function.
+        For this test, the key is not found and no exception should be raised.
+        But the value should be into the dict and the ID should be empty
+        @return:
+        """
+        barcode = str(uuid4())
+        ref = str(uuid4())
+        self.partner_3.write({
+            "barcode": barcode,
+            "ref": ref,
+        })
+        values = {
+            "barcode/key": barcode,
+            "ref/key": barcode,
+        }
+        with self.assertRaises(exceptions.UserError) as em:
+            self.ir_exports._import_replace_keys(dict(values), self.ir_exports.model_id.model)
+        for key in values:
+            self.assertIn(key, em.exception.name)

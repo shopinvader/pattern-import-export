@@ -279,16 +279,17 @@ class IrExports(models.Model):
         yield from getattr(self, target_function)(datafile)
 
     @api.multi
-    def _import_load_record(self, data_line, model):
+    def _import_load_record(self, data_line, model, raise_if_not_found=True):
         """
         Load the record in given data_line dict by extracting the
         id key (or empty key)
         @param data_line: dict
         @param model: str
+        @param raise_if_not_found: bool
         @return: recordset
         """
         record = self.env[model].browse()
-        self._import_replace_keys(data_line, model)
+        self._import_replace_keys(data_line, model, raise_if_not_found=raise_if_not_found)
         # Easy part: data_line contains ID
         data_id = data_line.pop("id", data_line.pop("id/key", data_line.pop("", False)))
         if data_id:
@@ -326,10 +327,23 @@ class IrExports(models.Model):
         target_keys = [
             k for k in data_line.keys() if regex_key_fields.match(k) and "/key" in k
         ]
-        for target_key in target_keys:
+        if len(target_keys) > 1:
+            details = "\n- ".join(target_keys)
+            error_message = _("There is too many keys on the same level into your import.\n- {details}").format(
+                details=details,
+            )
+            raise exceptions.UserError(error_message)
+        if target_keys:
+            target_key = target_keys[0]
             field_name = target_key.replace("/key", "")
-            real_field = record._fields.get(field_name)
             raw_value = data_line.pop(target_key)
+            if COLUMN_X2M_SEPARATOR in field_name:
+                field_name, sub_field_name = field_name.split(COLUMN_X2M_SEPARATOR, 1)
+                sub_data = {sub_field_name: raw_value}
+                real_field = record._fields.get(field_name)
+                raw_value = self._import_load_record(sub_data, model=real_field.comodel_name)
+            else:
+                real_field = record._fields.get(field_name)
             if isinstance(raw_value, float) and isnan(raw_value):
                 if real_field.type in ("float", "integer", "monetary"):
                     raw_value = 0
@@ -343,16 +357,18 @@ class IrExports(models.Model):
             # If the record is not found, raise an exception.
             # Because not coherent to create a record if the user
             # expect to have a result
-            if raise_if_not_found and not record:
+            if not record:
                 # Update the dict with False value for target record.
+                data_line.update({field_name: raw_value})
                 # In case of the caller catch the exception
-                error_message = _(
-                    "The value '{raw_value}' on model {model_name} and "
-                    "field {field_name} couldn't be found.\n"
-                    "Please ensure the record exists and you have "
-                    "correct access rights!"
-                ).format(raw_value=raw_value, model_name=model, field_name=field_name)
-                raise exceptions.UserError(error_message)
+                if raise_if_not_found:
+                    error_message = _(
+                        "The value '{raw_value}' on model {model_name} and "
+                        "field {field_name} couldn't be found.\n"
+                        "Please ensure the record exists and you have "
+                        "correct access rights!"
+                    ).format(raw_value=raw_value, model_name=model, field_name=field_name)
+                    raise exceptions.UserError(error_message)
             data_line.update({"id": record.id})
 
     @api.multi
@@ -505,7 +521,7 @@ class IrExports(models.Model):
         ):
             error_message = ""
             try:
-                record = self._import_load_record(raw_data, model=self.model_id.model)
+                record = self._import_load_record(raw_data, model=self.model_id.model, raise_if_not_found=False)
                 values = self._parse_import_data(raw_data)
                 if record and values:
                     record.write(values)

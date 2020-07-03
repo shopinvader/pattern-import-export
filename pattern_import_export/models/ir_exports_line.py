@@ -18,6 +18,12 @@ class IrExportsLine(models.Model):
     is_one2many = fields.Boolean(
         string="Is One2many field", compute="_compute_is_one2many", store=True
     )
+    is_key = fields.Boolean(
+        default=False,
+        help="Determine if this field is considered as key to update "
+             "existing record.\n"
+             "Please note that the field should have a unique constraint."
+    )
     pattern_export_id = fields.Many2one(
         comodel_name="ir.exports",
         ondelete="restrict",
@@ -36,6 +42,34 @@ class IrExportsLine(models.Model):
         "Many2many or One2many field.\n"
         "Value should be >= 1",
     )
+
+    @api.multi
+    @api.constrains('is_key', 'export_id')
+    def _constrains_one_key_per_export(self):
+        """
+        Constrain function to ensure there is maximum 1 field considered as key
+        for an export.
+        :return:
+        """
+        groupby = 'export_id'
+        domain = [
+            (groupby, 'in', self.mapped("export_id").ids),
+            ('is_key', '=', True),
+        ]
+        read = [
+            groupby,
+        ]
+        # Get the read group
+        read_values = self.read_group(domain, read, groupby, lazy=False)
+        count_by_export = {
+            v.get(groupby, [0])[0]: v.get('__count', 0) for v in read_values
+        }
+        exceeded_ids = {export_id: nb for export_id, nb in count_by_export.items() if nb > 1}
+        if exceeded_ids:
+            bad_records = self.filtered(lambda e: e.export_id.id in exceeded_ids).mapped("export_id")
+            details = "\n- ".join(bad_records.mapped("display_name"))
+            message = _("These export pattern are not valid because there is too much field considered as key (1 max):\n- %s") % details
+            raise exceptions.ValidationError(message)
 
     @api.multi
     @api.constrains("number_occurence", "is_many2many", "is_one2many")
@@ -185,6 +219,8 @@ class IrExportsLine(models.Model):
             real_fields.append(previous_real_field.name)
 
         field_name = real_field.name
+        if self.is_key:
+            field_name += "/key"
         if real_field.type in ("many2one", "one2many", "many2many"):
             nb_occurence = self._get_nb_occurence()
             for line_added in range(0, nb_occurence):
