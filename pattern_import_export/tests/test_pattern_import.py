@@ -2,8 +2,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from uuid import uuid4
 
-from odoo.tests.common import SavepointCase
 from odoo import exceptions
+from odoo.tests.common import SavepointCase
+
 from .common import ExportPatternCommon
 
 
@@ -16,7 +17,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         unique_name = str(uuid4())
         main_data = [
-            {"id": self.user3.get_xml_id().get(self.user3.id), "name": unique_name}
+            {"ID": self.user3.get_xml_id().get(self.user3.id), "Name": unique_name}
         ]
         target_model = self.ir_exports_m2m.model_id.model
         existing_records = self.env[target_model].search([])
@@ -35,7 +36,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         unique_name = str(uuid4())
         unique_login = str(uuid4())
-        main_data = [{"name": unique_name, "login": unique_login}]
+        main_data = [{"Name": unique_name, "Login": unique_login}]
         target_model = self.ir_exports_m2m.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
@@ -58,12 +59,12 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         partner3_name = str(uuid4())
         main_data = [
             {
-                "id": self.partner_1.get_xml_id().get(self.partner_1.id),
-                "name": unique_name,
-                "child_ids|1|id": self.partner_2.get_xml_id().get(self.partner_2.id),
-                "child_ids|1|name": partner2_name,
-                "child_ids|2|id": self.partner_3.get_xml_id().get(self.partner_3.id),
-                "child_ids|2|name": partner3_name,
+                "ID": self.partner_1.get_xml_id().get(self.partner_1.id),
+                "Name": unique_name,
+                "Contacts|1|ID": self.partner_2.get_xml_id().get(self.partner_2.id),
+                "Contacts|1|Name": partner2_name,
+                "Contacts|2|ID": self.partner_3.get_xml_id().get(self.partner_3.id),
+                "Contacts|2|Name": partner3_name,
             }
         ]
         target_model = self.ir_exports.model_id.model
@@ -94,38 +95,34 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         user2_name = str(uuid4())
         main_data = [
             {
-                "id": self.partner_1.get_xml_id().get(self.partner_1.id),
-                "name": unique_name,
-                "category_id|1|id": self.partner_cat1.get_xml_id().get(
-                    self.partner_cat1.id
-                ),
-                "category_id|2|id": self.partner_cat2.get_xml_id().get(
-                    self.partner_cat2.id
-                ),
-                "country_id|id": self.country_be.get_xml_id().get(self.country_be.id),
-                "child_ids|1|id": self.partner_2.get_xml_id().get(self.partner_2.id),
-                "child_ids|1|name": user1_name,
-                "child_ids|1|industry_id|id": self.industry1.get_xml_id().get(
+                "ID": self.partner_1.get_xml_id().get(self.partner_1.id),
+                "Name": unique_name,
+                "Tags|1|ID": self.partner_cat1.get_xml_id().get(self.partner_cat1.id),
+                "Tags|2|ID": self.partner_cat2.get_xml_id().get(self.partner_cat2.id),
+                "Country|ID": self.country_be.get_xml_id().get(self.country_be.id),
+                "Contacts|1|ID": self.partner_2.get_xml_id().get(self.partner_2.id),
+                "Contacts|1|Name": user1_name,
+                "Contacts|1|Industry|ID": self.industry1.get_xml_id().get(
                     self.industry1.id
                 ),
-                "child_ids|1|country_id|id": self.country_be.get_xml_id().get(
+                "Contacts|1|Country|ID": self.country_be.get_xml_id().get(
                     self.country_be.id
                 ),
-                "child_ids|1|category_id|1|id": self.partner_cat1.get_xml_id().get(
+                "Contacts|1|Tags|1|ID": self.partner_cat1.get_xml_id().get(
                     self.partner_cat1.id
                 ),
-                "child_ids|1|category_id|2|id": self.partner_cat2.get_xml_id().get(
+                "Contacts|1|Tags|2|ID": self.partner_cat2.get_xml_id().get(
                     self.partner_cat2.id
                 ),
-                "child_ids|2|id": self.partner_3.get_xml_id().get(self.partner_3.id),
-                "child_ids|2|name": user2_name,
-                "child_ids|2|industry_id|id": self.industry2.get_xml_id().get(
+                "Contacts|2|ID": self.partner_3.get_xml_id().get(self.partner_3.id),
+                "Contacts|2|Name": user2_name,
+                "Contacts|2|Industry|ID": self.industry2.get_xml_id().get(
                     self.industry2.id
                 ),
-                "child_ids|2|country_id|id": self.country_us.get_xml_id().get(
+                "Contacts|2|Country|ID": self.country_us.get_xml_id().get(
                     self.country_us.id
                 ),
-                "child_ids|2|category_id|1|id": self.partner_cat2.get_xml_id().get(
+                "Contacts|2|Tags|1|ID": self.partner_cat2.get_xml_id().get(
                     self.partner_cat2.id
                 ),
             }
@@ -164,7 +161,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         values = {
             # Cast into str to ensure it's correctly converted into int
-            "id/key": str(self.partner_3.id)
+            "ID/key": str(self.partner_3.id)
         }
         expected_results = {"id": self.partner_3.id}
         self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
@@ -178,9 +175,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         barcode = str(uuid4())
         self.partner_3.write({"barcode": barcode})
-        values = {
-            "barcode/key": barcode
-        }
+        values = {"Barcode/key": barcode}
         expected_results = {"id": self.partner_3.id}
         self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
         self.assertDictEqual(expected_results, values)
@@ -192,8 +187,8 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         separator.
         @return:
         """
-        values = {"parent_id|id/key": self.partner_3.id}
-        expected_results = {"parent_id|id/key": self.partner_3.id}
+        values = {"Related Company|ID/key": self.partner_3.id}
+        expected_results = {"Related Company|ID/key": self.partner_3.id}
         self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
         self.assertDictEqual(expected_results, values)
 
@@ -204,8 +199,10 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         separator.
         @return:
         """
-        values = {"parent_id/key|id": self.partner_3.id}
-        expected_partner = self.Partner.search([("parent_id", "=", self.partner_3.id)], limit=1)
+        values = {"Related Company/key|ID": self.partner_3.id}
+        expected_partner = self.Partner.search(
+            [("parent_id", "=", self.partner_3.id)], limit=1
+        )
         expected_results = {"id": expected_partner.id}
         self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
         self.assertDictEqual(expected_results, values)
@@ -218,11 +215,11 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         @return:
         """
         barcode = str(uuid4())
-        values = {
-            "barcode/key": barcode
-        }
-        expected_results = {"id": False, "barcode": barcode}
-        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model, raise_if_not_found=False)
+        values = {"Barcode/key": barcode}
+        expected_results = {"id": False, "Barcode": barcode}
+        self.ir_exports._import_replace_keys(
+            values, self.ir_exports.model_id.model, raise_if_not_found=False
+        )
         self.assertDictEqual(expected_results, values)
 
     def test_import_key_multi(self):
@@ -234,15 +231,11 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         barcode = str(uuid4())
         ref = str(uuid4())
-        self.partner_3.write({
-            "barcode": barcode,
-            "ref": ref,
-        })
-        values = {
-            "barcode/key": barcode,
-            "ref/key": barcode,
-        }
+        self.partner_3.write({"barcode": barcode, "ref": ref})
+        values = {"Barcode/key": barcode, "Internal Reference/key": barcode}
         with self.assertRaises(exceptions.UserError) as em:
-            self.ir_exports._import_replace_keys(dict(values), self.ir_exports.model_id.model)
+            self.ir_exports._import_replace_keys(
+                dict(values), self.ir_exports.model_id.model
+            )
         for key in values:
             self.assertIn(key, em.exception.name)

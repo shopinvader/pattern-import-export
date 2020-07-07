@@ -21,8 +21,8 @@ class IrExportsLine(models.Model):
     is_key = fields.Boolean(
         default=False,
         help="Determine if this field is considered as key to update "
-             "existing record.\n"
-             "Please note that the field should have a unique constraint."
+        "existing record.\n"
+        "Please note that the field should have a unique constraint.",
     )
     pattern_export_id = fields.Many2one(
         comodel_name="ir.exports",
@@ -44,31 +44,36 @@ class IrExportsLine(models.Model):
     )
 
     @api.multi
-    @api.constrains('is_key', 'export_id')
+    @api.constrains("is_key", "export_id")
     def _constrains_one_key_per_export(self):
         """
         Constrain function to ensure there is maximum 1 field considered as key
         for an export.
         :return:
         """
-        groupby = 'export_id'
-        domain = [
-            (groupby, 'in', self.mapped("export_id").ids),
-            ('is_key', '=', True),
-        ]
-        read = [
-            groupby,
-        ]
+        groupby = "export_id"
+        domain = [(groupby, "in", self.mapped("export_id").ids), ("is_key", "=", True)]
+        read = [groupby]
         # Get the read group
         read_values = self.read_group(domain, read, groupby, lazy=False)
         count_by_export = {
-            v.get(groupby, [0])[0]: v.get('__count', 0) for v in read_values
+            v.get(groupby, [0])[0]: v.get("__count", 0) for v in read_values
         }
-        exceeded_ids = {export_id: nb for export_id, nb in count_by_export.items() if nb > 1}
+        exceeded_ids = {
+            export_id: nb for export_id, nb in count_by_export.items() if nb > 1
+        }
         if exceeded_ids:
-            bad_records = self.filtered(lambda e: e.export_id.id in exceeded_ids).mapped("export_id")
+            bad_records = self.filtered(
+                lambda e: e.export_id.id in exceeded_ids
+            ).mapped("export_id")
             details = "\n- ".join(bad_records.mapped("display_name"))
-            message = _("These export pattern are not valid because there is too much field considered as key (1 max):\n- %s") % details
+            message = (
+                _(
+                    "These export pattern are not valid because there is too "
+                    "much field considered as key (1 max):\n- %s"
+                )
+                % details
+            )
             raise exceptions.ValidationError(message)
 
     @api.multi
@@ -206,19 +211,19 @@ class IrExportsLine(models.Model):
             previous_real_field = self.env[
                 previous_real_field.comodel_name
             ]._fields.get(self.field2_id.name)
-            real_fields.append(previous_real_field.name)
+            real_fields.append(previous_real_field.string)
         if self.field3_id:
             previous_real_field = self.env[
                 previous_real_field.comodel_name
             ]._fields.get(self.field3_id.name)
-            real_fields.append(previous_real_field.name)
+            real_fields.append(previous_real_field.string)
         if self.field4_id:
             previous_real_field = self.env[
                 previous_real_field.comodel_name
             ]._fields.get(self.field4_id.name)
-            real_fields.append(previous_real_field.name)
+            real_fields.append(previous_real_field.string)
 
-        field_name = real_field.name
+        field_name = real_field.string
         if self.is_key:
             field_name += "/key"
         if real_field.type in ("many2one", "one2many", "many2many"):

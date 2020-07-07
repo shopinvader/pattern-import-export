@@ -33,8 +33,8 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         wb = open_workbook(file_contents=decoded_data)
         sheet1 = wb.sheet_by_index(0)
         self.assertEqual(sheet1.name, "Partner list")
-        self.assertEqual(sheet1.cell_value(0, 0), "name")
-        self.assertEqual(sheet1.cell_value(0, 1), "street")
+        self.assertEqual(sheet1.cell_value(0, 0), "Name")
+        self.assertEqual(sheet1.cell_value(0, 1), "Street")
 
     def test_generate_pattern_with_many2one_fields(self):
         self.ir_exports.export_fields[0:3].unlink()
@@ -44,7 +44,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         wb = open_workbook(file_contents=decoded_data)
         self.assertEqual(len(wb.sheets()), 2)
         sheet1 = wb.sheet_by_index(0)
-        self.assertEqual(sheet1.cell_value(0, 0), "country_id|code")
+        self.assertEqual(sheet1.cell_value(0, 0), "Country|Country Code")
         sheet2 = wb.sheet_by_index(1)
         self.assertEqual(sheet2.name, "Country list (code)")
         self.assertEqual(sheet2.cell_value(1, 0), "BE")
@@ -120,7 +120,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertEqual(len(wb.sheets()), 2)
         sheet1 = wb.sheet_by_index(0)
         column_name = "{name}{sep}{nb}{sep}{f_name}".format(
-            name="company_ids", sep=self.separator, nb=1, f_name="name"
+            name="Companies", sep=self.separator, nb=1, f_name="Company Name"
         )
         self.assertEquals(column_name, sheet1.cell_value(0, 0))
 
@@ -142,7 +142,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         sheet1 = wb.sheet_by_index(0)
         for nb in range(self.ir_exports_m2m.export_fields.number_occurence):
             column_name = "{name}{sep}{nb}{sep}{f_name}".format(
-                name="company_ids", sep=self.separator, nb=nb + 1, f_name="name"
+                name="Companies", sep=self.separator, nb=nb + 1, f_name="Company Name"
             )
             self.assertEquals(column_name, sheet1.cell_value(0, nb))
 

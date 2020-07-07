@@ -120,13 +120,18 @@ class IrExports(models.Model):
                 if COLUMN_X2M_SEPARATOR in header:
                     to_update = False
                     base_name, ind = header.split(COLUMN_X2M_SEPARATOR, 1)
-                    sub_pattern = fields_sub_pattern.get(base_name)
+                    sub_pattern = fields_sub_pattern.get(header)
                     reg_result = re.findall(r"^\D*(\d+)", ind)
                     if ind.isdigit() and target_ind == int(ind):
                         to_update = True
                     # If no digits it's because header comes from a sub-pattern
                     elif not ind.isdigit() and sub_pattern:
-                        sub_records = record[base_name]
+                        real_field = [
+                            f for f in record._fields.values() if f.string == base_name
+                        ]
+                        if real_field:
+                            real_field = real_field[0]
+                        sub_records = record[real_field.name]
                         # Update current data with data from
                         # sub-pattern (and extend the key)
                         # This part cause the recursion
@@ -182,10 +187,10 @@ class IrExports(models.Model):
         fields_sub_pattern = {}
         for export_line in self.export_fields:
             if export_line.is_many2x and export_line.select_tab_id:
-                field_name = export_line.select_tab_id.field_id.name
+                field_name = export_line.select_tab_id._get_field_label()
                 field = export_line.name + "/" + field_name
             else:
-                field = export_line.name
+                field = export_line._get_header()[0]
             if export_line.is_one2many and export_line.pattern_export_id:
                 fields_sub_pattern.update({field: export_line.pattern_export_id})
         return fields_sub_pattern
@@ -289,9 +294,18 @@ class IrExports(models.Model):
         @return: recordset
         """
         record = self.env[model].browse()
-        self._import_replace_keys(data_line, model, raise_if_not_found=raise_if_not_found)
+        self._import_replace_keys(
+            data_line, model, raise_if_not_found=raise_if_not_found
+        )
+        # First, looking for ID into the given dict (
+        id_keys = ["", "id", "id/key"]
+        id_keys.extend([i.upper() for i in id_keys])
+        data_id = False
+        for id_key in id_keys:
+            if id_key in data_line:
+                data_id = data_line.pop(id_key)
+                break
         # Easy part: data_line contains ID
-        data_id = data_line.pop("id", data_line.pop("id/key", data_line.pop("", False)))
         if data_id:
             if isinstance(data_id, (int, float)) or data_id.isdigit():
                 record = record.browse(int(data_id))
@@ -320,8 +334,11 @@ class IrExports(models.Model):
         # - With only 1 "/"
         # - With text before and after the "/"
         record = self.env[model].browse()
+        # Build a dict where the key is the field's label and the
+        # value is the field object.
+        all_fields = {field.string: field for field in record._fields.values()}
         regex_key_fields = re.compile(
-            r"[" + COLUMN_X2M_SEPARATOR + r"]{0}((\w|[_])+([/]{1})(\w|[_])+)",
+            r"[" + COLUMN_X2M_SEPARATOR + r"]{0}((\w|[_ ])+([/]{1})(\w|[_ ])+)",
             re.IGNORECASE,
         )
         target_keys = [
@@ -329,9 +346,10 @@ class IrExports(models.Model):
         ]
         if len(target_keys) > 1:
             details = "\n- ".join(target_keys)
-            error_message = _("There is too many keys on the same level into your import.\n- {details}").format(
-                details=details,
-            )
+            error_message = _(
+                "There is too many keys on the same level into your import.\n"
+                "- {details}"
+            ).format(details=details)
             raise exceptions.UserError(error_message)
         if target_keys:
             target_key = target_keys[0]
@@ -340,10 +358,12 @@ class IrExports(models.Model):
             if COLUMN_X2M_SEPARATOR in field_name:
                 field_name, sub_field_name = field_name.split(COLUMN_X2M_SEPARATOR, 1)
                 sub_data = {sub_field_name: raw_value}
-                real_field = record._fields.get(field_name)
-                raw_value = self._import_load_record(sub_data, model=real_field.comodel_name)
+                real_field = all_fields.get(field_name)
+                raw_value = self._import_load_record(
+                    sub_data, model=real_field.comodel_name
+                )
             else:
-                real_field = record._fields.get(field_name)
+                real_field = all_fields.get(field_name)
             if isinstance(raw_value, float) and isnan(raw_value):
                 if real_field.type in ("float", "integer", "monetary"):
                     raw_value = 0
@@ -352,7 +372,7 @@ class IrExports(models.Model):
                 else:
                     raw_value = False
             target_value = real_field.convert_to_write(raw_value, record)
-            domain = [(field_name, "=", target_value)]
+            domain = [(real_field.name, "=", target_value)]
             record = record.search(domain, limit=1)
             # If the record is not found, raise an exception.
             # Because not coherent to create a record if the user
@@ -367,7 +387,9 @@ class IrExports(models.Model):
                         "field {field_name} couldn't be found.\n"
                         "Please ensure the record exists and you have "
                         "correct access rights!"
-                    ).format(raw_value=raw_value, model_name=model, field_name=field_name)
+                    ).format(
+                        raw_value=raw_value, model_name=model, field_name=field_name
+                    )
                     raise exceptions.UserError(error_message)
             data_line.update({"id": record.id})
 
@@ -393,7 +415,9 @@ class IrExports(models.Model):
         data_line = dict(data_line)
         model = model or self.model_id.model
         model_obj = self.env[model]
-        all_fields = list(model_obj._fields.keys())
+        # Build a dict where the key is the field's label and the
+        # value is the field object.
+        all_fields = {field.string: field for field in model_obj._fields.values()}
         complex_fields_types = ("many2one", "one2many", "many2many")
         ignore_fields = models.MAGIC_COLUMNS + [self.CONCURRENCY_CHECK_FIELD]
         ignore_fields.remove("id")
@@ -401,37 +425,52 @@ class IrExports(models.Model):
         # But we should keep ID if set
         data_line = {k: v for k, v in data_line.items() if k not in ignore_fields}
         simple_fields = [
-            f
+            all_fields.get(f).string
             for f in all_fields
-            if model_obj._fields.get(f).type not in complex_fields_types
-            and f not in ignore_fields
+            if all_fields.get(f)
+            and all_fields.get(f).type not in complex_fields_types
+            and all_fields.get(f).name not in ignore_fields
         ]
         complex_fields = [
-            f
+            all_fields.get(f).string
             for f in all_fields
-            if model_obj._fields.get(f).type in complex_fields_types
-            and f not in ignore_fields
+            if all_fields.get(f)
+            and all_fields.get(f).type in complex_fields_types
+            and all_fields.get(f).name not in ignore_fields
         ]
         self._import_replace_keys(data_line, model)
-        values = self._manage_import_simple_fields(data_line, simple_fields)
+        values = self._manage_import_simple_fields(data_line, simple_fields, model)
         values.update(
             self._manage_import_complex_fields(complex_fields, data_line, model)
         )
         return values
 
-    def _manage_import_simple_fields(self, data_line, target_fields):
+    def _manage_import_simple_fields(self, data_line, target_fields, model):
         """
         Manage simple fields to import (char, int etc)
         @param data_line: dict
         @param target_fields: list of str
+        @param model: str
         @return: dict
         """
         values = {
-            k: data_line.pop(k)
+            self._get_real_field(k, model).name: data_line.pop(k)
             for k in list(data_line.keys())
             if COLUMN_X2M_SEPARATOR not in k and k in target_fields
         }
         return values
+
+    @api.model
+    def _get_real_field(self, field_label, model):
+        """
+        Get the real field of the given model based on the field label
+        @param field_label: str
+        @param model: str
+        @return: odoo.fields or None
+        """
+        model_obj = self.env[model]
+        all_fields = {field.string: field for field in model_obj._fields.values()}
+        return all_fields.get(field_label)
 
     def _manage_import_complex_fields(self, target_fields, data_line, model):
         """
@@ -442,12 +481,11 @@ class IrExports(models.Model):
         @return:
         """
         values = {}
-        model_obj = self.env[model]
         for target_field in target_fields:
             # break the loop if nothing to manage
             if not data_line:
                 break
-            real_field = model_obj._fields.get(target_field)
+            real_field = self._get_real_field(target_field, model)
             if real_field.type in ("one2many", "many2many"):
                 template_starter = "{field_name}{sep}{nb}{sep}"
                 for nb in range(1, self._get_max_occurrence()):
@@ -470,11 +508,11 @@ class IrExports(models.Model):
                         )
                         if real_field.type == "one2many":
                             field_list = values.setdefault(
-                                target_field, [(6, False, [])]
+                                real_field.name, [(6, False, [])]
                             )
                         else:  # M2M
                             field_list = values.setdefault(
-                                target_field, [(5, False, False)]
+                                real_field.name, [(5, False, False)]
                             )
                         if record:
                             field_list.append((4, record.id, False))
@@ -509,7 +547,7 @@ class IrExports(models.Model):
                         record.write(sub_values)
                     elif not record and sub_values:
                         record = record.create(sub_values)
-                    values.update({target_field: record.id})
+                    values.update({real_field.name: record.id})
         return values
 
     @api.multi
@@ -521,7 +559,9 @@ class IrExports(models.Model):
         ):
             error_message = ""
             try:
-                record = self._import_load_record(raw_data, model=self.model_id.model, raise_if_not_found=False)
+                record = self._import_load_record(
+                    raw_data, model=self.model_id.model, raise_if_not_found=False
+                )
                 values = self._parse_import_data(raw_data)
                 if record and values:
                     record.write(values)

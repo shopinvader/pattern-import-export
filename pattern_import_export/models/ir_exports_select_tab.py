@@ -22,7 +22,15 @@ class IrExportsSelectTab(models.Model):
         @return: list of string
         """
         self.ensure_one()
-        return [self.field_id.name]
+        return [self._get_field_label()]
+
+    @api.multi
+    def _get_field_label(self):
+        """
+
+        @return: str
+        """
+        return self.env[self.model_id.model]._fields.get(self.field_id.name).string
 
     @api.multi
     def _get_records_to_export(self):
@@ -47,5 +55,5 @@ class IrExportsSelectTab(models.Model):
         for record in self._get_records_to_export():
             data = {}
             for header in self._get_header():
-                data.update({header: record[header]})
+                data.update({header: record[self.field_id.name]})
             yield data
