@@ -440,6 +440,8 @@ class IrExports(models.Model):
         ]
         self._import_replace_keys(data_line, model)
         values = self._manage_import_simple_fields(data_line, simple_fields, model)
+        if "id" in data_line:
+            values.update({"id": data_line.pop("id")})
         values.update(
             self._manage_import_complex_fields(complex_fields, data_line, model)
         )

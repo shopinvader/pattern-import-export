@@ -44,7 +44,9 @@ class IrExportsSelectTab(models.Model):
         domain = []
         if self.domain:
             domain = ast.literal_eval(self.domain)
-        return self.env[model].read_group(domain, [field], [field], orderby=field)
+        return self.env[model].read_group(
+            domain, [field], [field], orderby=field, lazy=False
+        )
 
     @api.multi
     def _get_data_to_export(self):
@@ -55,5 +57,8 @@ class IrExportsSelectTab(models.Model):
         for record in self._get_records_to_export():
             data = {}
             for header in self._get_header():
-                data.update({header: record[self.field_id.name]})
+                value = record[self.field_id.name]
+                if value and isinstance(value, (list, tuple)):
+                    value = value[1]
+                data.update({header: value})
             yield data
