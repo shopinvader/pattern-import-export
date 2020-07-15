@@ -14,6 +14,7 @@
                 </group>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
+                <field name="is_key"/>
                 <field name="is_many2x"/>
                 <field name="is_many2many" invisible="True"/>
                 <field name="is_one2many" invisible="True"/>

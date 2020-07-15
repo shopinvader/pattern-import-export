@@ -22,7 +22,15 @@ class IrExportsSelectTab(models.Model):
         @return: list of string
         """
         self.ensure_one()
-        return [self.field_id.name]
+        return [self._get_field_label()]
+
+    @api.multi
+    def _get_field_label(self):
+        """
+
+        @return: str
+        """
+        return self.env[self.model_id.model]._fields.get(self.field_id.name).string
 
     @api.multi
     def _get_records_to_export(self):
@@ -36,7 +44,9 @@ class IrExportsSelectTab(models.Model):
         domain = []
         if self.domain:
             domain = ast.literal_eval(self.domain)
-        return self.env[model].read_group(domain, [field], [field], orderby=field)
+        return self.env[model].read_group(
+            domain, [field], [field], orderby=field, lazy=False
+        )
 
     @api.multi
     def _get_data_to_export(self):
@@ -47,5 +57,8 @@ class IrExportsSelectTab(models.Model):
         for record in self._get_records_to_export():
             data = {}
             for header in self._get_header():
-                data.update({header: record[header]})
+                value = record[self.field_id.name]
+                if value and isinstance(value, (list, tuple)):
+                    value = value[1]
+                data.update({header: value})
             yield data
