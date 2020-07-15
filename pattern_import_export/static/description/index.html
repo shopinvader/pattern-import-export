@@ -368,22 +368,224 @@ ul.auto-toc {
 !! changes will be overwritten.                   !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 <p><a class="reference external" href="https://odoo-community.org/page/development-status"><img alt="Beta" src="https://img.shields.io/badge/maturity-Beta-yellow.png" /></a> <a class="reference external" href="http://www.gnu.org/licenses/agpl-3.0-standalone.html"><img alt="License: AGPL-3" src="https://img.shields.io/badge/licence-AGPL--3-blue.png" /></a> <a class="reference external" href="https://github.com/shopinvader/pattern-import-export/tree/12.0/pattern_import_export"><img alt="shopinvader/pattern-import-export" src="https://img.shields.io/badge/github-shopinvader%2Fpattern--import--export-lightgray.png?logo=github" /></a></p>
-<p>This module allows to create patterns for import or export.</p>
-<p>This module only create a common data structure used to do the real export into the expected format.</p>
+<p>This module allows to create some patterns to export records.
+A pattern is defined by a list of fields to export.
+This module only create a common data structure used to do the real export into the expected format.</p>
+<p>The import is also implemented to create or update records.
+Fields to update (or create) shouldn’t be necessarily into the pattern (but the base model should match).
+That means if your pattern only contains the name field, you can also update others fields without updating your pattern.</p>
 <p><strong>Table of contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#bug-tracker" id="id1">Bug Tracker</a></li>
-<li><a class="reference internal" href="#credits" id="id2">Credits</a><ul>
-<li><a class="reference internal" href="#authors" id="id3">Authors</a></li>
-<li><a class="reference internal" href="#contributors" id="id4">Contributors</a></li>
-<li><a class="reference internal" href="#maintainers" id="id5">Maintainers</a></li>
+<li><a class="reference internal" href="#usage" id="id1">Usage</a><ul>
+<li><a class="reference internal" href="#functionally" id="id2">Functionally</a><ul>
+<li><a class="reference internal" href="#do-export" id="id3">Do export</a></li>
+<li><a class="reference internal" href="#do-import" id="id4">Do import</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#technically" id="id5">Technically</a><ul>
+<li><a class="reference internal" href="#add-a-new-export-format" id="id6">Add a new export format</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bug-tracker" id="id7">Bug Tracker</a></li>
+<li><a class="reference internal" href="#credits" id="id8">Credits</a><ul>
+<li><a class="reference internal" href="#authors" id="id9">Authors</a></li>
+<li><a class="reference internal" href="#contributors" id="id10">Contributors</a></li>
+<li><a class="reference internal" href="#maintainers" id="id11">Maintainers</a></li>
 </ul>
 </li>
 </ul>
 </div>
+<div class="section" id="usage">
+<h1><a class="toc-backref" href="#id1">Usage</a></h1>
+<div class="section" id="functionally">
+<h2><a class="toc-backref" href="#id2">Functionally</a></h2>
+<p>To use this module, you only have to install it (please check python dependencies).</p>
+<p>First you have to define a pattern:</p>
+<ol class="arabic simple">
+<li>Go on the Import/Export-&gt;Patterns menu;</li>
+<li>Create your pattern with fields to export.</li>
+</ol>
+<div class="section" id="do-export">
+<h3><a class="toc-backref" href="#id3">Do export</a></h3>
+<p>On a Tree view, select records to export (or into the Form view) and on the
+“action” options, pick the “Export with pattern”.
+On the new wizard, fill the Export pattern to use and click on the “Export button”.</p>
+<p>A job is now created and your export will be executed as soon as possible (depending on system charge).</p>
+</div>
+<div class="section" id="do-import">
+<h3><a class="toc-backref" href="#id4">Do import</a></h3>
+<p>Once your file is edited, you can upload it to create or update related records.</p>
+<p>On a Tree view, select at least one record (not necessarily ones to update) and on the “action” button, select “Import with pattern”.
+A new wizard is open and select a pattern to do the import.</p>
+<p>Into your file, you can add/remove/rename column as you want (with specific format and with existing field’s name).</p>
+<p>You can also add some fields wo aren’t into the pattern and these fields’ will be updated.</p>
+<p>To be more user-friendly, it’s not mandatory to work with ID or XML ID to update existing record.
+You can just add “/key” at the end of the column name (without spaces) and the column will become the key (please ensure the field used as key as necessary constraints).</p>
+<p>Example of simple update on <tt class="docutils literal">product.product</tt>:
+Existing record:</p>
+<ul class="simple">
+<li>xml id: “__export__.product1”</li>
+<li>name: “Product 1”</li>
+<li>default_code: “PRD1”</li>
+</ul>
+<p>The generated export should be like</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="24%" />
+<col width="30%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">id</th>
+<th class="head">name</th>
+<th class="head">default_code</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>__export__.product1</td>
+<td>Product 1</td>
+<td>PRD1</td>
+</tr>
+</tbody>
+</table>
+<p>Updated file</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="42%" />
+<col width="30%" />
+<col width="28%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">id</th>
+<th class="head">name</th>
+<th class="head">default_code</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>__export__.product1</td>
+<td>Product 1-bis</td>
+<td>PRD1B</td>
+</tr>
+</tbody>
+</table>
+<p>Then your record will be updated:</p>
+<ul class="simple">
+<li>xml id: “__export__.product1”</li>
+<li>name: “Product 1-bis”</li>
+<li>default_code: “PRD1B”</li>
+</ul>
+<p>On the same example, you can also edit more complex fields like relational fields:</p>
+<ul class="simple">
+<li>seller_ids:</li>
+</ul>
+<blockquote>
+<ul class="simple">
+<li>xml id (of the seller/partner): “__export__.partner1”</li>
+<li>name (seller): Partner 1</li>
+<li>price: 10</li>
+</ul>
+</blockquote>
+<p>The generated export should be like</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="13%" />
+<col width="16%" />
+<col width="25%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">id</th>
+<th class="head">name</th>
+<th class="head">default_code</th>
+<th class="head">seller_ids|1|name|id</th>
+<th class="head">seller_ids|1|price</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>__export__.product1</td>
+<td>Product 1</td>
+<td>PRD1</td>
+<td>__export__.partner1</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<p>The name (seller) is into this format because seller_ids is a reference to many sellers (so specify the <tt class="docutils literal">|1|</tt>) and the name (seller) is itself a reference to a partner. So we have to specify his ID.</p>
+<p>You can also specify a partner reference (who is considered as unique) like this:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="12%" />
+<col width="15%" />
+<col width="29%" />
+<col width="22%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">id</th>
+<th class="head">name</th>
+<th class="head">default_code</th>
+<th class="head">seller_ids|1|name|ref/key</th>
+<th class="head">seller_ids|1|price</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>__export__.product1</td>
+<td>Product 1</td>
+<td>PRD1</td>
+<td>partner1-ref</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<p>So this <tt class="docutils literal">/key</tt> say that Odoo should search for a <tt class="docutils literal">res.partner</tt> where the ref is the cell’s value.</p>
+<p>It’s also possible to update a product (for this example) based on the default_code instead of the ID.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="11%" />
+<col width="19%" />
+<col width="28%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">id</th>
+<th class="head">name</th>
+<th class="head">default_code/key</th>
+<th class="head">seller_ids|1|name|ref/key</th>
+<th class="head">seller_ids|1|price</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td>Product 1</td>
+<td>PRD1</td>
+<td>partner1-ref</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<p>So Odoo will search the product with the <tt class="docutils literal">default_code</tt> and update it.</p>
+</div>
+</div>
+<div class="section" id="technically">
+<h2><a class="toc-backref" href="#id5">Technically</a></h2>
+<div class="section" id="add-a-new-export-format">
+<h3><a class="toc-backref" href="#id6">Add a new export format</a></h3>
+<ol class="arabic simple">
+<li>Inherit the <tt class="docutils literal">ir.exports</tt> model.</li>
+<li>Add your new file format in the selection field <tt class="docutils literal">export_format</tt>;</li>
+<li>Implements functions <tt class="docutils literal">_export_with_record_&lt;format&gt;</tt> and <tt class="docutils literal">_read_import_data_&lt;format&gt;</tt>.</li>
+</ol>
+<p>Please take care of iterators (<tt class="docutils literal">yield</tt>) to avoid loading full file into the system memory.</p>
+</div>
+</div>
+</div>
 <div class="section" id="bug-tracker">
-<h1><a class="toc-backref" href="#id1">Bug Tracker</a></h1>
+<h1><a class="toc-backref" href="#id7">Bug Tracker</a></h1>
 <p>Bugs are tracked on <a class="reference external" href="https://github.com/shopinvader/pattern-import-export/issues">GitHub Issues</a>.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us smashing it by providing a detailed and welcomed
@@ -391,15 +593,15 @@ If you spotted it first, help us smashing it by providing a detailed and welcome
 <p>Do not contact contributors directly about support or help with technical issues.</p>
 </div>
 <div class="section" id="credits">
-<h1><a class="toc-backref" href="#id2">Credits</a></h1>
+<h1><a class="toc-backref" href="#id8">Credits</a></h1>
 <div class="section" id="authors">
-<h2><a class="toc-backref" href="#id3">Authors</a></h2>
+<h2><a class="toc-backref" href="#id9">Authors</a></h2>
 <ul class="simple">
 <li>Akretion</li>
 </ul>
 </div>
 <div class="section" id="contributors">
-<h2><a class="toc-backref" href="#id4">Contributors</a></h2>
+<h2><a class="toc-backref" href="#id10">Contributors</a></h2>
 <ul class="simple">
 <li>Chafique Delli &lt;<a class="reference external" href="mailto:chafique.delli&#64;akretion.com">chafique.delli&#64;akretion.com</a>&gt;</li>
 <li>Sébastien Beau &lt;<a class="reference external" href="mailto:sebastien.beau&#64;akretion.com">sebastien.beau&#64;akretion.com</a>&gt;</li>
@@ -407,7 +609,7 @@ If you spotted it first, help us smashing it by providing a detailed and welcome
 </ul>
 </div>
 <div class="section" id="maintainers">
-<h2><a class="toc-backref" href="#id5">Maintainers</a></h2>
+<h2><a class="toc-backref" href="#id11">Maintainers</a></h2>
 <p>This module is part of the <a class="reference external" href="https://github.com/shopinvader/pattern-import-export/tree/12.0/pattern_import_export">shopinvader/pattern-import-export</a> project on GitHub.</p>
 <p>You are welcome to contribute.</p>
 </div>
