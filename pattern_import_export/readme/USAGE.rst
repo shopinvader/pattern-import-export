@@ -1,5 +1,5 @@
 Functionally
-------------
+~~~~~~~~~~~~
 To use this module, you only have to install it (please check python dependencies).
 
 First you have to define a pattern:
@@ -9,7 +9,7 @@ First you have to define a pattern:
 
 
 Do export
-^^^^^^^^^
+---------
 On a Tree view, select records to export (or into the Form view) and on the
 "action" options, pick the "Export with pattern".
 On the new wizard, fill the Export pattern to use and click on the "Export button".
@@ -17,7 +17,7 @@ On the new wizard, fill the Export pattern to use and click on the "Export butto
 A job is now created and your export will be executed as soon as possible (depending on system charge).
 
 Do import
-^^^^^^^^^
+---------
 Once your file is edited, you can upload it to create or update related records.
 
 On a Tree view, select at least one record (not necessarily ones to update) and on the "action" button, select "Import with pattern".
@@ -100,9 +100,9 @@ So Odoo will search the product with the ``default_code`` and update it.
 
 
 Technically
------------
+~~~~~~~~~~~
 Add a new export format
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 1. Inherit the ``ir.exports`` model.
 2. Add your new file format in the selection field ``export_format``;
 3. Implements functions ``_export_with_record_<format>`` and ``_read_import_data_<format>``.
