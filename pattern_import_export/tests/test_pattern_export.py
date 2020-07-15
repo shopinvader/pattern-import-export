@@ -1,5 +1,7 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+from collections import OrderedDict
+
 from odoo.tests.common import SavepointCase
 
 from .common import ExportPatternCommon
@@ -12,7 +14,13 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         @return:
         """
         headers = self.ir_exports._get_header()
-        expected_header = ["id", "name", "street", "country_id", "child_ids/country_id"]
+        expected_header = [
+            "id",
+            "name",
+            "street",
+            "country_id|code",
+            "child_ids|1|country_id|code",
+        ]
         self.assertEquals(expected_header, headers)
 
     def test_get_header2(self):
@@ -21,7 +29,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         @return:
         """
         headers = self.ir_exports_m2m._get_header()
-        expected_header = ["id", "name", "company_ids|1"]
+        expected_header = ["id", "name", "company_ids|1|name"]
         self.assertEquals(expected_header, headers)
 
     def test_get_header3(self):
@@ -38,11 +46,11 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         expected_header = [
             "id",
             "name",
-            "company_ids|1",
-            "company_ids|2",
-            "company_ids|3",
-            "company_ids|4",
-            "company_ids|5",
+            "company_ids|1|name",
+            "company_ids|2|name",
+            "company_ids|3|name",
+            "company_ids|4|name",
+            "company_ids|5|name",
         ]
         self.assertEquals(expected_header, headers)
 
@@ -58,13 +66,13 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             "name",
             "user_ids|1|id",
             "user_ids|1|name",
-            "user_ids|1|company_ids|1",
+            "user_ids|1|company_ids|1|name",
             "user_ids|2|id",
             "user_ids|2|name",
-            "user_ids|2|company_ids|1",
+            "user_ids|2|company_ids|1|name",
             "user_ids|3|id",
             "user_ids|3|name",
-            "user_ids|3|company_ids|1",
+            "user_ids|3|company_ids|1|name",
         ]
         self.assertEquals(expected_header, headers)
 
@@ -86,25 +94,25 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             "name",
             "user_ids|1|id",
             "user_ids|1|name",
-            "user_ids|1|company_ids|1",
-            "user_ids|1|company_ids|2",
-            "user_ids|1|company_ids|3",
-            "user_ids|1|company_ids|4",
-            "user_ids|1|company_ids|5",
+            "user_ids|1|company_ids|1|name",
+            "user_ids|1|company_ids|2|name",
+            "user_ids|1|company_ids|3|name",
+            "user_ids|1|company_ids|4|name",
+            "user_ids|1|company_ids|5|name",
             "user_ids|2|id",
             "user_ids|2|name",
-            "user_ids|2|company_ids|1",
-            "user_ids|2|company_ids|2",
-            "user_ids|2|company_ids|3",
-            "user_ids|2|company_ids|4",
-            "user_ids|2|company_ids|5",
+            "user_ids|2|company_ids|1|name",
+            "user_ids|2|company_ids|2|name",
+            "user_ids|2|company_ids|3|name",
+            "user_ids|2|company_ids|4|name",
+            "user_ids|2|company_ids|5|name",
             "user_ids|3|id",
             "user_ids|3|name",
-            "user_ids|3|company_ids|1",
-            "user_ids|3|company_ids|2",
-            "user_ids|3|company_ids|3",
-            "user_ids|3|company_ids|4",
-            "user_ids|3|company_ids|5",
+            "user_ids|3|company_ids|1|name",
+            "user_ids|3|company_ids|2|name",
+            "user_ids|3|company_ids|3|name",
+            "user_ids|3|company_ids|4|name",
+            "user_ids|3|company_ids|5|name",
         ]
         self.assertEquals(expected_header, headers)
 
@@ -118,22 +126,22 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
                 "id": "base.res_partner_1",
                 "name": "Wood Corner",
                 "street": "1164 Cambridge Drive",
-                "country_id": "US",
-                "child_ids/country_id": "US",
+                "country_id|code": "US",
+                "child_ids|1|country_id|code": "US",
             },
             {
                 "id": "base.res_partner_2",
                 "name": "Deco Addict",
                 "street": "325 Elsie Drive",
-                "country_id": "US",
-                "child_ids/country_id": "US",
+                "country_id|code": "US",
+                "child_ids|1|country_id|code": "US",
             },
             {
                 "id": "base.res_partner_3",
                 "name": "Gemini Furniture",
                 "street": "1128 Lunetta Street",
-                "country_id": "US",
-                "child_ids/country_id": "US",
+                "country_id|code": "US",
+                "child_ids|1|country_id|code": "US",
             },
         ]
         results = self.ir_exports._get_data_to_export(self.partners)
@@ -150,7 +158,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             {
                 "id": "base.user_root",
                 "name": "OdooBot",
-                "company_ids|1": "Awesome company",
+                "company_ids|1|name": "Awesome company",
             }
         ]
         results = self.ir_exports_m2m._get_data_to_export(self.env.user)
@@ -169,13 +177,15 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertTrue(export_fields_m2m)
         export_fields_m2m.write({"number_occurence": 5})
         expected_results = [
-            {
-                "id": "base.user_root",
-                "name": "OdooBot",
-                "company_ids|1": "Awesome company",
-                "company_ids|2": "Bad company",
-                "company_ids|3": "YourCompany",
-            }
+            OrderedDict(
+                {
+                    "id": "base.user_root",
+                    "name": "OdooBot",
+                    "company_ids|1|name": "Awesome company",
+                    "company_ids|2|name": "Bad company",
+                    "company_ids|3|name": "YourCompany",
+                }
+            )
         ]
         results = self.ir_exports_m2m._get_data_to_export(self.env.user)
         for result, expected_result in zip(results, expected_results):
@@ -188,21 +198,25 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         @return:
         """
         expected_results = [
-            {
-                "id": "base.res_partner_1",
-                "name": "Wood Corner",
-                "user_ids|1|id": self.user1.get_xml_id().get(self.user1.id),
-                "user_ids|1|name": "Wood Corner",
-                "user_ids|1|company_ids|1": "Awesome company",
-            },
-            {
-                "id": "base.res_partner_2",
-                "name": "Deco Addict",
-                "user_ids|1|id": self.user3.get_xml_id().get(self.user3.id),
-                "user_ids|1|name": "Deco Addict",
-                "user_ids|1|company_ids|1": "YourCompany",
-            },
-            {"id": "base.res_partner_3", "name": "Gemini Furniture"},
+            OrderedDict(
+                {
+                    "id": "base.res_partner_1",
+                    "name": "Wood Corner",
+                    "user_ids|1|id": self.user1.get_xml_id().get(self.user1.id),
+                    "user_ids|1|name": "Wood Corner",
+                    "user_ids|1|company_ids|1|name": "Awesome company",
+                }
+            ),
+            OrderedDict(
+                {
+                    "id": "base.res_partner_2",
+                    "name": "Deco Addict",
+                    "user_ids|1|id": self.user3.get_xml_id().get(self.user3.id),
+                    "user_ids|1|name": "Deco Addict",
+                    "user_ids|1|company_ids|1|name": "YourCompany",
+                }
+            ),
+            OrderedDict({"id": "base.res_partner_3", "name": "Gemini Furniture"}),
         ]
         results = self.ir_exports_o2m._get_data_to_export(self.partners)
         for result, expected_result in zip(results, expected_results):
@@ -225,23 +239,27 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertTrue(export_fields_o2m)
         export_fields_o2m.write({"number_occurence": 3})
         expected_results = [
-            {
-                "id": "base.res_partner_1",
-                "name": "Wood Corner",
-                "user_ids|1|id": self.user1.get_xml_id().get(self.user1.id),
-                "user_ids|1|name": "Wood Corner",
-                "user_ids|1|company_ids|1": "Awesome company",
-                "user_ids|1|company_ids|2": "Bad company",
-                "user_ids|1|company_ids|3": "YourCompany",
-            },
-            {
-                "id": "base.res_partner_2",
-                "name": "Deco Addict",
-                "user_ids|1|id": self.user3.get_xml_id().get(self.user3.id),
-                "user_ids|1|name": "Deco Addict",
-                "user_ids|1|company_ids|1": "YourCompany",
-            },
-            {"id": "base.res_partner_3", "name": "Gemini Furniture"},
+            OrderedDict(
+                {
+                    "id": "base.res_partner_1",
+                    "name": "Wood Corner",
+                    "user_ids|1|id": self.user1.get_xml_id().get(self.user1.id),
+                    "user_ids|1|name": "Wood Corner",
+                    "user_ids|1|company_ids|1|name": "Awesome company",
+                    "user_ids|1|company_ids|2|name": "Bad company",
+                    "user_ids|1|company_ids|3|name": "YourCompany",
+                }
+            ),
+            OrderedDict(
+                {
+                    "id": "base.res_partner_2",
+                    "name": "Deco Addict",
+                    "user_ids|1|id": self.user3.get_xml_id().get(self.user3.id),
+                    "user_ids|1|name": "Deco Addict",
+                    "user_ids|1|company_ids|1|name": "YourCompany",
+                }
+            ),
+            OrderedDict({"id": "base.res_partner_3", "name": "Gemini Furniture"}),
         ]
         results = self.ir_exports_o2m._get_data_to_export(self.partners)
         for result, expected_result in zip(results, expected_results):

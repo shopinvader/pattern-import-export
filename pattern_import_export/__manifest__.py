@@ -12,6 +12,7 @@
     "data": [
         "security/ir.model.access.csv",
         "wizard/export_with_pattern.xml",
+        "wizard/import_pattern_wizard.xml",
         "views/pattern_import_export.xml",
     ],
     "installable": True,

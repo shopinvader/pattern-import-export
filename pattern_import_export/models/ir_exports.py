@@ -1,14 +1,27 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-
 import base64
+import re
 
-from odoo import api, fields, models
+from psycopg2 import IntegrityError
+
+from odoo import _, api, exceptions, fields, models
+
+from odoo.addons.queue_job.job import job
+
+from _collections import OrderedDict
 
 COLUMN_X2M_SEPARATOR = "|"
 
 
 class IrExports(models.Model):
+    """
+    Todo: description:
+    To implements:
+    _export_with_record_FORMAT (should use an iterator)
+    _read_import_data_FORMAT (should return an iterator)
+    """
+
     _inherit = "ir.exports"
 
     pattern_file = fields.Binary(string="Pattern file", readonly=True)
@@ -27,29 +40,7 @@ class IrExports(models.Model):
         self.ensure_one()
         header = []
         for export_line in self.export_fields:
-            column_name = base_column_name = export_line.name
-            nb_occurence = export_line._get_nb_occurence()
-            for line_added in range(0, nb_occurence):
-                if export_line.is_many2many or export_line.is_one2many:
-                    column_name = "{column_name}{separator}{nb}".format(
-                        column_name=base_column_name,
-                        separator=COLUMN_X2M_SEPARATOR,
-                        nb=line_added + 1,
-                    )
-                if export_line.is_one2many:
-                    sub_pattern = export_line.pattern_export_id
-                    sub_headers = sub_pattern._get_header()
-                    base_sub_header = column_name
-                    for sub_header in sub_headers:
-                        column_name = "{base}{sep}{sub_header}".format(
-                            base=base_sub_header,
-                            sep=COLUMN_X2M_SEPARATOR,
-                            sub_header=sub_header,
-                        )
-                        header.append(column_name)
-                    column_name = False
-                if column_name:
-                    header.append(column_name)
+            header.extend(export_line._get_header())
         return header
 
     @api.multi
@@ -115,7 +106,7 @@ class IrExports(models.Model):
         @return: dict
         """
         self.ensure_one()
-        data = {}
+        data = OrderedDict()
         fields_sub_pattern = self._get_sub_patterns()
         for target_ind, record_data in enumerate(raw_data, start=1):
             for header, value in zip(self._get_header(), record_data):
@@ -127,11 +118,12 @@ class IrExports(models.Model):
                 if COLUMN_X2M_SEPARATOR in header:
                     to_update = False
                     base_name, ind = header.split(COLUMN_X2M_SEPARATOR, 1)
+                    sub_pattern = fields_sub_pattern.get(base_name)
+                    reg_result = re.findall(r"^\D*(\d+)", ind)
                     if ind.isdigit() and target_ind == int(ind):
                         to_update = True
                     # If no digits it's because header comes from a sub-pattern
-                    elif not ind.isdigit():
-                        sub_pattern = fields_sub_pattern.get(base_name)
+                    elif not ind.isdigit() and sub_pattern:
                         sub_records = record[base_name]
                         # Update current data with data from
                         # sub-pattern (and extend the key)
@@ -148,6 +140,13 @@ class IrExports(models.Model):
                                 for k, v in sub_data.items()
                             }
                             data.update(sub_data_replaced)
+                    # If there is a digit and the digit match with the target
+                    # do the update
+                    elif not ind.isdigit() and reg_result:
+                        to_update = target_ind == int(reg_result[0])
+                    # If no digit, do the update (field is not enumerated)
+                    elif not ind.isdigit() and not reg_result:
+                        to_update = True
                 if to_update:
                     data.update({header: value})
         return data
@@ -258,5 +257,208 @@ class IrExports(models.Model):
             lambda l: l.is_one2many and l.pattern_export_id
         ).mapped("pattern_export_id")
         if sub_patterns:
-            export_tabs |= sub_patterns._get_additionnal_info()
+            export_tabs |= sub_patterns._get_select_tab()
         return export_tabs
+
+    # Import part
+
+    @api.multi
+    def _read_import_data(self, datafile):
+        """
+
+        @param datafile:
+        @return: list of str
+        """
+        target_function = "_read_import_data_{format}".format(
+            format=self.export_format or ""
+        )
+        if not hasattr(self, target_function):
+            raise NotImplementedError()
+        yield from getattr(self, target_function)(datafile)
+
+    @api.multi
+    def _import_load_record(self, data_line, model):
+        """
+        Load the record in given data_line dict by extracting the
+        id key (or empty key)
+        @param data_line: dict
+        @param model: str
+        @return: recordset
+        """
+        record = self.env[model].browse()
+        data_id = data_line.pop("id", data_line.pop("", False))
+        if data_id:
+            if data_id.isdigit():
+                record = record.browse(data_id)
+            else:
+                # add 'or record' to avoid None
+                record = self.env.ref(data_id, raise_if_not_found=False) or record
+        if record:
+            record = record.exists()
+        return record
+
+    @api.multi
+    def _get_max_occurrence(self):
+        """
+        Get the number of occurrence to manage.
+        Value should be > 1 otherwise it's disabled
+        @return: int
+        """
+        return 20
+
+    @api.multi
+    def _parse_import_data(self, data_line, model=""):
+        """
+        Recursive function used to read given data_line and build a dict
+        used to do create/write.
+        Recursive only for O2M, M2M and M2O fields.
+        @param data_line: dict
+        @param model: str
+        @return: dict
+        """
+        data_line = dict(data_line)
+        model = model or self.model_id.model
+        model_obj = self.env[model]
+        all_fields = list(model_obj._fields.keys())
+        complex_fields_types = ("many2one", "one2many", "many2many")
+        ignore_fields = models.MAGIC_COLUMNS + [self.CONCURRENCY_CHECK_FIELD]
+        ignore_fields.remove("id")
+        # Remove these fields to ignore if there are into the data_line
+        # But we should keep ID if set
+        data_line = {k: v for k, v in data_line.items() if k not in ignore_fields}
+        simple_fields = [
+            f
+            for f in all_fields
+            if model_obj._fields.get(f).type not in complex_fields_types
+            and f not in ignore_fields
+        ]
+        complex_fields = [
+            f
+            for f in all_fields
+            if model_obj._fields.get(f).type in complex_fields_types
+            and f not in ignore_fields
+        ]
+        values = self._manage_import_simple_fields(data_line, simple_fields)
+        values.update(
+            self._manage_import_complex_fields(complex_fields, data_line, model)
+        )
+        return values
+
+    def _manage_import_simple_fields(self, data_line, target_fields):
+        """
+        Manage simple fields to import (char, int etc)
+        @param data_line: dict
+        @param target_fields: list of str
+        @return: dict
+        """
+        values = {
+            k: data_line.pop(k)
+            for k in list(data_line.keys())
+            if COLUMN_X2M_SEPARATOR not in k and k in target_fields
+        }
+        return values
+
+    def _manage_import_complex_fields(self, target_fields, data_line, model):
+        """
+        Manage complex fields to import (M2M, O2M and M2O)
+        @param target_fields: list of str
+        @param data_line: dict
+        @param model: str
+        @return:
+        """
+        values = {}
+        model_obj = self.env[model]
+        for target_field in target_fields:
+            # break the loop if nothing to manage
+            if not data_line:
+                break
+            real_field = model_obj._fields.get(target_field)
+            if real_field.type in ("one2many", "many2many"):
+                template_starter = "{field_name}{sep}{nb}{sep}"
+                for nb in range(1, self._get_max_occurrence()):
+                    starter = template_starter.format(
+                        field_name=target_field, sep=COLUMN_X2M_SEPARATOR, nb=nb
+                    )
+                    sub_values = {
+                        k.replace(starter, ""): data_line.pop(k)
+                        for k in list(data_line.keys())
+                        if k.startswith(starter)
+                    }
+                    if sub_values:
+                        sub_values = self._parse_import_data(
+                            sub_values, model=real_field.comodel_name
+                        )
+                    if sub_values:
+                        write_code = 0
+                        record = self._import_load_record(
+                            sub_values, model=real_field.comodel_name
+                        )
+                        if real_field.type == "one2many":
+                            field_list = values.setdefault(
+                                target_field, [(6, False, [])]
+                            )
+                        else:  # M2M
+                            field_list = values.setdefault(
+                                target_field, [(5, False, False)]
+                            )
+                        if record:
+                            field_list.append((4, record.id, False))
+                            write_code = 1
+                        if sub_values:
+                            # In case of O2M, sub_values should contains
+                            # every required fields as previous values are deleted
+                            field_list.append((write_code, record.id, sub_values))
+                    else:
+                        # If no more sub-values found,
+                        # suppose no others values will be found for this field
+                        break
+            else:  # Is M2O
+                template_starter = "{field_name}{sep}"
+                starter = template_starter.format(
+                    field_name=target_field, sep=COLUMN_X2M_SEPARATOR
+                )
+                sub_values = {
+                    k.replace(starter, ""): data_line.pop(k)
+                    for k in list(data_line.keys())
+                    if k.startswith(starter) and COLUMN_X2M_SEPARATOR in k
+                }
+                if sub_values:
+                    sub_values = self._parse_import_data(
+                        sub_values, model=real_field.comodel_name
+                    )
+                if sub_values:
+                    record = self._import_load_record(
+                        sub_values, model=real_field.comodel_name
+                    )
+                    if record and sub_values:
+                        record.write(sub_values)
+                    elif not record and sub_values:
+                        record = record.create(sub_values)
+                    values.update({target_field: record.id})
+        return values
+
+    @api.multi
+    @job(default_channel="root.importwithpattern")
+    def _generate_import_with_pattern_job(self, attachment):
+        attachment_data = base64.b64decode(attachment.datas.decode("utf-8"))
+        for line_nb, raw_data in enumerate(
+            self._read_import_data(attachment_data), start=1
+        ):
+            error_message = ""
+            try:
+                record = self._import_load_record(raw_data, model=self.model_id.model)
+                values = self._parse_import_data(raw_data)
+                if record and values:
+                    record.write(values)
+                elif values and not record:
+                    record.create(values)
+            except IntegrityError as e:
+                error_message = _(
+                    "Error to write/create line {line_nb}: {ex_msg}"
+                ).format(line_nb=line_nb, ex_msg=e)
+            except exceptions.except_orm as e:
+                error_message = _(
+                    "Error to write/create line {line_nb}: {ex_msg}"
+                ).format(line_nb=line_nb, ex_msg=e)
+            if error_message:
+                raise exceptions.UserError(error_message)
