@@ -19,7 +19,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             "Name",
             "Street",
             "Country|Country Code",
-            "Contacts|1|Country|Country Code",
+            "Related Company|Country|Country Code",
         ]
         self.assertEquals(expected_header, headers)
 
@@ -38,9 +38,8 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         @return:
         """
         export_fields_m2m = self.ir_exports_m2m.export_fields.filtered(
-            lambda l: l.is_many2many
+            lambda l: l.name == "company_ids/name"
         )
-        self.assertTrue(export_fields_m2m)
         export_fields_m2m.write({"number_occurence": 5})
         headers = self.ir_exports_m2m._get_header()
         expected_header = [
@@ -84,9 +83,8 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         @return:
         """
         export_fields_m2m = self.ir_exports_m2m.export_fields.filtered(
-            lambda l: l.is_many2many
+            lambda l: l.name == "company_ids/name"
         )
-        self.assertTrue(export_fields_m2m)
         export_fields_m2m.write({"number_occurence": 5})
         headers = self.ir_exports_o2m._get_header()
         expected_header = [
