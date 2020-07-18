@@ -26,6 +26,7 @@ class IrExports(models.Model):
 
     _inherit = "ir.exports"
 
+    is_pattern = fields.Boolean(default=False)
     pattern_file = fields.Binary(string="Pattern file", readonly=True)
     pattern_last_generation_date = fields.Datetime(
         string="Pattern last generation date", readonly=True

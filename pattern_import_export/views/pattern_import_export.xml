@@ -13,13 +13,35 @@
                     <field name="pattern_last_generation_date"/>
                 </group>
             </xpath>
+            <xpath expr="//field[@name='field2_id']" position="attributes">
+                <attribute name="attrs">{
+                    'readonly': [('model2_id', '=', False)],
+                    'required': [('model2_id', '!=', False)]
+                    }</attribute>
+            </xpath>
+            <xpath expr="//field[@name='field3_id']" position="attributes">
+                <attribute name="attrs">{
+                    'readonly': [('model3_id', '=', False)],
+                    'required': [('model3_id', '!=', False)]
+                    }</attribute>
+            </xpath>
+            <xpath expr="//field[@name='field4_id']" position="attributes">
+                <attribute name="attrs">{
+                    'readonly': [('model4_id', '=', False)],
+                    'required': [('model4_id', '!=', False)]
+                    }</attribute>
+            </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
                 <field name="is_key"/>
-                <field name="is_many2x"/>
-                <field name="is_many2many" invisible="True"/>
-                <field name="is_one2many" invisible="True"/>
-                <field name="number_occurence" attrs="{'required': ['|', ('is_many2many', '=', True), ('is_one2many', '=', True)], 'readonly': [('is_many2many', '!=', True), ('is_one2many', '!=', True)], 'invisible': [('is_many2many', '!=', True), ('is_one2many', '!=', True)]}"/>
-                <field name="pattern_export_id" attrs="{'required': [('is_one2many', '=', True)], 'readonly': [('is_one2many', '!=', True)], 'invisible': [('is_one2many', '!=', True)]}"/>
+                <field name="required_fields"/>
+                <field name="number_occurence" attrs="{
+                    'required': [('required_fields', 'ilike', 'number_occurence')],
+                    'readonly': ['!', ('required_fields', 'ilike', 'number_occurence')],
+                    'invisible': ['!', ('required_fields', 'ilike', 'number_occurence')]}"/>
+                <field name="pattern_export_id" attrs="{
+                    'required': [('required_fields', 'ilike', 'pattern_export_id')],
+                    'readonly': ['!', ('required_fields', 'ilike', 'pattern_export_id')],
+                    'invisible': ['!', ('required_fields', 'ilike', 'pattern_export_id')]}"/>
                 <field name="related_model_id"/>
                 <field name="select_tab_id"/>
             </xpath>

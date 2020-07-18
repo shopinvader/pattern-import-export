@@ -86,7 +86,11 @@ class ExportPatternCommon(JobMixin):
         # Used to generate XML id automatically
         cls.companies.export_data(["id"])
         company_name_field = cls.env.ref("base.field_res_company__name")
-        exports_vals = {"name": "Partner list", "resource": "res.partner"}
+        exports_vals = {
+            "name": "Partner list",
+            "resource": "res.partner",
+            "is_pattern": True,
+        }
         cls.separator = COLUMN_X2M_SEPARATOR
         cls.ir_exports = cls.Exports.create(exports_vals)
         select_tab_vals = {
@@ -101,12 +105,12 @@ class ExportPatternCommon(JobMixin):
             {"name": "name", "export_id": cls.ir_exports.id},
             {"name": "street", "export_id": cls.ir_exports.id},
             {
-                "name": "country_id",
+                "name": "country_id/code",
                 "export_id": cls.ir_exports.id,
                 "select_tab_id": cls.select_tab.id,
             },
             {
-                "name": "child_ids/country_id",
+                "name": "parent_id/country_id/code",
                 "export_id": cls.ir_exports.id,
                 "select_tab_id": cls.select_tab.id,
             },
@@ -122,6 +126,7 @@ class ExportPatternCommon(JobMixin):
         cls.ir_exports_m2m = cls.Exports.create(
             {
                 "name": "Users list - M2M",
+                "is_pattern": True,
                 "resource": "res.users",
                 "export_fields": [
                     (0, False, {"name": "id"}),
@@ -130,7 +135,7 @@ class ExportPatternCommon(JobMixin):
                         0,
                         False,
                         {
-                            "name": "company_ids",
+                            "name": "company_ids/name",
                             "number_occurence": 1,
                             "select_tab_id": cls.select_tab_company.id,
                         },
@@ -141,6 +146,7 @@ class ExportPatternCommon(JobMixin):
         cls.ir_exports_o2m = cls.Exports.create(
             {
                 "name": "Partner - O2M",
+                "is_pattern": True,
                 "resource": "res.partner",
                 "export_fields": [
                     (0, False, {"name": "id"}),

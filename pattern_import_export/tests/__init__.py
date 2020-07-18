@@ -4,3 +4,4 @@
 from . import test_exports_line
 from . import test_pattern_export
 from . import test_pattern_import
+from . import test_pattern_constraint
