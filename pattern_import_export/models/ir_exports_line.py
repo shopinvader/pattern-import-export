@@ -152,31 +152,40 @@ class IrExportsLine(models.Model):
                     export_line.related_model_id = comodel.id
                     export_line.level = level
 
-    def _build_header(self, level):
+    def _build_header(self, level, use_description):
         base_header = []
         for idx in range(1, level + 1):
             field = self["field{}_id".format(idx)]
-            base_header.append(field.field_description)
+            if use_description:
+                base_header.append(field.field_description)
+            else:
+                base_header.append(field.name)
         return COLUMN_X2M_SEPARATOR.join(base_header)
 
     @api.multi
-    def _get_header(self):
+    def _get_header(self, use_description=False):
         """
         @return: list of str
         """
         headers = []
         for record in self:
             if record.level == 0:
-                headers.append(record.field1_id.field_description)
+                if use_description:
+                    headers.append(record.field1_id.field_description)
+                else:
+                    headers.append(record.field1_id.name)
             else:
                 last_relation_field = record["field{}_id".format(record.level)]
                 if last_relation_field.ttype == "many2one":
-                    headers.append(record._build_header(self.level + 1))
+                    headers.append(
+                        record._build_header(self.level + 1, use_description)
+                    )
                 else:
-                    base_header = record._build_header(record.level)
-                    if record.pattern_export_id:
-                        sub_headers = (
-                            record.pattern_export_id.export_fields._get_header()
+                    base_header = record._build_header(record.level, use_description)
+                    sub_pattern = record.pattern_export_id
+                    if sub_pattern:
+                        sub_headers = sub_pattern.export_fields._get_header(
+                            use_description
                         )
                         for idx in range(1, record.number_occurence + 1):
                             headers.extend(
@@ -188,9 +197,11 @@ class IrExportsLine(models.Model):
                                 ]
                             )
                     else:
-                        field_name = record[
-                            "field{}_id".format(record.level + 1)
-                        ].field_description
+                        field = record["field{}_id".format(record.level + 1)]
+                        if use_description:
+                            field_name = field.field_description
+                        else:
+                            field_name = field.name
                         for idx in range(1, record.number_occurence + 1):
                             headers.append(
                                 COLUMN_X2M_SEPARATOR.join(

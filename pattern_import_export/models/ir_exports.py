@@ -8,6 +8,7 @@ from psycopg2 import IntegrityError
 
 from odoo import _, api, exceptions, fields, models
 
+from odoo.addons.base_jsonify.models.ir_export import convert_dict, update_dict
 from odoo.addons.queue_job.job import job
 
 from _collections import OrderedDict
@@ -71,12 +72,46 @@ class IrExports(models.Model):
         """
         Iterator who built data dict record by record.
         This function could be recursive in case of sub-pattern
-        @param records: recordset
-        @return: dict
         """
         self.ensure_one()
         for record in records:
             yield self._get_data_to_export_by_record(record)
+
+    def _get_dict_parser_for_pattern(self):
+        self.ensure_one()
+        dict_parser = OrderedDict()
+        for line in self.export_fields:
+            names = line.name.split("/")
+            update_dict(dict_parser, names)
+            if line.pattern_export_id:
+                last_item = dict_parser
+                last_field = names[0]
+                for field in names[:-1]:
+                    last_item = last_item[field]
+                    last_field = field
+                last_item[
+                    last_field
+                ] = line.pattern_export_id._get_dict_parser_for_pattern()
+        return dict_parser
+
+    def _get_json_parser_for_pattern(self):
+        return convert_dict(self._get_dict_parser_for_pattern())
+
+    def json2flatty(self, data):
+        res = {}
+        for header in self._get_header():
+            try:
+                val = data
+                for key in header.split(COLUMN_X2M_SEPARATOR):
+                    if key.isdigit():
+                        key = int(key) - 1
+                    val = val[key]
+                    if val is None:
+                        break
+            except IndexError:
+                val = None
+            res[header] = val
+        return res
 
     @api.multi
     def _get_data_to_export_by_record(self, record):
@@ -88,113 +123,9 @@ class IrExports(models.Model):
         """
         self.ensure_one()
         record.ensure_one()
-        fields_to_export = self._get_fields_to_export()
-        # The data-structure returned by export_data is different
-        # that the one used to export.
-        # export_data(...) return a dict with a keys named 'datas'
-        # and it contains a list of list.
-        # Each list item is a line (for M2M) but for the export,
-        # we want to display these lines as column.
-        # So we have to convert
-        res = record.export_data(fields_to_export, raw_data=False)
-        data = self._built_record_values(res.get("datas", []), record)
-        return data
-
-    @api.multi
-    def _built_record_values(self, raw_data, record):
-        """
-
-        @param raw_data: list
-        @param record: recordset
-        @return: dict
-        """
-        self.ensure_one()
-        data = OrderedDict()
-        fields_sub_pattern = self._get_sub_patterns()
-        for target_ind, record_data in enumerate(raw_data, start=1):
-            for header, value in zip(self._get_header(), record_data):
-                # In case of sub-pattern, it's possible that the
-                # header has been already added
-                if header in data:
-                    continue
-                to_update = True
-                if COLUMN_X2M_SEPARATOR in header:
-                    to_update = False
-                    base_name, ind = header.split(COLUMN_X2M_SEPARATOR, 1)
-                    sub_pattern = fields_sub_pattern.get(header)
-                    reg_result = re.findall(r"^\D*(\d+)", ind)
-                    if ind.isdigit() and target_ind == int(ind):
-                        to_update = True
-                    # If no digits it's because header comes from a sub-pattern
-                    elif not ind.isdigit() and sub_pattern:
-                        real_field = [
-                            f for f in record._fields.values() if f.string == base_name
-                        ]
-                        if real_field:
-                            real_field = real_field[0]
-                        sub_records = record[real_field.name]
-                        # Update current data with data from
-                        # sub-pattern (and extend the key)
-                        # This part cause the recursion
-                        for sub_data in sub_pattern._get_data_to_export(sub_records):
-                            base_key = "{base}{sep}{target_ind}{sep}{sub_key}"
-                            sub_data_replaced = {
-                                base_key.format(
-                                    base=base_name,
-                                    sub_key=k,
-                                    target_ind=target_ind,
-                                    sep=COLUMN_X2M_SEPARATOR,
-                                ): v
-                                for k, v in sub_data.items()
-                            }
-                            data.update(sub_data_replaced)
-                    # If there is a digit and the digit match with the target
-                    # do the update
-                    elif not ind.isdigit() and reg_result:
-                        to_update = target_ind == int(reg_result[0])
-                    # If no digit, do the update (field is not enumerated)
-                    elif not ind.isdigit() and not reg_result:
-                        to_update = True
-                if to_update:
-                    data.update({header: value})
-        return data
-
-    @api.multi
-    def _get_fields_to_export(self):
-        """
-
-        @return: list of str
-        """
-        self.ensure_one()
-        fields_to_export = []
-        for export_line in self.export_fields:
-            nb_column = 1
-            if export_line.is_many2x and export_line.select_tab_id:
-                field_name = export_line.select_tab_id.field_id.name
-                field = export_line.name + "/" + field_name
-                if export_line.is_many2many:
-                    nb_column = max(1, export_line.number_occurence)
-            else:
-                field = export_line.name
-            for _i in range(0, nb_column):
-                fields_to_export.append(field)
-        return fields_to_export
-
-    def _get_sub_patterns(self):
-        """
-
-        @return: dict
-        """
-        fields_sub_pattern = {}
-        for export_line in self.export_fields:
-            if export_line.is_many2x and export_line.select_tab_id:
-                field_name = export_line.select_tab_id._get_field_label()
-                field = export_line.name + "/" + field_name
-            else:
-                field = export_line._get_header()[0]
-            if export_line.is_one2many and export_line.pattern_export_id:
-                fields_sub_pattern.update({field: export_line.pattern_export_id})
-        return fields_sub_pattern
+        parser = self._get_json_parser_for_pattern()
+        data = record.jsonify(parser)[0]
+        return self.json2flatty(data)
 
     @api.multi
     def _generate_with_records(self, records):

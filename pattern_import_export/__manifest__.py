@@ -8,7 +8,7 @@
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "http://www.akretion.com",
     "license": "AGPL-3",
-    "depends": ["base", "queue_job", "document", "base_export_manager"],
+    "depends": ["base_jsonify", "queue_job", "document", "base_export_manager"],
     "data": [
         "security/ir.model.access.csv",
         "wizard/export_with_pattern.xml",
