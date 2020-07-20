@@ -171,9 +171,12 @@ class IrExportsLine(models.Model):
         for record in self:
             if record.level == 0:
                 if use_description:
-                    headers.append(record.field1_id.field_description)
+                    header = record.field1_id.field_description
                 else:
-                    headers.append(record.field1_id.name)
+                    header = record.field1_id.name
+                if record.is_key:
+                    header += "/key"
+                headers.append(header)
             else:
                 last_relation_field = record["field{}_id".format(record.level)]
                 if last_relation_field.ttype == "many2one":

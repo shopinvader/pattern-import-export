@@ -105,6 +105,8 @@ class IrExports(models.Model):
                 for key in header.split(COLUMN_X2M_SEPARATOR):
                     if key.isdigit():
                         key = int(key) - 1
+                    elif "/key" in key:
+                        key = key.replace("/key", "")
                     val = val[key]
                     if val is None:
                         break
