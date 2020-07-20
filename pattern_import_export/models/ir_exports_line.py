@@ -24,11 +24,18 @@ class IrExportsLine(models.Model):
     related_model_id = fields.Many2one(
         "ir.model",
         string="Related model",
-        compute="_compute_related_and_level",
+        compute="_compute_related_level_field",
         store=True,
     )
-    level = fields.Integer(compute="_compute_related_and_level", store=True)
+    last_field_id = fields.Many2one(
+        "ir.model.fields",
+        string="Last Field",
+        compute="_compute_related_level_field",
+        store=True,
+    )
+    level = fields.Integer(compute="_compute_related_level_field", store=True)
     required_fields = fields.Char(compute="_compute_required_fields", store=True)
+    hidden_fields = fields.Char(compute="_compute_required_fields", store=True)
     number_occurence = fields.Integer(
         string="# Occurence",
         default=1,
@@ -85,8 +92,18 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_required_fields(self):
         for record in self:
+            hidden_fields = [
+                "field1_id",
+                "field2_id",
+                "field3_id",
+                "field4_id",
+                "number_occurence",
+                "pattern_export_id",
+                "select_tab_id",
+            ]
             if not record.name:
                 record.required_fields = ""
+                record.hidden_fields = ""
             else:
                 required = []
                 field, model, level = self._get_last_relation_field(
@@ -95,6 +112,7 @@ class IrExportsLine(models.Model):
                 ftype = self.env[model]._fields[field].type
                 if ftype in ["many2one", "many2many"]:
                     level += 1
+                    hidden_fields.remove("select_tab_id")
                 for idx in range(2, level + 1):
                     required.append("field{}_id".format(idx))
                 if ftype in ["one2many", "many2many"]:
@@ -102,6 +120,8 @@ class IrExportsLine(models.Model):
                 if ftype in "one2many":
                     required.append("pattern_export_id")
                 record.required_fields = ",".join(required)
+                hidden_fields = list(set(hidden_fields) - set(required))
+                record.hidden_fields = ",".join(hidden_fields)
 
     def _inverse_name(self):
         super()._inverse_name()
@@ -138,7 +158,7 @@ class IrExportsLine(models.Model):
 
     @api.multi
     @api.depends("name")
-    def _compute_related_and_level(self):
+    def _compute_related_level_field(self):
         for export_line in self:
             if export_line.export_id.resource and export_line.name:
                 field, model, level = export_line._get_last_relation_field(
@@ -151,6 +171,16 @@ class IrExportsLine(models.Model):
                     )
                     export_line.related_model_id = comodel.id
                     export_line.level = level
+                fields = export_line.name.split("/")
+                if len(fields) > level:
+                    last_field = fields[-1]
+                    last_model = related_comodel
+                else:
+                    last_field = field
+                    last_model = model
+                export_line.last_field_id = self.env["ir.model.fields"].search(
+                    [("name", "=", last_field), ("model_id.model", "=", last_model)]
+                )
 
     def _build_header(self, level, use_description):
         base_header = []

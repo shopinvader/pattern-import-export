@@ -33,17 +33,27 @@
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
                 <field name="is_key" attrs="{'readonly': [('model2_id', '!=', False)]}"/>
-                <field name="required_fields"/>
+                <field name="required_fields" invisible="1"/>
+                <field name="hidden_fields" invisible="1"/>
                 <field name="number_occurence" attrs="{
                     'required': [('required_fields', 'ilike', 'number_occurence')],
-                    'readonly': ['!', ('required_fields', 'ilike', 'number_occurence')],
-                    'invisible': ['!', ('required_fields', 'ilike', 'number_occurence')]}"/>
+                    'readonly': [('hidden_fields', 'ilike', 'number_occurence')],
+                    'invisible': [('hidden_fields', 'ilike', 'number_occurence')]}"/>
                 <field name="pattern_export_id" attrs="{
                     'required': [('required_fields', 'ilike', 'pattern_export_id')],
-                    'readonly': ['!', ('required_fields', 'ilike', 'pattern_export_id')],
-                    'invisible': ['!', ('required_fields', 'ilike', 'pattern_export_id')]}"/>
-                <field name="related_model_id"/>
-                <field name="select_tab_id"/>
+                    'readonly': [('hidden_fields', 'ilike', 'pattern_export_id')],
+                    'invisible': [('hidden_fields', 'ilike', 'pattern_export_id')]}"/>
+                <field name="related_model_id" invisible="1"/>
+                <field name="last_field_id" invisible="1"/>
+                <field name="select_tab_id"
+                       attrs="{
+                           'invisible': [('hidden_fields', 'ilike', 'select_tab_id')],
+                           'readonly': [('hidden_fields', 'ilike', 'select_tab_id')]
+                       }"
+                       context="{
+                           'default_model_id': related_model_id,
+                           'default_field_id': last_field_id,
+                    }"/>
             </xpath>
         </field>
     </record>
