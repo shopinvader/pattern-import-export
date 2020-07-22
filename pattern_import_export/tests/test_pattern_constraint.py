@@ -69,6 +69,6 @@ class TestPatternContraint(SavepointCase):
             self.env["ir.exports.line"].with_context(skip_check=False).create(
                 {"export_id": self.ir_export.id, "name": "category_id"}
             )
-            self.assertEqual(
-                em.exception, u"The field field2_id is empty for the line category_id"
-            )
+        self.assertEqual(
+            em.exception.name, u"The field field2_id is empty for the line category_id"
+        )

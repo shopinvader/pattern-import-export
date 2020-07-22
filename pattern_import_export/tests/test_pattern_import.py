@@ -8,8 +8,8 @@ from odoo.tests.common import SavepointCase
 from .common import ExportPatternCommon
 
 
-class TestPatternExport(ExportPatternCommon, SavepointCase):
-    def test_generate_import_with_pattern_job1(self):
+class TestPatternImport(ExportPatternCommon, SavepointCase):
+    def test_update_with_external_id(self):
         """
         For this test, simulate the case of an update of existing record
         with 'simple' fields and ensure no new records are created
@@ -17,7 +17,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         unique_name = str(uuid4())
         main_data = [
-            {"ID": self.user3.get_xml_id().get(self.user3.id), "Name": unique_name}
+            {"id": self.user3.get_xml_id().get(self.user3.id), "name": unique_name}
         ]
         target_model = self.ir_exports_m2m.model_id.model
         existing_records = self.env[target_model].search([])
@@ -29,14 +29,14 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertFalse(new_records)
         self.assertEquals(unique_name, self.user3.name)
 
-    def test_generate_import_with_pattern_job2(self):
+    def test_create_new_record(self):
         """
         For this test, simulate the case of the creation of a new record
         @return:
         """
         unique_name = str(uuid4())
         unique_login = str(uuid4())
-        main_data = [{"Name": unique_name, "Login": unique_login}]
+        main_data = [{"name": unique_name, "login": unique_login}]
         target_model = self.ir_exports_m2m.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
@@ -48,7 +48,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertEquals(unique_name, new_records.name)
         self.assertEquals(unique_login, new_records.login)
 
-    def test_generate_import_with_pattern_job3(self):
+    def test_update_o2m_with_external_id(self):
         """
         For this test, simulate the case of a complex update (O2M) on existing record
         and ensure no new records are created
@@ -59,12 +59,12 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         partner3_name = str(uuid4())
         main_data = [
             {
-                "ID": self.partner_1.get_xml_id().get(self.partner_1.id),
-                "Name": unique_name,
-                "Contacts|1|ID": self.partner_2.get_xml_id().get(self.partner_2.id),
-                "Contacts|1|Name": partner2_name,
-                "Contacts|2|ID": self.partner_3.get_xml_id().get(self.partner_3.id),
-                "Contacts|2|Name": partner3_name,
+                "id": self.partner_1.get_xml_id().get(self.partner_1.id),
+                "name": unique_name,
+                "child_ids|1|id": self.partner_2.get_xml_id().get(self.partner_2.id),
+                "child_ids|1|name": partner2_name,
+                "child_ids|2|id": self.partner_3.get_xml_id().get(self.partner_3.id),
+                "child_ids|2|name": partner3_name,
             }
         ]
         target_model = self.ir_exports.model_id.model
@@ -84,7 +84,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertIn(self.partner_2, self.partner_1.child_ids)
         self.assertIn(self.partner_3, self.partner_1.child_ids)
 
-    def test_generate_import_with_pattern_job4(self):
+    def test_update_o2m_m2m_with_external_id(self):
         """
         For this test, simulate the case of a complex update on existing record
         and mix M2M in O2M
@@ -95,34 +95,38 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         user2_name = str(uuid4())
         main_data = [
             {
-                "ID": self.partner_1.get_xml_id().get(self.partner_1.id),
-                "Name": unique_name,
-                "Tags|1|ID": self.partner_cat1.get_xml_id().get(self.partner_cat1.id),
-                "Tags|2|ID": self.partner_cat2.get_xml_id().get(self.partner_cat2.id),
-                "Country|ID": self.country_be.get_xml_id().get(self.country_be.id),
-                "Contacts|1|ID": self.partner_2.get_xml_id().get(self.partner_2.id),
-                "Contacts|1|Name": user1_name,
-                "Contacts|1|Industry|ID": self.industry1.get_xml_id().get(
-                    self.industry1.id
-                ),
-                "Contacts|1|Country|ID": self.country_be.get_xml_id().get(
-                    self.country_be.id
-                ),
-                "Contacts|1|Tags|1|ID": self.partner_cat1.get_xml_id().get(
+                "id": self.partner_1.get_xml_id().get(self.partner_1.id),
+                "name": unique_name,
+                "category_id|1|id": self.partner_cat1.get_xml_id().get(
                     self.partner_cat1.id
                 ),
-                "Contacts|1|Tags|2|ID": self.partner_cat2.get_xml_id().get(
+                "category_id|2|id": self.partner_cat2.get_xml_id().get(
                     self.partner_cat2.id
                 ),
-                "Contacts|2|ID": self.partner_3.get_xml_id().get(self.partner_3.id),
-                "Contacts|2|Name": user2_name,
-                "Contacts|2|Industry|ID": self.industry2.get_xml_id().get(
+                "country_id|id": self.country_be.get_xml_id().get(self.country_be.id),
+                "child_ids|1|id": self.partner_2.get_xml_id().get(self.partner_2.id),
+                "child_ids|1|name": user1_name,
+                "child_ids|1|industry_id|id": self.industry1.get_xml_id().get(
+                    self.industry1.id
+                ),
+                "child_ids|1|country_id|id": self.country_be.get_xml_id().get(
+                    self.country_be.id
+                ),
+                "child_ids|1|category_id|1|id": self.partner_cat1.get_xml_id().get(
+                    self.partner_cat1.id
+                ),
+                "child_ids|1|category_id|2|id": self.partner_cat2.get_xml_id().get(
+                    self.partner_cat2.id
+                ),
+                "child_ids|2|id": self.partner_3.get_xml_id().get(self.partner_3.id),
+                "child_ids|2|name": user2_name,
+                "child_ids|2|industry_id|id": self.industry2.get_xml_id().get(
                     self.industry2.id
                 ),
-                "Contacts|2|Country|ID": self.country_us.get_xml_id().get(
+                "child_ids|2|country_id|id": self.country_us.get_xml_id().get(
                     self.country_us.id
                 ),
-                "Contacts|2|Tags|1|ID": self.partner_cat2.get_xml_id().get(
+                "child_ids|2|category_id|1|id": self.partner_cat2.get_xml_id().get(
                     self.partner_cat2.id
                 ),
             }
@@ -153,89 +157,50 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         self.assertEquals(self.country_be, self.partner_3.country_id)
         self.assertEquals(self.partner_cat2, self.partner_3.category_id)
 
-    def test_import_replace_keys1(self):
-        """
-        Test the _import_replace_keys function.
-        For this test, we only have basic fields and without seperator
-        @return:
-        """
-        values = {
-            # Cast into str to ensure it's correctly converted into int
-            "ID/key": str(self.partner_3.id)
-        }
-        expected_results = {"id": self.partner_3.id}
-        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
-        self.assertDictEqual(expected_results, values)
+    def test_update_with_key(self):
+        unique_name = str(uuid4())
+        main_data = [{"login#key": self.user3.login, "name": unique_name}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports_m2m._generate_import_with_pattern_job(self.empty_attachment)
+        self.assertEquals(unique_name, self.user3.name)
 
-    def test_import_replace_keys2(self):
-        """
-        Test the _import_replace_keys function.
-        For this test, we only have basic fields and without seperator
-        @return:
-        """
-        barcode = str(uuid4())
-        self.partner_3.write({"barcode": barcode})
-        values = {"Barcode/key": barcode}
-        expected_results = {"id": self.partner_3.id}
-        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
-        self.assertDictEqual(expected_results, values)
+    def test_update_o2m_with_key(self):
+        unique_name = str(uuid4())
+        partner2_name = str(uuid4())
+        partner3_name = str(uuid4())
+        self.partner_1.ref = "o2m_main"
+        self.partner_2.ref = "o2m_child_1"
+        self.partner_3.ref = "o2m_child_2"
+        main_data = [
+            {
+                "ref#key": self.partner_1.ref,
+                "name": unique_name,
+                "child_ids|1|ref#key": self.partner_2.ref,
+                "child_ids|1|name": partner2_name,
+                "child_ids|2|ref#key": self.partner_3.ref,
+                "child_ids|2|name": partner3_name,
+            }
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(self.empty_attachment)
+        # Special case: as the name comes from the related res.partner and
+        # we link these 3 users together, the name will be the one
+        # set in last position
+        self.assertEquals(unique_name, self.partner_1.name)
+        self.assertEquals(partner2_name, self.partner_2.name)
+        self.assertEquals(partner3_name, self.partner_3.name)
+        self.assertIn(self.partner_2, self.partner_1.child_ids)
+        self.assertIn(self.partner_3, self.partner_1.child_ids)
 
-    def test_import_replace_keys3(self):
-        """
-        Test the _import_replace_keys function.
-        For this test the key shouldn't be replaced because there is the
-        separator.
-        @return:
-        """
-        values = {"Related Company|ID/key": self.partner_3.id}
-        expected_results = {"Related Company|ID/key": self.partner_3.id}
-        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
-        self.assertDictEqual(expected_results, values)
-
-    def test_import_replace_keys4(self):
-        """
-        Test the _import_replace_keys function.
-        For this test the key shouldn't be replaced because there is the
-        separator.
-        @return:
-        """
-        values = {"Related Company/key|ID": self.partner_3.id}
-        expected_partner = self.Partner.search(
-            [("parent_id", "=", self.partner_3.id)], limit=1
-        )
-        expected_results = {"id": expected_partner.id}
-        self.ir_exports._import_replace_keys(values, self.ir_exports.model_id.model)
-        self.assertDictEqual(expected_results, values)
-
-    def test_import_key_not_found1(self):
-        """
-        Test the _import_replace_keys function.
-        For this test, the key is not found and no exception should be raised.
-        But the value should be into the dict and the ID should be empty
-        @return:
-        """
-        barcode = str(uuid4())
-        values = {"Barcode/key": barcode}
-        expected_results = {"id": False, "Barcode": barcode}
-        self.ir_exports._import_replace_keys(
-            values, self.ir_exports.model_id.model, raise_if_not_found=False
-        )
-        self.assertDictEqual(expected_results, values)
-
-    def test_import_key_multi(self):
-        """
-        Test the _import_replace_keys function.
-        For this test, the key is not found and no exception should be raised.
-        But the value should be into the dict and the ID should be empty
-        @return:
-        """
-        barcode = str(uuid4())
-        ref = str(uuid4())
-        self.partner_3.write({"barcode": barcode, "ref": ref})
-        values = {"Barcode/key": barcode, "Internal Reference/key": barcode}
-        with self.assertRaises(exceptions.UserError) as em:
-            self.ir_exports._import_replace_keys(
-                dict(values), self.ir_exports.model_id.model
+    def test_wrong_import(self):
+        main_data = [{"login#key": self.user3.login, "name": ""}]
+        with self._mock_read_import_data(main_data):
+            with self.assertRaises(exceptions.UserError) as em:
+                self.ir_exports_m2m._generate_import_with_pattern_job(
+                    self.empty_attachment
+                )
+            self.assertIn(
+                "Several error have been found number of errors: 1,"
+                " number of warnings: 0",
+                em.exception.name,
             )
-        for key in values:
-            self.assertIn(key, em.exception.name)
