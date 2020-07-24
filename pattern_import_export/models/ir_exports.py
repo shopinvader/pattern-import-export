@@ -230,7 +230,7 @@ class IrExports(models.Model):
             )
         return False, ""
 
-    def _process_load_result(self, res):
+    def _process_load_result(self, attachment, res):
         ids = res["ids"] or []
         info = _("Number of record imported {}\ndetails {}").format(len(ids), ids)
         raise_error = False
@@ -250,4 +250,4 @@ class IrExports(models.Model):
             .env[self.model_id.model]
             .load([], datas)
         )
-        return self._process_load_result(res)
+        return self._process_load_result(attachment, res)
