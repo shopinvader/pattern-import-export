@@ -65,8 +65,8 @@ class IrFieldsConverter(models.AbstractModel):
 
             subfield, warnings = self._referencing_subfield(item)
 
-            id, _, ws = self.db_id_for(model, field, subfield, item[subfield])
-            ids.append(id)
+            rec_id, _, ws = self.db_id_for(model, field, subfield, item[subfield])
+            ids.append(rec_id)
             warnings.extend(ws)
 
         if self._context.get("update_many2many"):

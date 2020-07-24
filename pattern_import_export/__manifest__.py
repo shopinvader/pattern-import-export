@@ -15,6 +15,7 @@
         "wizard/import_pattern_wizard.xml",
         "views/pattern_import_export.xml",
     ],
+    "demo": ["demo/demo.xml"],
     "external_dependencies": {"python": ["numpy"]},
     "installable": True,
 }

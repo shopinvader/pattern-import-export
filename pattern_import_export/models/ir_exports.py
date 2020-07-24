@@ -162,7 +162,6 @@ class IrExports(models.Model):
                 attachments |= export._attachment_document(attachment_data)
         return attachments
 
-    @api.multi
     def _attachment_document(self, attachment_datas):
         """
         Attach given parameter (b64 encoded) to the current export.
@@ -181,6 +180,20 @@ class IrExports(models.Model):
                 "datas": attachment_datas,
             }
         )
+
+    @api.multi
+    def _get_select_tab(self):
+        """
+        Get every export select tab related to current recordset.
+        Recursive
+        @return: ir.exports.select.tab recordset
+        """
+        result = self.env["ir.exports.select.tab"]
+        for rec in self:
+            result += rec.export_fields.mapped("select_tab_id")
+            subpatterns = rec.export_fields.mapped(lambda r: r.pattern_export_id)
+            result += subpatterns._get_select_tab()
+        return result
 
     # Import part
 

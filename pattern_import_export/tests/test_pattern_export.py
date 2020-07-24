@@ -35,9 +35,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         Ensure the header is correctly generated in case of M2M more than 1 occurrence
         @return:
         """
-        export_fields_m2m = self.ir_exports_m2m.export_fields.filtered(
-            lambda l: l.name == "company_ids/name"
-        )
+        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
         export_fields_m2m.write({"number_occurence": 5})
         headers = self.ir_exports_m2m._get_header()
         expected_header = [
@@ -80,9 +78,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         than 1 occurrence
         @return:
         """
-        export_fields_m2m = self.ir_exports_m2m.export_fields.filtered(
-            lambda l: l.name == "company_ids/name"
-        )
+        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
         export_fields_m2m.write({"number_occurence": 5})
         headers = self.ir_exports_o2m._get_header()
         expected_header = [
@@ -167,10 +163,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         than 1 occurrence.
         @return:
         """
-        export_fields_m2m = self.ir_exports_m2m.export_fields.filtered(
-            lambda l: l.name == "company_ids/name"
-        )
-        self.assertTrue(export_fields_m2m)
+        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
         export_fields_m2m.write({"number_occurence": 5})
         expected_results = [
             {
@@ -244,15 +237,9 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         M2M who contains more than 1 occurrence.
         @return:
         """
-        export_fields_m2m = self.ir_exports_m2m.export_fields.filtered(
-            lambda l: l.name == "company_ids/name"
-        )
-        self.assertTrue(export_fields_m2m)
+        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
         export_fields_m2m.write({"number_occurence": 3})
-        export_fields_o2m = self.ir_exports_o2m.export_fields.filtered(
-            lambda l: l.name == "user_ids"
-        )
-        self.assertTrue(export_fields_o2m)
+        export_fields_o2m = self.env.ref("pattern_import_export.demo_export_o2m_line_3")
         export_fields_o2m.write({"number_occurence": 2})
         expected_results = [
             {
@@ -331,9 +318,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
                 "parent_id|country_id|code": None,
             },
         ]
-        self.ir_exports.export_fields.filtered(lambda l: l.name == "name").write(
-            {"is_key": True}
-        )
+        self.env.ref("pattern_import_export.demo_export_line_2").write({"is_key": True})
         results = self.ir_exports._get_data_to_export(self.partners)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)

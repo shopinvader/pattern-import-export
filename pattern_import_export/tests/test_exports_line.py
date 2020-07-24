@@ -12,7 +12,9 @@ class TestExportsLine(ExportPatternCommon, SavepointCase):
         Ensure the constraint is applied
         @return:
         """
-        self.ir_exports.export_fields[0].write({"is_key": True})
+        self.env.ref("pattern_import_export.demo_export_line_1").write({"is_key": True})
         with self.assertRaises(exceptions.ValidationError) as em:
-            self.ir_exports.export_fields[1].write({"is_key": True})
+            self.env.ref("pattern_import_export.demo_export_line_2").write(
+                {"is_key": True}
+            )
         self.assertIn(self.ir_exports.name, em.exception.name)

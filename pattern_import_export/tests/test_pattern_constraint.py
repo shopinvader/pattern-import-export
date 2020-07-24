@@ -5,7 +5,7 @@ from openerp import exceptions
 from odoo.tests.common import SavepointCase
 
 
-class TestPatternContraint(SavepointCase):
+class TestPatternConstraint(SavepointCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

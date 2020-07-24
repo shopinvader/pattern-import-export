@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--Export tabs-->
+        <record id="demo_export_tab_1" model="ir.exports.select.tab">
+            <field name="name">Country list</field>
+            <field name="model_id" ref="base.model_res_country"/>
+            <field name="field_id" ref="base.field_res_country__code"/>
+            <field name="domain">[('code', 'in', ['FR', 'BE', 'US'])]</field>
+        </record>
+        <record id="demo_export_tab_2" model="ir.exports.select.tab">
+            <field name="name">Company list</field>
+            <field name="model_id" ref="base.model_res_company"/>
+            <field name="field_id" ref="base.field_res_company__name"/>
+        </record>
+
+        <!--Exports-->
+        <record id="demo_export" model="ir.exports">
+            <field name="name">Partner list</field>
+            <field name="resource">res.partner</field>
+            <field name="is_pattern" eval="True"/>
+        </record>
+        <record id="demo_export_m2m" model="ir.exports">
+            <field name="name">Users list - M2M</field>
+            <field name="is_pattern" eval="True"/>
+            <field name="resource">res.users</field>
+        </record>
+        <record id="demo_export_o2m" model="ir.exports">
+            <field name="name">Partner - O2M</field>
+            <field name="is_pattern" eval="True"/>
+            <field name="resource">res.partner</field>
+        </record>
+
+        <!--Export lines-->
+        <record id="demo_export_line_1" model="ir.exports.line">
+            <field name="name">id</field>
+            <field name="export_id" ref="demo_export"/>
+        </record>
+        <record id="demo_export_line_2" model="ir.exports.line">
+            <field name="name">name</field>
+            <field name="export_id" ref="demo_export"/>
+        </record>
+        <record id="demo_export_line_3" model="ir.exports.line">
+            <field name="name">street</field>
+            <field name="export_id" ref="demo_export"/>
+        </record>
+        <record id="demo_export_line_4" model="ir.exports.line">
+            <field name="name">country_id/code</field>
+            <field name="export_id" ref="demo_export"/>
+            <field name="select_tab_id" ref="demo_export_tab_1"/>
+        </record>
+        <record id="demo_export_line_5" model="ir.exports.line">
+            <field name="name">parent_id/country_id/code</field>
+            <field name="export_id" ref="demo_export"/>
+            <field name="select_tab_id" ref="demo_export_tab_1"/>
+        </record>
+        <record id="demo_export_m2m_line_1" model="ir.exports.line">
+            <field name="name">id</field>
+            <field name="export_id" ref="demo_export_m2m"/>
+        </record>
+        <record id="demo_export_m2m_line_2" model="ir.exports.line">
+            <field name="name">name</field>
+            <field name="export_id" ref="demo_export_m2m"/>
+        </record>
+        <record id="demo_export_m2m_line_3" model="ir.exports.line">
+            <field name="name">company_ids/name</field>
+            <field name="number_occurence">1</field>
+            <field name="export_id" ref="demo_export_m2m"/>
+            <field name="select_tab_id" ref="demo_export_tab_2"/>
+        </record>
+        <record id="demo_export_o2m_line_1" model="ir.exports.line">
+            <field name="name">id</field>
+            <field name="export_id" ref="demo_export_o2m"/>
+        </record>
+        <record id="demo_export_o2m_line_2" model="ir.exports.line">
+            <field name="name">name</field>
+            <field name="export_id" ref="demo_export_o2m"/>
+        </record>
+        <record id="demo_export_o2m_line_3" model="ir.exports.line">
+            <field name="name">user_ids</field>
+            <field name="number_occurence">3</field>
+            <field name="export_id" ref="demo_export_o2m"/>
+            <field name="pattern_export_id" ref="demo_export_m2m"/>
+        </record>
+    </data>
+</odoo>
