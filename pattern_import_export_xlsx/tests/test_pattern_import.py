@@ -3,13 +3,21 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import base64
 from io import BytesIO
+from os import path
 
+# TODO FIXME somehow Travis complains that openpyxl isn't there,
+# the warning shows only here and not in any other import of openpyxl?
+# pylint: disable=missing-manifest-dependency
 import openpyxl
 
 from odoo.tests import SavepointCase
+from odoo.tools import mute_logger
 
 # helper to dump the result of the import into an excel file
 DUMP_OUTPUT = False
+
+
+PATH = path.dirname(__file__) + "/fixtures/"
 
 
 class TestPatternImport(SavepointCase):
@@ -31,7 +39,7 @@ class TestPatternImport(SavepointCase):
         )
 
     def _load_file(self, filename):
-        data = base64.b64encode(open(filename, "rb").read())
+        data = base64.b64encode(open(PATH + filename, "rb").read())
         wizard = self.env["import.pattern.wizard"].create(
             {
                 "ir_exports_id": self.ir_export.id,
@@ -48,7 +56,7 @@ class TestPatternImport(SavepointCase):
                 output.write(base64.b64decode(attachment.datas))
 
     def test_import_ok(self):
-        self._load_file("fixtures/example.ok.xlsx")
+        self._load_file("example.ok.xlsx")
         # check first line
         partner = self.env.ref("base.res_partner_1")
 
@@ -106,8 +114,9 @@ class TestPatternImport(SavepointCase):
         self.assertEqual(contact_2.email, "raph-pattern@example.com")
         self.assertEqual(contact_2.function, "Store Manager")
 
+    @mute_logger("odoo.sql_db")
     def test_import_fail(self):
-        self._load_file("fixtures/example.fail.xlsx")
+        self._load_file("example.fail.xlsx")
         self.env.clear()
 
         # check that nothong have been done
