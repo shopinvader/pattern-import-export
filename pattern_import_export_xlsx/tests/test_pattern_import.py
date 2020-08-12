@@ -3,7 +3,11 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import base64
 from io import BytesIO
+from os import path
 
+# TODO FIXME somehow Travis complains that openpyxl isn't there,
+# the warning shows only here and not in any other import of openpyxl?
+# pylint: disable=missing-manifest-dependency
 import openpyxl
 
 from odoo.tests import SavepointCase
@@ -12,7 +16,6 @@ from odoo.tools import mute_logger
 # helper to dump the result of the import into an excel file
 DUMP_OUTPUT = False
 
-from os import path
 
 PATH = path.dirname(__file__) + "/fixtures/"
 
