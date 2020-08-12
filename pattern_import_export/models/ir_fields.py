@@ -8,7 +8,7 @@ from odoo.exceptions import UserError
 
 from odoo.addons.base.models import ir_fields
 
-IDENTIFIER_SURFIXE = "#key"
+from .common import IDENTIFIER_SUFFIX
 
 
 class IrFieldsConverter(models.AbstractModel):
@@ -22,13 +22,13 @@ class IrFieldsConverter(models.AbstractModel):
             cleanned = {}
             keyfields = []
             for field, vals in record.items():
-                if field.endswith(IDENTIFIER_SURFIXE):
-                    field = field.replace(IDENTIFIER_SURFIXE, "")
+                if field.endswith(IDENTIFIER_SUFFIX):
+                    field = field.replace(IDENTIFIER_SUFFIX, "")
                     keyfields.append(field)
                 cleanned[field] = vals
             converted = fn(cleanned, log)
             for field in keyfields:
-                converted["{}{}".format(field, IDENTIFIER_SURFIXE)] = converted.pop(
+                converted["{}{}".format(field, IDENTIFIER_SUFFIX)] = converted.pop(
                     field
                 )
             return converted

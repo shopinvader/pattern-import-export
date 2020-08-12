@@ -17,19 +17,19 @@
                 <attribute name="attrs">{
                     'readonly': [('model2_id', '=', False)],
                     'required': [('model2_id', '!=', False)]
-                    }</attribute>
+                }</attribute>
             </xpath>
             <xpath expr="//field[@name='field3_id']" position="attributes">
                 <attribute name="attrs">{
                     'readonly': [('model3_id', '=', False)],
                     'required': [('model3_id', '!=', False)]
-                    }</attribute>
+                }</attribute>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="attributes">
                 <attribute name="attrs">{
                     'readonly': [('model4_id', '=', False)],
                     'required': [('model4_id', '!=', False)]
-                    }</attribute>
+                }</attribute>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
                 <field name="is_key" attrs="{'readonly': [('model2_id', '!=', False)]}"/>
@@ -45,15 +45,18 @@
                     'invisible': [('hidden_fields', 'ilike', 'pattern_export_id')]}"/>
                 <field name="related_model_id" invisible="1"/>
                 <field name="last_field_id" invisible="1"/>
-                <field name="select_tab_id"
+                <field name="add_select_tab" invisible="1"
                        attrs="{
-                           'invisible': [('hidden_fields', 'ilike', 'select_tab_id')],
-                           'readonly': [('hidden_fields', 'ilike', 'select_tab_id')]
+                       'invisible': [('hidden_fields', 'ilike', 'add_select_tab')],
+                       'readonly': [('hidden_fields', 'ilike', 'add_select_tab')]
                        }"
-                       context="{
-                           'default_model_id': related_model_id,
-                           'default_field_id': last_field_id,
-                    }"/>
+                />
+                <field name="use_tab"
+                       attrs="{
+                       'invisible': [('hidden_fields', 'ilike', 'use_tab')],
+                       'readonly': [('hidden_fields', 'ilike', 'use_tab')]
+                       }"/>
+                <!--                TODO domain for filter-->
             </xpath>
         </field>
     </record>
@@ -83,23 +86,23 @@
     </record>
 
     <menuitem id="import_export_menu_root"
-        name="Import/Export"
-        active="True"
-        sequence="100"
-        groups="base.group_user"/>
+              name="Import/Export"
+              active="True"
+              sequence="100"
+              groups="base.group_user"/>
 
     <menuitem id="pattern_menu"
-        name="Patterns"
-        parent="import_export_menu_root"
-        sequence="1"
-        groups="base.group_user"
-        action="base_export_manager.ir_exports_action"/>
+              name="Patterns"
+              parent="import_export_menu_root"
+              sequence="1"
+              groups="base.group_user"
+              action="base_export_manager.ir_exports_action"/>
 
     <menuitem id="export_menu"
-        name="Exports"
-        parent="import_export_menu_root"
-        sequence="2"
-        groups="base.group_user"
-        action="export_action"/>
+              name="Exports"
+              parent="import_export_menu_root"
+              sequence="2"
+              groups="base.group_user"
+              action="export_action"/>
 
 </odoo>

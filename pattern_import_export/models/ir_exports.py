@@ -5,10 +5,7 @@ import base64
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from odoo.addons.base_jsonify.models.ir_export import convert_dict, update_dict
 from odoo.addons.queue_job.job import job
-
-from _collections import OrderedDict
 
 from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 
@@ -71,28 +68,9 @@ class IrExports(models.Model):
         This function could be recursive in case of sub-pattern
         """
         self.ensure_one()
+        json_parser = self.export_fields._get_json_parser_for_pattern()
         for record in records:
-            yield self._get_data_to_export_by_record(record)
-
-    def _get_dict_parser_for_pattern(self):
-        self.ensure_one()
-        dict_parser = OrderedDict()
-        for line in self.export_fields:
-            names = line.name.split("/")
-            update_dict(dict_parser, names)
-            if line.pattern_export_id:
-                last_item = dict_parser
-                last_field = names[0]
-                for field in names[:-1]:
-                    last_item = last_item[field]
-                    last_field = field
-                last_item[
-                    last_field
-                ] = line.pattern_export_id._get_dict_parser_for_pattern()
-        return dict_parser
-
-    def _get_json_parser_for_pattern(self):
-        return convert_dict(self._get_dict_parser_for_pattern())
+            yield self._get_data_to_export_by_record(record, json_parser)
 
     def json2flatty(self, data):
         res = {}
@@ -113,7 +91,7 @@ class IrExports(models.Model):
         return res
 
     @api.multi
-    def _get_data_to_export_by_record(self, record):
+    def _get_data_to_export_by_record(self, record, parser):
         """
         Use the ORM cache to re-use already exported data and
         could also prevent infinite recursion
@@ -122,7 +100,6 @@ class IrExports(models.Model):
         """
         self.ensure_one()
         record.ensure_one()
-        parser = self._get_json_parser_for_pattern()
         data = record.jsonify(parser)[0]
         return self.json2flatty(data)
 
@@ -180,20 +157,6 @@ class IrExports(models.Model):
                 "datas": attachment_datas,
             }
         )
-
-    @api.multi
-    def _get_select_tab(self):
-        """
-        Get every export select tab related to current recordset.
-        Recursive
-        @return: ir.exports.select.tab recordset
-        """
-        result = self.env["ir.exports.select.tab"]
-        for rec in self:
-            result += rec.export_fields.mapped("select_tab_id")
-            subpatterns = rec.export_fields.mapped(lambda r: r.pattern_export_id)
-            result += subpatterns._get_select_tab()
-        return result
 
     # Import part
 
