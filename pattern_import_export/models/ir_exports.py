@@ -10,7 +10,7 @@ from odoo.addons.queue_job.job import job
 
 from _collections import OrderedDict
 
-COLUMN_X2M_SEPARATOR = "|"
+from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 
 
 class IrExports(models.Model):
@@ -102,8 +102,8 @@ class IrExports(models.Model):
                 for key in header.split(COLUMN_X2M_SEPARATOR):
                     if key.isdigit():
                         key = int(key) - 1
-                    elif "/key" in key:
-                        key = key.replace("/key", "")
+                    elif IDENTIFIER_SUFFIX in key:
+                        key = key.replace(IDENTIFIER_SUFFIX, "")
                     val = val[key]
                     if val is None:
                         break
