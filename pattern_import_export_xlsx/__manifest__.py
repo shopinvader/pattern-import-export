@@ -9,7 +9,7 @@
     "website": "http://www.akretion.com",
     "license": "AGPL-3",
     "depends": ["pattern_import_export"],
-    "external_dependencies": {"python": ["xlsxwriter", "xlrd"]},
+    "external_dependencies": {"python": ["xlsxwriter", "xlrd", "openpyxl"]},
     "data": [],
     "installable": True,
 }
