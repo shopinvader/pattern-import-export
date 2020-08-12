@@ -3,7 +3,8 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 
-from odoo import api, models
+from odoo import _, api, models
+from odoo.exceptions import UserError
 
 from odoo.addons.base.models import ir_fields
 
@@ -51,10 +52,16 @@ class IrFieldsConverter(models.AbstractModel):
         if subfield in [".id", "id", None]:
             return super().db_id_for(model, field, subfield, value)
         else:
-            # TODO finish
-            # simple implementation for now
-            # we should add warning, manage when having multiple result...
-            record = model.search([(subfield, "=", value)])
+            record = self.env[field._related_comodel_name].search(
+                [(subfield, "=", value)]
+            )
+            if len(record) > 1:
+                raise UserError(
+                    _(
+                        "Too many records found for {} "
+                        "with the field {} and the value {}"
+                    ).format(_(record._description), subfield, value)
+                )
             return record.id, subfield, []
 
     @api.model

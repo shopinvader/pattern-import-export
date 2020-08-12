@@ -4,10 +4,11 @@
 import base64
 from io import BytesIO
 
+import openpyxl
 import xlrd
 import xlsxwriter
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 
 class IrExports(models.Model):
@@ -58,9 +59,7 @@ class IrExports(models.Model):
         return pattern_file.getvalue()
 
     def _read_xlsx_file(self, datafile):
-        workbook = xlrd.open_workbook(
-            file_contents=base64.b64decode(BytesIO(datafile).read())
-        )
+        workbook = xlrd.open_workbook(file_contents=BytesIO(datafile).read())
         return workbook.sheet_by_index(0)
 
     @api.multi
@@ -74,3 +73,29 @@ class IrExports(models.Model):
             for col in range(worksheet.ncols):
                 elm[headers[col]] = worksheet.cell_value(row, col)
             yield elm
+
+    def _process_load_result_for_xls(self, attachment, res):
+        infile = BytesIO(base64.b64decode(attachment.datas))
+        wb = openpyxl.load_workbook(filename=infile)
+        ws = wb.worksheets[0]
+        if ws["A1"] != _("#Error"):
+            ws.insert_cols(1)
+            ws.cell(1, 1, value=_("#Error"))
+        for message in res["messages"]:
+            ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
+        output = BytesIO()
+        wb.save(output)
+        attachment.datas = base64.b64encode(output.getvalue())
+
+        ids = res["ids"] or []
+        info = _(
+            "Number of record imported {} Number of error/warning {}"
+            "\nrecord ids details: {}"
+        ).format(len(ids), len(res.get("messages", [])), ids)
+        return info
+
+    def _process_load_result(self, attachment, res):
+        if self.export_format == "xlsx":
+            self._process_load_result_for_xls(attachment, res)
+        else:
+            return super()._process_load_result(attachment, res)

@@ -166,31 +166,28 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
 
     def test_update_o2m_with_key(self):
         unique_name = str(uuid4())
-        partner2_name = str(uuid4())
-        partner3_name = str(uuid4())
+        contact_1_name = str(uuid4())
+        contact_2_name = str(uuid4())
         self.partner_1.ref = "o2m_main"
-        self.partner_2.ref = "o2m_child_1"
-        self.partner_3.ref = "o2m_child_2"
+        contact_1 = self.env.ref("base.res_partner_address_1")
+        contact_2 = self.env.ref("base.res_partner_address_2")
+        contact_1.ref = "o2m_child_1"
+        contact_2.ref = "o2m_child_2"
         main_data = [
             {
                 "ref#key": self.partner_1.ref,
                 "name": unique_name,
-                "child_ids|1|ref#key": self.partner_2.ref,
-                "child_ids|1|name": partner2_name,
-                "child_ids|2|ref#key": self.partner_3.ref,
-                "child_ids|2|name": partner3_name,
+                "child_ids|1|ref#key": contact_1.ref,
+                "child_ids|1|name": contact_1_name,
+                "child_ids|2|ref#key": contact_2.ref,
+                "child_ids|2|name": contact_2_name,
             }
         ]
         with self._mock_read_import_data(main_data):
             self.ir_exports._generate_import_with_pattern_job(self.empty_attachment)
-        # Special case: as the name comes from the related res.partner and
-        # we link these 3 users together, the name will be the one
-        # set in last position
         self.assertEquals(unique_name, self.partner_1.name)
-        self.assertEquals(partner2_name, self.partner_2.name)
-        self.assertEquals(partner3_name, self.partner_3.name)
-        self.assertIn(self.partner_2, self.partner_1.child_ids)
-        self.assertIn(self.partner_3, self.partner_1.child_ids)
+        self.assertEquals(contact_1_name, contact_1.name)
+        self.assertEquals(contact_2_name, contact_2.name)
 
     def test_wrong_import(self):
         main_data = [{"login#key": self.user3.login, "name": ""}]
