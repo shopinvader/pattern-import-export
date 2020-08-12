@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from odoo import exceptions
 from odoo.tests.common import SavepointCase
+from odoo.tools import mute_logger
 
 from .common import ExportPatternCommon
 
@@ -189,6 +190,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEquals(contact_1_name, contact_1.name)
         self.assertEquals(contact_2_name, contact_2.name)
 
+    @mute_logger("odoo.sql_db")
     def test_wrong_import(self):
         main_data = [{"login#key": self.user3.login, "name": ""}]
         with self._mock_read_import_data(main_data):

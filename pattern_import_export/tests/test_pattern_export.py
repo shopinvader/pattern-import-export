@@ -149,7 +149,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         expected_results = [
             {
                 "id": self.env.user.id,
-                "name": "System",
+                "name": "OdooBot",
                 "company_ids|1|name": "Awesome company",
             }
         ]
@@ -168,7 +168,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         expected_results = [
             {
                 "id": self.env.user.id,
-                "name": "System",
+                "name": "OdooBot",
                 "company_ids|1|name": "Awesome company",
                 "company_ids|2|name": "Bad company",
                 "company_ids|3|name": "YourCompany",
