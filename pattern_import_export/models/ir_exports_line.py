@@ -3,7 +3,7 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-from .ir_exports import COLUMN_X2M_SEPARATOR
+from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 
 
 class IrExportsLine(models.Model):
@@ -172,7 +172,7 @@ class IrExportsLine(models.Model):
                 else:
                     header = record.field1_id.name
                 if record.is_key:
-                    header += "/key"
+                    header += IDENTIFIER_SUFFIX
                 headers.append(header)
             else:
                 last_relation_field = record["field{}_id".format(record.level)]

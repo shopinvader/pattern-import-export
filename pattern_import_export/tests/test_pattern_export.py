@@ -298,21 +298,21 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         expected_results = [
             {
                 "id": self.partner_1.id,
-                "name/key": "Wood Corner",
+                "name#key": "Wood Corner",
                 "street": "1164 Cambridge Drive",
                 "country_id|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
                 "id": self.partner_2.id,
-                "name/key": "Deco Addict",
+                "name#key": "Deco Addict",
                 "street": "325 Elsie Drive",
                 "country_id|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
                 "id": self.partner_3.id,
-                "name/key": "Gemini Furniture",
+                "name#key": "Gemini Furniture",
                 "street": "1128 Lunetta Street",
                 "country_id|code": "US",
                 "parent_id|country_id|code": None,
