@@ -14,6 +14,7 @@
         "wizard/export_with_pattern.xml",
         "wizard/import_pattern_wizard.xml",
         "views/pattern_import_export.xml",
+        "views/patterned_import_export.xml",
     ],
     "demo": ["demo/demo.xml"],
     "external_dependencies": {"python": ["numpy"]},
