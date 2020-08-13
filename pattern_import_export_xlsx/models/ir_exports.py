@@ -129,11 +129,10 @@ class IrExports(models.Model):
         for col in range(real_last_column):
             headers.append(worksheet.cell(1, col + 1).value)
         real_last_row = self._find_real_last_row(worksheet, real_last_column)
-        for row in range(real_last_row):
+        for row in range(real_last_row - 1):
             elm = {}
             for col in range(real_last_column):
-                elm[headers[col]] = worksheet.cell(row + 1, col + 1).value
-            #
+                elm[headers[col]] = worksheet.cell(row + 2, col + 1).value
             yield elm
 
     def _process_load_result_for_xls(self, attachment, res):
@@ -144,7 +143,7 @@ class IrExports(models.Model):
             ws.insert_cols(1)
             ws.cell(1, 1, value=_("#Error"))
         for message in res["messages"]:
-            ws.cell(message["rows"]["to"], 1, value=message["message"].strip())
+            ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
         output = BytesIO()
         wb.save(output)
         attachment.datas = base64.b64encode(output.getvalue())
