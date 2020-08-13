@@ -91,8 +91,11 @@ class IrExports(models.Model):
         excel_file = self._create_xlsx_file(records)
         return excel_file.getvalue()
 
+    # Import part
+
     def _read_xlsx_file(self, datafile):
-        workbook = openpyxl.load_workbook(base64.b64decode(BytesIO(datafile).read()))
+        file = BytesIO(datafile)
+        workbook = openpyxl.load_workbook(file)
         return workbook[workbook.sheetnames[0]]
 
     @api.multi
@@ -100,11 +103,11 @@ class IrExports(models.Model):
         worksheet = self._read_xlsx_file(datafile)
         headers = []
         for col in range(worksheet.max_column):  # max_column is 1-based
-            headers.append(worksheet.cell_value(1, col))
-        for row in range(worksheet.max_row + 1):  # max_row is 1-based
+            headers.append(worksheet.cell(1, col + 1))
+        for row in range(worksheet.max_row):  # max_row is 1-based
             elm = {}
             for col in range(worksheet.max_column):
-                elm[headers[col]] = worksheet.cell_value(row, col)
+                elm[headers[col]] = worksheet.cell(row + 1, col + 1)
             yield elm
 
     def _process_load_result_for_xls(self, attachment, res):
