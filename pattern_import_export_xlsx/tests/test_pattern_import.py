@@ -29,7 +29,7 @@ class TestPatternImport(SavepointCase):
                 cls.env.context, test_queue_job_no_delay=True  # no jobs thanks
             )
         )
-        cls.ir_export = cls.env["ir.exports"].create(
+        cls.ir_export_partner = cls.env["ir.exports"].create(
             {
                 "name": "Partner",
                 "resource": "res.partner",
@@ -37,12 +37,22 @@ class TestPatternImport(SavepointCase):
                 "export_format": "xlsx",
             }
         )
+        cls.ir_export_users = cls.env["ir.exports"].create(
+            {
+                "name": "Partner",
+                "resource": "res.users",
+                "is_pattern": True,
+                "export_format": "xlsx",
+            }
+        )
+        cls.user_admin = cls.env.ref("base.user_admin")
+        cls.user_demo = cls.env.ref("base.user_demo")
 
-    def _load_file(self, filename):
+    def _load_file(self, filename, export_id):
         data = base64.b64encode(open(PATH + filename, "rb").read())
         wizard = self.env["import.pattern.wizard"].create(
             {
-                "ir_exports_id": self.ir_export.id,
+                "ir_exports_id": export_id.id,
                 "import_file": data,
                 "filename": "example.xlsx",
             }
@@ -57,8 +67,12 @@ class TestPatternImport(SavepointCase):
             with open(output_name, "wb") as output:
                 output.write(base64.b64decode(attachment.datas))
 
-    def test_import_ok(self):
-        self._load_file("example.ok.xlsx")
+    def test_import_partners_ok(self):
+        """
+        * Lookup by email
+        * Update some o2m fields
+        """
+        self._load_file("example.partners.ok.xlsx", self.ir_export_partner)
         # check first line
         partner = self.env.ref("base.res_partner_1")
 
@@ -117,8 +131,12 @@ class TestPatternImport(SavepointCase):
         self.assertEqual(contact_2.function, "Store Manager")
 
     @mute_logger("odoo.sql_db")
-    def test_import_fail(self):
-        self._load_file("example.fail.xlsx")
+    def test_import_partners_fail(self):
+        """
+        * Lookup by email
+        * Report error in excel file through wrong email
+        """
+        self._load_file("example.partners.fail.xlsx", self.ir_export_partner)
         self.env.clear()
 
         # check that nothong have been done
@@ -149,3 +167,25 @@ class TestPatternImport(SavepointCase):
             'violates check constraint "res_partner_check_name"',
             ws["A5"].value,
         )
+
+    @mute_logger("odoo.sql_db")
+    def test_import_users_ok(self):
+        """
+        * Lookup by DB ID
+        * Simple update
+        """
+        self._load_file("example.users.ok.xlsx", self.ir_export_users)
+        self.env.clear()
+        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
+        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+
+    @mute_logger("odoo.sql_db")
+    def test_import_users_fail(self):
+        """
+        * Lookup by external ID
+        * Report error in excel file through external id not found
+        """
+        self._load_file("example.users.fail.xlsx", self.ir_export_users)
+        self.env.clear()
+        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
+        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
