@@ -98,16 +98,42 @@ class IrExports(models.Model):
         workbook = openpyxl.load_workbook(file)
         return workbook[workbook.sheetnames[0]]
 
+    def _find_real_last_column(self, worksheet):
+        """
+        The last column and row are actually written in the excel file
+        Openpyxl doesn't automatically verify if it is right or not
+        """
+        tentative_last_column = worksheet.max_column
+        for col in reversed(range(tentative_last_column)):
+            if worksheet.cell(1, col + 1).value:
+                break
+        return col + 1
+
+    def _find_real_last_row(self, worksheet, max_col):
+        """ See _find_real_last_column """
+        tentative_last_row = worksheet.max_row
+        for row in reversed(range(tentative_last_row)):
+            row_has_val = any(
+                worksheet.cell(row + 1, col + 1).value for col in range(max_col)
+            )
+            if row_has_val:
+                break
+        return row + 1
+
     @api.multi
     def _read_import_data_xlsx(self, datafile):
+        # note that columns and rows are 1-based
         worksheet = self._read_xlsx_file(datafile)
         headers = []
-        for col in range(worksheet.max_column):  # max_column is 1-based
-            headers.append(worksheet.cell(1, col + 1))
-        for row in range(worksheet.max_row):  # max_row is 1-based
+        real_last_column = self._find_real_last_column(worksheet)
+        for col in range(real_last_column):
+            headers.append(worksheet.cell(1, col + 1).value)
+        real_last_row = self._find_real_last_row(worksheet, real_last_column)
+        for row in range(real_last_row):
             elm = {}
-            for col in range(worksheet.max_column):
-                elm[headers[col]] = worksheet.cell(row + 1, col + 1)
+            for col in range(real_last_column):
+                elm[headers[col]] = worksheet.cell(row + 1, col + 1).value
+            #
             yield elm
 
     def _process_load_result_for_xls(self, attachment, res):
@@ -118,7 +144,7 @@ class IrExports(models.Model):
             ws.insert_cols(1)
             ws.cell(1, 1, value=_("#Error"))
         for message in res["messages"]:
-            ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
+            ws.cell(message["rows"]["to"], 1, value=message["message"].strip())
         output = BytesIO()
         wb.save(output)
         attachment.datas = base64.b64encode(output.getvalue())
