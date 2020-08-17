@@ -39,7 +39,7 @@ class TestPatternImport(SavepointCase):
         )
         cls.ir_export_users = cls.env["ir.exports"].create(
             {
-                "name": "Partner",
+                "name": "User",
                 "resource": "res.users",
                 "is_pattern": True,
                 "export_format": "xlsx",
