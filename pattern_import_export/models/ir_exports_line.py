@@ -15,7 +15,7 @@ class IrExportsLine(models.Model):
     _inherit = "ir.exports.line"
 
     add_select_tab = fields.Boolean()
-    use_tab = fields.Many2one("ir.filters")
+    tab_filter_id = fields.Many2one("ir.filters")
     is_key = fields.Boolean(
         default=False,
         help="Determine if this field is considered as key to update "
@@ -33,15 +33,7 @@ class IrExportsLine(models.Model):
         compute="_compute_related_level_field",
         store=True,
     )
-    related_model_relation_type = fields.Selection(
-        selection=[
-            ("many2one", "many2one"),
-            ("many2many", "many2many"),
-            ("one2many", "one2many"),
-        ],
-        compute="_compute_related_level_field",
-        store=True,
-    )
+    related_model_name = fields.Char(related="related_model_id.model")
     last_field_id = fields.Many2one(
         "ir.model.fields",
         string="Last Field",
@@ -81,7 +73,7 @@ class IrExportsLine(models.Model):
                 "field4_id",
                 "number_occurence",
                 "pattern_export_id",
-                "use_tab",
+                "tab_filter_id",
                 "add_select_tab",
             ]
             if not record.name:
@@ -103,7 +95,7 @@ class IrExportsLine(models.Model):
                 if ftype in "one2many":
                     required.append("pattern_export_id")
                 if record.add_select_tab:
-                    required.append("use_tab")
+                    required.append("tab_filter_id")
                 record.required_fields = ",".join(required)
                 hidden_fields = list(set(hidden_fields) - set(required))
                 record.hidden_fields = ",".join(hidden_fields)
@@ -155,9 +147,6 @@ class IrExportsLine(models.Model):
                         [("model", "=", related_comodel)], limit=1
                     )
                     export_line.related_model_id = comodel.id
-                    export_line.related_model_relation_type = (
-                        self.env[model]._fields[field].type
-                    )
                     export_line.level = level
                 fields = export_line.name.split("/")
                 if len(fields) > level:
@@ -252,26 +241,23 @@ class IrExportsLine(models.Model):
         """
         result = []
         for itr, rec in enumerate(self, start=1):
-            if not (
-                rec.related_model_relation_type in ("many2many", "many2one")
-                and rec.add_select_tab
-            ):
+            if not rec.add_select_tab:
                 continue
             permitted_records = []
             model_name = rec.related_model_id.model
-            domain = (rec.use_tab and safe_eval(rec.use_tab.domain)) or []
+            domain = (rec.tab_filter_id and safe_eval(rec.tab_filter_id.domain)) or []
             records_matching_constraint = self.env[model_name].search(domain)
             permitted_records += records_matching_constraint
             data = rec._format_tab_records(permitted_records)
             headers = rec._get_tab_headers()
             # TODO find a solution for this. Tab name maximum length
             #  is 31 characters on excel
-            name = rec.related_model_id.name + " (" + rec.use_tab.name + ")"
+            name = rec.related_model_id.name + " (" + rec.tab_filter_id.name + ")"
             if len(name) > 31:
                 raise UserWarning(
                     _(
                         "Filter name %s is too long, "
-                        "maximum name length is 31 characters" % rec.use_tab.name
+                        "maximum name length is 31 characters" % rec.tab_filter_id.name
                     )
                 )
             result.append((name, headers, data, itr))

@@ -45,8 +45,9 @@ class IrExports(models.Model):
         """
         Get the actual data and write it row by row on the main sheet
         """
+        headers = self._get_header()
         for row, values in enumerate(self._get_data_to_export(records), start=2):
-            for col, header in enumerate(self._get_header(), start=1):
+            for col, header in enumerate(headers, start=1):
                 main_sheet.cell(row=row, column=col, value=values.get(header, ""))
 
     def _create_tabs(self, book, tab_data):

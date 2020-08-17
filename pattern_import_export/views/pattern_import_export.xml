@@ -45,18 +45,19 @@
                     'invisible': [('hidden_fields', 'ilike', 'pattern_export_id')]}"/>
                 <field name="related_model_id" invisible="1"/>
                 <field name="last_field_id" invisible="1"/>
-                <field name="add_select_tab" invisible="1"
+                <field name="add_select_tab"
                        attrs="{
                        'invisible': [('hidden_fields', 'ilike', 'add_select_tab')],
                        'readonly': [('hidden_fields', 'ilike', 'add_select_tab')]
                        }"
                 />
-                <field name="use_tab"
+                <field name="related_model_name" invisible="1"/>
+                <field name="tab_filter_id"
+                       domain="[('model_id', '=', related_model_name)]"
                        attrs="{
-                       'invisible': [('hidden_fields', 'ilike', 'use_tab')],
-                       'readonly': [('hidden_fields', 'ilike', 'use_tab')]
+                       'invisible': [('hidden_fields', 'ilike', 'tab_filter_id')],
+                       'readonly': [('hidden_fields', 'ilike', 'tab_filter_id')]
                        }"/>
-                <!--                TODO domain for filter-->
             </xpath>
         </field>
     </record>
