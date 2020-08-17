@@ -8,7 +8,7 @@ from odoo.osv import expression
 
 from odoo.addons.queue_job.job import job
 
-from .ir_fields import IDENTIFIER_SURFIXE
+from .common import IDENTIFIER_SUFFIX
 
 
 class Base(models.AbstractModel):
@@ -66,14 +66,14 @@ class Base(models.AbstractModel):
     def _clean_identifier_key(self, res, ident_keys):
         for key in ident_keys:
             if key in res:
-                res[key.replace(IDENTIFIER_SURFIXE, "")] = res.pop(key)
+                res[key.replace(IDENTIFIER_SUFFIX, "")] = res.pop(key)
 
     def _get_domain_from_identifier_key(self, res):
         ident_keys = []
         domain = []
         for key in list(res.keys()):
-            if key.endswith(IDENTIFIER_SURFIXE):
-                field_name = key.replace(IDENTIFIER_SURFIXE, "")
+            if key.endswith(IDENTIFIER_SUFFIX):
+                field_name = key.replace(IDENTIFIER_SUFFIX, "")
                 domain.append((field_name, "=", res[key]))
                 ident_keys.append(key)
         return domain, ident_keys

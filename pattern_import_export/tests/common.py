@@ -67,10 +67,9 @@ class ExportPatternCommon(JobMixin):
                 "user_ids": [(6, 0, [cls.user1.id, cls.env.ref("base.user_admin").id])],
             }
         )
+        cls.company4 = cls.env["res.company"].create({"name": "Ignored company"})
         cls.companies = cls.company1 | cls.company2 | cls.company3
         cls.separator = COLUMN_X2M_SEPARATOR
-        cls.select_tab = cls.env.ref("pattern_import_export.demo_export_tab_1")
-        cls.select_tab_company = cls.env.ref("pattern_import_export.demo_export_tab_2")
         cls.ir_exports = cls.env.ref("pattern_import_export.demo_export")
         cls.ir_exports_m2m = cls.env.ref("pattern_import_export.demo_export_m2m")
         cls.ir_exports_o2m = cls.env.ref("pattern_import_export.demo_export_o2m")
