@@ -2,7 +2,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from uuid import uuid4
 
-from odoo import exceptions
 from odoo.tests.common import SavepointCase
 from odoo.tools import mute_logger
 
@@ -23,7 +22,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         target_model = self.ir_exports_m2m.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
         new_records = self.env[target_model].search(
             [("id", "not in", existing_records.ids)]
         )
@@ -40,7 +41,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         main_data = [{"id": 2, "name": unique_name}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
 
     # TODO FIXME
     def disable_test_update_with_external_id_bad_data_2(self):
@@ -52,7 +55,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         main_data = [{".id": "bad data", "name": unique_name}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
 
     def test_create_new_record(self):
         """
@@ -65,7 +70,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         target_model = self.ir_exports_m2m.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
         new_records = self.env[target_model].search(
             [("id", "not in", existing_records.ids)]
         )
@@ -95,7 +102,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         target_model = self.ir_exports.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
         new_records = self.env[target_model].search(
             [("id", "not in", existing_records.ids)]
         )
@@ -159,7 +168,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         target_model = self.ir_exports.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
         new_records = self.env[target_model].search(
             [("id", "not in", existing_records.ids)]
         )
@@ -186,7 +197,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         main_data = [{"login#key": self.user3.login, "name": unique_name}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
         self.assertEquals(unique_name, self.user3.name)
 
     def test_update_o2m_with_key(self):
@@ -209,7 +222,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             }
         ]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_attachment)
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
         self.assertEquals(unique_name, self.partner_1.name)
         self.assertEquals(contact_1_name, contact_1.name)
         self.assertEquals(contact_2_name, contact_2.name)
@@ -218,12 +233,12 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
     def test_wrong_import(self):
         main_data = [{"login#key": self.user3.login, "name": ""}]
         with self._mock_read_import_data(main_data):
-            with self.assertRaises(exceptions.UserError) as em:
-                self.ir_exports_m2m._generate_import_with_pattern_job(
-                    self.empty_attachment
-                )
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+            self.assertEqual(self.empty_patterned_import_export.status, "fail")
             self.assertIn(
                 "Several error have been found number of errors: 1,"
                 " number of warnings: 0",
-                em.exception.name,
+                self.empty_patterned_import_export.info,
             )

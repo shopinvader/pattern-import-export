@@ -48,9 +48,10 @@ class TestPatternImport(SavepointCase):
         cls.user_admin = cls.env.ref("base.user_admin")
         cls.user_demo = cls.env.ref("base.user_demo")
 
-    def _load_file(self, filename, export_id):
+    @classmethod
+    def _load_file(cls, filename, export_id):
         data = base64.b64encode(open(PATH + filename, "rb").read())
-        wizard = self.env["import.pattern.wizard"].create(
+        wizard = cls.env["import.pattern.wizard"].create(
             {
                 "ir_exports_id": export_id.id,
                 "import_file": data,
@@ -60,7 +61,7 @@ class TestPatternImport(SavepointCase):
         wizard.action_launch_import()
 
         if DUMP_OUTPUT:
-            attachment = self.env["patterned.import.export"].search(
+            attachment = cls.env["patterned.import.export"].search(
                 [], limit=1, order="id desc"
             )
             output_name = filename.replace(".xlsx", ".result.xlsx")

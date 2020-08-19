@@ -10,6 +10,7 @@
                 <field name="create_date"/>
                 <field name="status"/>
                 <field name="kind"/>
+                <field name="info"/>
             </tree>
         </field>
     </record>
@@ -25,6 +26,7 @@
                         <field name="create_date" attrs="{'readonly': 1}"/>
                         <field name="status" attrs="{'readonly': 1}"/>
                         <field name="kind" attrs="{'readonly': 1}"/>
+                        <field name="info" attrs="{'readonly': 1}"/>
                     </group>
                 </sheet>
             </form>
