@@ -52,16 +52,19 @@ class IrFieldsConverter(models.AbstractModel):
         if subfield in [".id", "id", None]:
             return super().db_id_for(model, field, subfield, value)
         else:
-            record = self.env[field._related_comodel_name].search(
-                [(subfield, "=", value)]
-            )
-            if len(record) > 1:
-                raise UserError(
-                    _(
-                        "Too many records found for {} "
-                        "with the field {} and the value {}"
-                    ).format(_(record._description), subfield, value)
+            if value:
+                record = self.env[field._related_comodel_name].search(
+                    [(subfield, "=", value)]
                 )
+                if len(record) > 1:
+                    raise UserError(
+                        _(
+                            "Too many records found for {} "
+                            "with the field {} and the value {}"
+                        ).format(_(record._description), subfield, value)
+                    )
+            else:
+                record = self.env[field._related_comodel_name].browse()
             return record.id, subfield, []
 
     @api.model
@@ -104,5 +107,7 @@ class IrFieldsConverter(models.AbstractModel):
         elif value == "=TRUE()":
             return True, []
         elif value == "=FALSE()":
+            return False, []
+        elif value is None:
             return False, []
         return super()._str_to_boolean(model, field, value)
