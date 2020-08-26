@@ -155,11 +155,15 @@ class IrExports(models.Model):
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
         ws = self._get_worksheet(wb)
+        global_message = []
         if ws["A1"] != _("#Error"):
             ws.insert_cols(1)
             ws.cell(1, 1, value=_("#Error"))
         for message in res["messages"]:
-            ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
+            if "rows" in message:
+                ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
+            else:
+                global_message.append(message)
         output = BytesIO()
         wb.save(output)
         attachment.datas = base64.b64encode(output.getvalue())
@@ -167,7 +171,18 @@ class IrExports(models.Model):
         info = _(
             "Number of record imported {} Number of error/warning {}"
             "\nrecord ids details: {}"
-        ).format(len(ids), len(res.get("messages", [])), ids)
+            "\n{}"
+        ).format(
+            len(ids),
+            len(res.get("messages", [])),
+            ids,
+            "\n".join(
+                [
+                    "{}: {}".format(message["type"], message["message"])
+                    for message in global_message
+                ]
+            ),
+        )
         if res.get("messages"):
             status = "fail"
         else:
