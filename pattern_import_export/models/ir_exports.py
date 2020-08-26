@@ -120,9 +120,9 @@ class IrExports(models.Model):
                     format=export.export_format or "Undefined"
                 )
                 raise NotImplementedError(msg)
-            attachment_data = getattr(export, target_function)(records)
-            if attachment_data:
-                all_data.append(base64.b64encode(attachment_data))
+            export_data = getattr(export, target_function)(records)
+            if export_data:
+                all_data.append(base64.b64encode(export_data))
         return all_data
 
     @api.multi
@@ -132,29 +132,31 @@ class IrExports(models.Model):
         @param records: recordset
         @return: ir.attachment recordset
         """
-        attachments = self.env["ir.attachment"].browse()
+        patterned_exports = self.env["patterned.import.export"]
         all_data = self._generate_with_records(records)
         if all_data and self.env.context.get("export_as_attachment", True):
             for export, attachment_data in zip(self, all_data):
-                attachments |= export._attachment_document(attachment_data)
-        return attachments
+                patterned_exports |= export._create_patterned_export(attachment_data)
+        return patterned_exports
 
-    def _attachment_document(self, attachment_datas):
+    def _create_patterned_export(self, attachment_datas):
         """
         Attach given parameter (b64 encoded) to the current export.
         @param attachment_datas: base64 encoded data
         @return: ir.attachment recordset
         """
         self.ensure_one()
-        return self.env["ir.attachment"].create(
+        name = "{name}.{format}".format(name=self.name, format=self.export_format)
+        return self.env["patterned.import.export"].create(
             {
-                "name": "{name}.{format}".format(
-                    name=self.name, format=self.export_format
-                ),
+                "name": name,
                 "type": "binary",
                 "res_id": self.id,
                 "res_model": "ir.exports",
                 "datas": attachment_datas,
+                "datas_fname": name,
+                "kind": "export",
+                "status": "success",
             }
         )
 
@@ -198,32 +200,54 @@ class IrExports(models.Model):
                     _("Message type {} is not supported").format(message["type"])
                 )
         if count_errors or count_warnings:
-            return (
-                True,
-                error_message.format(
-                    count_errors, count_warnings, "\n".join(error_details)
-                ),
+            return error_message.format(
+                count_errors, count_warnings, "\n".join(error_details)
             )
-        return False, ""
+        return ""
 
-    def _process_load_result(self, attachment, res):
+    def _process_load_result(self, patterned_import, res):
         ids = res["ids"] or []
         info = _("Number of record imported {}\ndetails {}").format(len(ids), ids)
-        raise_error = False
         if res.get("messages"):
-            raise_error, message = self._process_load_message(res["messages"])
-            info += message
-        if raise_error:
-            raise UserError(message)
-        return info
+            info += self._process_load_message(res["messages"])
+        if res.get("messages"):
+            status = "fail"
+        else:
+            status = "success"
+        return info, status
 
     @job(default_channel="root.importwithpattern")
-    def _generate_import_with_pattern_job(self, attachment):
-        attachment_data = base64.b64decode(attachment.datas.decode("utf-8"))
-        datas = self._read_import_data(attachment_data)
+    def _generate_import_with_pattern_job(self, patterned_import):
+        try:
+            attachment_data = base64.b64decode(patterned_import.datas.decode("utf-8"))
+            datas = self._read_import_data(attachment_data)
+        except Exception as e:
+            patterned_import.status = "fail"
+            patterned_import.info = e
         res = (
             self.with_context(load_format="flatty")
             .env[self.model_id.model]
             .load([], datas)
         )
-        return self._process_load_result(attachment, res)
+        patterned_import.info, patterned_import.status = self._process_load_result(
+            patterned_import, res
+        )
+        return self._notify_user(patterned_import)
+
+    def _notify_user(self, patterned_import_export):
+        if patterned_import_export.status == "fail":
+            self.env.user.notify_danger(
+                message=_(
+                    "Import job has failed. \nFor more details: %s"
+                    % self._helper_build_export_url(patterned_import_export)
+                ),
+                sticky=True,
+            )
+        else:
+            self.env.user.notify_success(
+                message=_(
+                    "Import job has finished. \nFor more details: %s"
+                    % self._helper_build_export_url(patterned_import_export)
+                ),
+                sticky=True,
+            )

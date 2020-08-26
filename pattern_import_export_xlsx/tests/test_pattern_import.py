@@ -48,9 +48,10 @@ class TestPatternImport(SavepointCase):
         cls.user_admin = cls.env.ref("base.user_admin")
         cls.user_demo = cls.env.ref("base.user_demo")
 
-    def _load_file(self, filename, export_id):
+    @classmethod
+    def _load_file(cls, filename, export_id):
         data = base64.b64encode(open(PATH + filename, "rb").read())
-        wizard = self.env["import.pattern.wizard"].create(
+        wizard = cls.env["import.pattern.wizard"].create(
             {
                 "ir_exports_id": export_id.id,
                 "import_file": data,
@@ -60,7 +61,9 @@ class TestPatternImport(SavepointCase):
         wizard.action_launch_import()
 
         if DUMP_OUTPUT:
-            attachment = self.env["ir.attachment"].search([], limit=1, order="id desc")
+            attachment = cls.env["patterned.import.export"].search(
+                [], limit=1, order="id desc"
+            )
             output_name = filename.replace(".xlsx", ".result.xlsx")
             with open(output_name, "wb") as output:
                 output.write(base64.b64decode(attachment.datas))
@@ -150,7 +153,9 @@ class TestPatternImport(SavepointCase):
             [("email", "=", "akretion-pattern@example.com")]
         )
         self.assertEqual(len(partner), 0)
-        attachment = self.env["ir.attachment"].search([], order="id desc", limit=1)
+        attachment = self.env["patterned.import.export"].search(
+            [], order="id desc", limit=1
+        )
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
         ws = wb.worksheets[0]
