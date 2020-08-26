@@ -242,3 +242,21 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 " number of warnings: 0",
                 self.empty_patterned_import_export.info,
             )
+
+    def test_m2m_with_empty_columns(self):
+        unique_name = str(uuid4())
+        main_data = [
+            {
+                "name": unique_name,
+                "category_id|1|name": self.partner_cat1.name,
+                "category_id|2|name": None,
+                "category_id|3|name": "",
+            }
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+        self.assertEquals(self.partner_cat1, partner.category_id)
