@@ -96,3 +96,11 @@ class IrFieldsConverter(models.AbstractModel):
             # odoo expect a list with one item
             value = [value]
         return super()._str_to_many2one(model, field, value)
+
+    @api.model
+    def _str_to_boolean(self, model, field, value):
+        if value == "=TRUE()":
+            return True, []
+        elif value == "=FALSE()":
+            return False, []
+        return super()._str_to_boolean(model, field, value)
