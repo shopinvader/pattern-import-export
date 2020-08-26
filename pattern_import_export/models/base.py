@@ -170,10 +170,18 @@ class Base(models.AbstractModel):
         self._clean_identifier_key(res, ident_keys)
         return res
 
+    def _remove_commented_columns(self, row):
+        for key in list(row.keys()):
+            if key.startswith("#"):
+                row.pop(key)
+
     @api.model
     def _extract_records(self, fields_, data, log=lambda a: None):
         if self._context.get("load_format") == "flatty":
             for idx, row in enumerate(data):
+                self._remove_commented_columns(row)
+                if not any(row.values()):
+                    continue
                 yield self._flatty2json(row), {"rows": {"from": idx + 1, "to": idx + 1}}
         else:
             yield from super()._extract_records(fields_, data, log=log)
