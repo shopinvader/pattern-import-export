@@ -99,7 +99,9 @@ class IrFieldsConverter(models.AbstractModel):
 
     @api.model
     def _str_to_boolean(self, model, field, value):
-        if value == "=TRUE()":
+        if isinstance(value, bool):
+            return value, []
+        elif value == "=TRUE()":
             return True, []
         elif value == "=FALSE()":
             return False, []

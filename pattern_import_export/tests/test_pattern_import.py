@@ -258,5 +258,35 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 self.empty_patterned_import_export
             )
         partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(self.empty_patterned_import_export.status, "success")
         self.assertEqual(len(partner), 1)
         self.assertEquals(self.partner_cat1, partner.category_id)
+
+    def test_empty_o2m(self):
+        unique_name = str(uuid4())
+        partner2_name = str(uuid4())
+        main_data = [
+            {
+                "name": unique_name,
+                "child_ids|1|name": partner2_name,
+                "child_ids|1|country_id|code": "FR",
+                "child_ids|2|name": "",
+                "child_ids|2|country_id|code": "",
+                "child_ids|3|name": None,
+                "child_ids|3|country_id|code": None,
+                "child_ids|4|name": None,
+                "child_ids|4|country_id|code": "",
+            }
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(
+            self.empty_patterned_import_export.status,
+            "success",
+            self.empty_patterned_import_export.info,
+        )
+        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+        self.assertEqual(len(partner.child_ids), 1)
