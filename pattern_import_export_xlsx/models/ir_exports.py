@@ -156,7 +156,7 @@ class IrExports(models.Model):
         wb = openpyxl.load_workbook(filename=infile)
         ws = self._get_worksheet(wb)
         global_message = []
-        if ws["A1"] != _("#Error"):
+        if ws["A1"].value != _("#Error"):
             ws.insert_cols(1)
             ws.cell(1, 1, value=_("#Error"))
         for message in res["messages"]:
