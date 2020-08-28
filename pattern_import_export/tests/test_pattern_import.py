@@ -290,3 +290,11 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         partner = self.env["res.partner"].search([("name", "=", unique_name)])
         self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.child_ids), 1)
+
+    def disable_test_missing_record(self):
+        main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(self.empty_patterned_import_export.status, "fail")

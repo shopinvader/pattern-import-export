@@ -59,8 +59,15 @@ class IrFieldsConverter(models.AbstractModel):
                 if len(record) > 1:
                     raise UserError(
                         _(
-                            "Too many records found for {} "
-                            "with the field {} and the value {}"
+                            "Too many records found for '{}' "
+                            "with the field '{}' and the value '{}'"
+                        ).format(_(record._description), subfield, value)
+                    )
+                elif len(record) == 0:
+                    raise UserError(
+                        _(
+                            "No value found for model '{}' with the field '{}' "
+                            "and the value '{}'"
                         ).format(_(record._description), subfield, value)
                     )
             else:
