@@ -16,7 +16,9 @@ class IrExports(models.Model):
     _inherit = "ir.exports"
 
     export_format = fields.Selection(selection_add=[("xlsx", "Excel")])
-    tab_to_import = fields.Selection([("first", "First"), ("match_name", "Match Name")])
+    tab_to_import = fields.Selection(
+        [("first", "First"), ("match_name", "Match Name")], default="first"
+    )
 
     @api.multi
     def _create_xlsx_file(self, records):
