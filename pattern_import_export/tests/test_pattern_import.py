@@ -298,3 +298,22 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 self.empty_patterned_import_export
             )
         self.assertEqual(self.empty_patterned_import_export.status, "fail")
+
+    def disable_test_import_m2o_key(self):
+        name = str(uuid4())
+        ref = str(uuid4())
+        main_data = [{"name": name, "country_id|code#key": "FR", "ref#key": ref}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(
+            self.empty_patterned_import_export.status,
+            "success",
+            self.empty_patterned_import_export.info,
+        )
+        partner = self.env["res.partner"].search([("name", "=", name)])
+        self.assertEqual(len(partner), 1)
+        self.assertEqual(len(partner.ref), ref)
+        self.assertEqual(len(partner.name), name)
+        self.assertEqual(len(partner.country_id.code), "FR")
