@@ -138,7 +138,7 @@ class IrExports(models.Model):
     @api.multi
     def _read_import_data_xlsx(self, datafile):
         # note that columns and rows are 1-based
-        workbook = openpyxl.load_workbook(BytesIO(datafile))
+        workbook = openpyxl.load_workbook(BytesIO(datafile), data_only=True)
         worksheet = self._get_worksheet(workbook)
         headers = []
         real_last_column = self._find_real_last_column(worksheet)
