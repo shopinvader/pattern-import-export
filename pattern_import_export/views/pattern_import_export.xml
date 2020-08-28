@@ -6,11 +6,17 @@
         <field name="model">ir.exports</field>
         <field name="inherit_id" ref="base_export_manager.ir_exports_form_view"/>
         <field name="arch" type="xml">
+            <xpath expr="//form/group[1]" position="before">
+                <header>
+                    <button name="%(import_pattern_wizard_action)d" string="Import" class="oe_highlight" type="action" context="{'default_ir_exports_id': id, 'hide_ir_export_id': True}"/>
+                </header>
+            </xpath>
             <xpath expr="//form/group[1]" position="after">
                 <group>
                     <field name="export_format" required="True"/>
                     <field name="pattern_file"/>
                     <field name="pattern_last_generation_date"/>
+                    <field name="id" invisible="1"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='field2_id']" position="attributes">
@@ -68,11 +74,20 @@
               sequence="100"
               groups="base.group_user"/>
 
+    <record model="ir.actions.act_window" id="act_open_pattern_view">
+        <field name="name">Import/Export Patterns</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">ir.exports</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_pattern', '=', True)]</field>
+        <field name="context">{}</field>
+    </record>
+
     <menuitem id="pattern_menu"
               name="Patterns"
               parent="import_export_menu_root"
               sequence="1"
               groups="base.group_user"
-              action="base_export_manager.ir_exports_action"/>
-
+              action="act_open_pattern_view"/>
 </odoo>

@@ -242,3 +242,78 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 " number of warnings: 0",
                 self.empty_patterned_import_export.info,
             )
+
+    def test_m2m_with_empty_columns(self):
+        unique_name = str(uuid4())
+        main_data = [
+            {
+                "name": unique_name,
+                "category_id|1|name": self.partner_cat1.name,
+                "category_id|2|name": None,
+                "category_id|3|name": "",
+            }
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        self.assertEqual(len(partner), 1)
+        self.assertEquals(self.partner_cat1, partner.category_id)
+
+    def test_empty_o2m(self):
+        unique_name = str(uuid4())
+        partner2_name = str(uuid4())
+        main_data = [
+            {
+                "name": unique_name,
+                "child_ids|1|name": partner2_name,
+                "child_ids|1|country_id|code": "FR",
+                "child_ids|2|name": "",
+                "child_ids|2|country_id|code": "",
+                "child_ids|3|name": None,
+                "child_ids|3|country_id|code": None,
+                "child_ids|4|name": None,
+                "child_ids|4|country_id|code": "",
+            }
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(
+            self.empty_patterned_import_export.status,
+            "success",
+            self.empty_patterned_import_export.info,
+        )
+        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+        self.assertEqual(len(partner.child_ids), 1)
+
+    def disable_test_missing_record(self):
+        main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(self.empty_patterned_import_export.status, "fail")
+
+    def disable_test_import_m2o_key(self):
+        name = str(uuid4())
+        ref = str(uuid4())
+        main_data = [{"name": name, "country_id|code#key": "FR", "ref#key": ref}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(
+            self.empty_patterned_import_export.status,
+            "success",
+            self.empty_patterned_import_export.info,
+        )
+        partner = self.env["res.partner"].search([("name", "=", name)])
+        self.assertEqual(len(partner), 1)
+        self.assertEqual(len(partner.ref), ref)
+        self.assertEqual(len(partner.name), name)
+        self.assertEqual(len(partner.country_id.code), "FR")

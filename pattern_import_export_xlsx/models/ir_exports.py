@@ -9,12 +9,16 @@ from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class IrExports(models.Model):
     _inherit = "ir.exports"
 
     export_format = fields.Selection(selection_add=[("xlsx", "Excel")])
+    tab_to_import = fields.Selection(
+        [("first", "First"), ("match_name", "Match Name")], default="first"
+    )
 
     @api.multi
     def _create_xlsx_file(self, records):
@@ -94,10 +98,22 @@ class IrExports(models.Model):
 
     # Import part
 
-    def _read_xlsx_file(self, datafile):
-        file = BytesIO(datafile)
-        workbook = openpyxl.load_workbook(file)
-        return workbook[workbook.sheetnames[0]]
+    def _get_worksheet(self, workbook):
+        name = None
+        if self.tab_to_import == "first":
+            name = workbook.sheetnames[0]
+        elif self.tab_to_import == "match_name":
+            for sheetname in workbook.sheetnames:
+                if sheetname.lower() == self.name.lower():
+                    name = sheetname
+                    break
+            if not name:
+                raise UserError(
+                    _("The file do not contain tab with the name {}").format(self.name)
+                )
+        else:
+            raise UserError(_("Please select a tab to import on the pattern"))
+        return workbook[name]
 
     def _find_real_last_column(self, worksheet):
         """
@@ -124,7 +140,8 @@ class IrExports(models.Model):
     @api.multi
     def _read_import_data_xlsx(self, datafile):
         # note that columns and rows are 1-based
-        worksheet = self._read_xlsx_file(datafile)
+        workbook = openpyxl.load_workbook(BytesIO(datafile), data_only=True)
+        worksheet = self._get_worksheet(workbook)
         headers = []
         real_last_column = self._find_real_last_column(worksheet)
         for col in range(real_last_column):
@@ -139,12 +156,16 @@ class IrExports(models.Model):
     def _process_load_result_for_xls(self, attachment, res):
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
-        ws = wb.worksheets[0]
-        if ws["A1"] != _("#Error"):
+        ws = self._get_worksheet(wb)
+        global_message = []
+        if ws["A1"].value != _("#Error"):
             ws.insert_cols(1)
             ws.cell(1, 1, value=_("#Error"))
         for message in res["messages"]:
-            ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
+            if "rows" in message:
+                ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
+            else:
+                global_message.append(message)
         output = BytesIO()
         wb.save(output)
         attachment.datas = base64.b64encode(output.getvalue())
@@ -152,7 +173,18 @@ class IrExports(models.Model):
         info = _(
             "Number of record imported {} Number of error/warning {}"
             "\nrecord ids details: {}"
-        ).format(len(ids), len(res.get("messages", [])), ids)
+            "\n{}"
+        ).format(
+            len(ids),
+            len(res.get("messages", [])),
+            ids,
+            "\n".join(
+                [
+                    "{}: {}".format(message["type"], message["message"])
+                    for message in global_message
+                ]
+            ),
+        )
         if res.get("messages"):
             status = "fail"
         else:

@@ -52,16 +52,26 @@ class IrFieldsConverter(models.AbstractModel):
         if subfield in [".id", "id", None]:
             return super().db_id_for(model, field, subfield, value)
         else:
-            record = self.env[field._related_comodel_name].search(
-                [(subfield, "=", value)]
-            )
-            if len(record) > 1:
-                raise UserError(
-                    _(
-                        "Too many records found for {} "
-                        "with the field {} and the value {}"
-                    ).format(_(record._description), subfield, value)
+            if value:
+                record = self.env[field._related_comodel_name].search(
+                    [(subfield, "=", value)]
                 )
+                if len(record) > 1:
+                    raise UserError(
+                        _(
+                            "Too many records found for '{}' "
+                            "with the field '{}' and the value '{}'"
+                        ).format(_(record._description), subfield, value)
+                    )
+                elif len(record) == 0:
+                    raise UserError(
+                        _(
+                            "No value found for model '{}' with the field '{}' "
+                            "and the value '{}'"
+                        ).format(_(record._description), subfield, value)
+                    )
+            else:
+                record = self.env[field._related_comodel_name].browse()
             return record.id, subfield, []
 
     @api.model
@@ -71,10 +81,10 @@ class IrFieldsConverter(models.AbstractModel):
             [record] = item
 
             subfield, warnings = self._referencing_subfield(item)
-
-            rec_id, _, ws = self.db_id_for(model, field, subfield, item[subfield])
-            ids.append(rec_id)
-            warnings.extend(ws)
+            if item[subfield]:
+                rec_id, _, ws = self.db_id_for(model, field, subfield, item[subfield])
+                ids.append(rec_id)
+                warnings.extend(ws)
 
         if self._context.get("update_many2many"):
             return [ir_fields.LINK_TO(id) for id in ids], warnings
@@ -96,3 +106,17 @@ class IrFieldsConverter(models.AbstractModel):
             # odoo expect a list with one item
             value = [value]
         return super()._str_to_many2one(model, field, value)
+
+    @api.model
+    def _str_to_boolean(self, model, field, value):
+        if isinstance(value, int):
+            return bool(value), []
+        if isinstance(value, bool):
+            return value, []
+        elif value == "=TRUE()":
+            return True, []
+        elif value == "=FALSE()":
+            return False, []
+        elif value is None:
+            return False, []
+        return super()._str_to_boolean(model, field, value)

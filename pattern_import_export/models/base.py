@@ -11,6 +11,23 @@ from odoo.addons.queue_job.job import job
 from .common import IDENTIFIER_SUFFIX
 
 
+def is_empty(item):
+    if not item:
+        return True
+    elif isinstance(item, dict):
+        for key in item:
+            empty = is_empty(item[key])
+            if empty:
+                return True
+    elif isinstance(item, list):
+        for subitem in item:
+            empty = is_empty(subitem)
+            if empty:
+                return True
+    else:
+        return False
+
+
 class Base(models.AbstractModel):
     _inherit = "base"
 
@@ -137,11 +154,15 @@ class Base(models.AbstractModel):
                 subdomain = []
                 if parent_id:
                     subdomain.append((field.inverse_name, "=", parent_id))
-
+                # empty subitem are removed
+                valid_subitems = []
                 for subitem in res[key]:
-                    self.env[field._related_comodel_name]._post_process_key(
-                        subitem, subdomain, not bool(parent_id)
-                    )
+                    if not is_empty(subitem):
+                        valid_subitems.append(subitem)
+                        self.env[field._related_comodel_name]._post_process_key(
+                            subitem, subdomain, not bool(parent_id)
+                        )
+                res[key] = valid_subitems
 
     def _set_record_id_from_domain(self, res, ident_keys, domain):
         record = self.search(domain)
@@ -170,10 +191,18 @@ class Base(models.AbstractModel):
         self._clean_identifier_key(res, ident_keys)
         return res
 
+    def _remove_commented_columns(self, row):
+        for key in list(row.keys()):
+            if key.startswith("#"):
+                row.pop(key)
+
     @api.model
     def _extract_records(self, fields_, data, log=lambda a: None):
         if self._context.get("load_format") == "flatty":
             for idx, row in enumerate(data):
+                self._remove_commented_columns(row)
+                if not any(row.values()):
+                    continue
                 yield self._flatty2json(row), {"rows": {"from": idx + 1, "to": idx + 1}}
         else:
             yield from super()._extract_records(fields_, data, log=log)
