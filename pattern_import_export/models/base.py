@@ -11,21 +11,19 @@ from odoo.addons.queue_job.job import job
 from .common import IDENTIFIER_SUFFIX
 
 
-def is_empty(item):
+def is_not_empty(item):
     if not item:
-        return True
+        return False
     elif isinstance(item, dict):
         for key in item:
-            empty = is_empty(item[key])
-            if empty:
+            if is_not_empty(item[key]):
                 return True
     elif isinstance(item, list):
         for subitem in item:
-            empty = is_empty(subitem)
-            if empty:
+            if is_not_empty(subitem):
                 return True
     else:
-        return False
+        return True
 
 
 class Base(models.AbstractModel):
@@ -157,7 +155,7 @@ class Base(models.AbstractModel):
                 # empty subitem are removed
                 valid_subitems = []
                 for subitem in res[key]:
-                    if not is_empty(subitem):
+                    if is_not_empty(subitem):
                         valid_subitems.append(subitem)
                         self.env[field._related_comodel_name]._post_process_key(
                             subitem, subdomain, not bool(parent_id)

@@ -291,6 +291,35 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.child_ids), 1)
 
+    def test_empty_m2m_with_o2m(self):
+        unique_name = str(uuid4())
+        partner2_name = str(uuid4())
+        main_data = [
+            {
+                "name": unique_name,
+                "child_ids|1|name": partner2_name,
+                "child_ids|1|country_id|code": "FR",
+                "child_ids|1|category_id|1|name": "Prospects",
+                "child_ids|1|category_id|2|name": "Services",
+                "child_ids|1|category_id|3|name": None,
+            }
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(
+            self.empty_patterned_import_export.status,
+            "success",
+            self.empty_patterned_import_export.info,
+        )
+        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+        self.assertEqual(len(partner.child_ids), 1)
+        self.assertEqual(
+            set(partner.child_ids.category_id.mapped("name")),
+            {"Prospects", "Services"})
+
     def test_missing_record(self):
         main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
         with self._mock_read_import_data(main_data):
