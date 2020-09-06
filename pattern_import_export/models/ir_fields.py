@@ -2,8 +2,8 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-
 from odoo import _, api, models
+from odoo.osv import expression
 
 from odoo.addons.base.models import ir_fields
 
@@ -52,9 +52,13 @@ class IrFieldsConverter(models.AbstractModel):
             return super().db_id_for(model, field, subfield, value)
         else:
             if value:
-                record = self.env[field._related_comodel_name].search(
-                    [(subfield, "=", value)]
-                )
+                # Only list domain are supported as they can be apply on server-side
+                if isinstance(field.domain, list):
+                    domain = field.domain
+                else:
+                    domain = []
+                domain = expression.AND([domain, [(subfield, "=", value)]])
+                record = self.env[field._related_comodel_name].search(domain)
                 if len(record) > 1:
                     raise self._format_import_error(
                         ValueError,
