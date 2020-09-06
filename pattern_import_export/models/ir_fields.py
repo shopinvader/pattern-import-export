@@ -4,7 +4,6 @@
 
 
 from odoo import _, api, models
-from odoo.exceptions import UserError
 
 from odoo.addons.base.models import ir_fields
 
@@ -57,18 +56,24 @@ class IrFieldsConverter(models.AbstractModel):
                     [(subfield, "=", value)]
                 )
                 if len(record) > 1:
-                    raise UserError(
+                    raise self._format_import_error(
+                        ValueError,
                         _(
-                            "Too many records found for '{}' "
-                            "with the field '{}' and the value '{}'"
-                        ).format(_(record._description), subfield, value)
+                            "Fail to process field '%%(field)s'.\n"
+                            "Too many records found for '%s' "
+                            "with the field '%s' and the value '%s'"
+                        ),
+                        (_(record._description), subfield, value),
                     )
                 elif len(record) == 0:
-                    raise UserError(
+                    raise self._format_import_error(
+                        ValueError,
                         _(
-                            "No value found for model '{}' with the field '{}' "
-                            "and the value '{}'"
-                        ).format(_(record._description), subfield, value)
+                            "Fail to process field '%%(field)s'.\n"
+                            "No value found for model '%s' with the field '%s' "
+                            "and the value '%s'"
+                        ),
+                        (_(record._description), subfield, value),
                     )
             else:
                 record = self.env[field._related_comodel_name].browse()

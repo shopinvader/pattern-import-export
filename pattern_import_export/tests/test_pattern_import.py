@@ -291,13 +291,21 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.child_ids), 1)
 
-    def disable_test_missing_record(self):
+    def test_missing_record(self):
         main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
         with self._mock_read_import_data(main_data):
             self.ir_exports._generate_import_with_pattern_job(
                 self.empty_patterned_import_export
             )
         self.assertEqual(self.empty_patterned_import_export.status, "fail")
+        self.assertIn(
+            (
+                "Fail to process field 'Country'.\n"
+                "No value found for model 'Country' with the field 'code' "
+                "and the value 'Fake'"
+            ),
+            self.empty_patterned_import_export.info,
+        )
 
     def disable_test_import_m2o_key(self):
         name = str(uuid4())
