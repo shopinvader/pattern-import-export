@@ -38,7 +38,7 @@
                 }</attribute>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
-                <field name="is_key" attrs="{'readonly': [('model2_id', '!=', False)]}"/>
+                <field name="is_key"/>
                 <field name="required_fields" invisible="1"/>
                 <field name="hidden_fields" invisible="1"/>
                 <field name="number_occurence" attrs="{
