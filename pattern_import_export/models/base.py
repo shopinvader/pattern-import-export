@@ -95,6 +95,9 @@ class Base(models.AbstractModel):
         return super()._load_records_create(copy.deepcopy(values))
 
     def _flatty2json(self, row):
+        for key in ["id", ".id"]:
+            if key in row and row[key] is None:
+                row.pop(key)
         res = {}
         items = [(k, v) for k, v in row.items()]
         items.sort()

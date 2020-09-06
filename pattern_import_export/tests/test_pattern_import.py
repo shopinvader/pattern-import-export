@@ -80,6 +80,30 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEquals(unique_name, new_records.name)
         self.assertEquals(unique_login, new_records.login)
 
+    def test_empty_external_id(self):
+        unique_name = str(uuid4())
+        unique_login = str(uuid4())
+        main_data = [{"name": unique_name, "login": unique_login, "id": None}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        partner = self.env["res.users"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+
+    def test_empty_id(self):
+        unique_name = str(uuid4())
+        unique_login = str(uuid4())
+        main_data = [{"name": unique_name, "login": unique_login, ".id": None}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        partner = self.env["res.users"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+
     def test_update_o2m_with_external_id(self):
         """
         For this test, simulate the case of a complex update (O2M) on existing record
