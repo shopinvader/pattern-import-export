@@ -131,13 +131,25 @@ class Base(models.AbstractModel):
             if key in res:
                 res[key.replace(IDENTIFIER_SUFFIX, "")] = res.pop(key)
 
+    def _convert_value_to_domain(self, field_name, value):
+        if isinstance(value, dict):
+            domain = []
+            for key, val in value.items():
+                domain.append(("{}.{}".format(field_name, key), "=", val))
+        else:
+            domain = [(field_name, "=", value)]
+        return domain
+
     def _get_domain_from_identifier_key(self, res):
         ident_keys = []
         domain = []
         for key in list(res.keys()):
             if key.endswith(IDENTIFIER_SUFFIX):
                 field_name = key.replace(IDENTIFIER_SUFFIX, "")
-                domain.append((field_name, "=", res[key]))
+                domain = expression.AND([
+                    domain,
+                    self._convert_value_to_domain(field_name, res[key])
+                    ])
                 ident_keys.append(key)
         return domain, ident_keys
 
