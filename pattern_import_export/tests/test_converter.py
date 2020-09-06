@@ -1,14 +1,11 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-from uuid import uuid4
 
-from odoo.tests.common import SavepointCase
-from odoo.tools import mute_logger
 from odoo import api
+from odoo.tests.common import SavepointCase
 
 
 class TestConvertID(SavepointCase):
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -35,15 +32,20 @@ class TestConvertID(SavepointCase):
         # ['|', ('is_company', '=', True), ('parent_id', '=', False)]
         self.assertEqual(
             self.search_domain,
-            [['&',
-              '|',
-              ('is_company', '=', True),
-              ('parent_id', '=', False),
-              ('name', '=', 'foo')]])
+            [
+                [
+                    "&",
+                    "|",
+                    ("is_company", "=", True),
+                    ("parent_id", "=", False),
+                    ("name", "=", "foo"),
+                ]
+            ],
+        )
 
     def test_string_domain_is_ignored(self):
         model = self.env["res.partner"]
         field = model._fields["state_id"]
         self._patch_search("res.country.state")
         self.converter.db_id_for(model, field, "name", "Rio de Janeiro")
-        self.assertEqual(self.search_domain, [[('name', '=', 'Rio de Janeiro')]])
+        self.assertEqual(self.search_domain, [[("name", "=", "Rio de Janeiro")]])

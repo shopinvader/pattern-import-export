@@ -146,10 +146,9 @@ class Base(models.AbstractModel):
         for key in list(res.keys()):
             if key.endswith(IDENTIFIER_SUFFIX):
                 field_name = key.replace(IDENTIFIER_SUFFIX, "")
-                domain = expression.AND([
-                    domain,
-                    self._convert_value_to_domain(field_name, res[key])
-                    ])
+                domain = expression.AND(
+                    [domain, self._convert_value_to_domain(field_name, res[key])]
+                )
                 ident_keys.append(key)
         return domain, ident_keys
 

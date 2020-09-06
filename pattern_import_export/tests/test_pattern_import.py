@@ -341,8 +341,8 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.child_ids), 1)
         self.assertEqual(
-            set(partner.child_ids.category_id.mapped("name")),
-            {"Prospects", "Services"})
+            set(partner.child_ids.category_id.mapped("name")), {"Prospects", "Services"}
+        )
 
     def test_missing_record(self):
         main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
