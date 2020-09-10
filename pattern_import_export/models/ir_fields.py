@@ -2,9 +2,8 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-
 from odoo import _, api, models
-from odoo.exceptions import UserError
+from odoo.osv import expression
 
 from odoo.addons.base.models import ir_fields
 
@@ -53,22 +52,32 @@ class IrFieldsConverter(models.AbstractModel):
             return super().db_id_for(model, field, subfield, value)
         else:
             if value:
-                record = self.env[field._related_comodel_name].search(
-                    [(subfield, "=", value)]
-                )
+                # Only list domain are supported as they can be apply on server-side
+                if isinstance(field.domain, list):
+                    domain = field.domain
+                else:
+                    domain = []
+                domain = expression.AND([domain, [(subfield, "=", value)]])
+                record = self.env[field._related_comodel_name].search(domain)
                 if len(record) > 1:
-                    raise UserError(
+                    raise self._format_import_error(
+                        ValueError,
                         _(
-                            "Too many records found for '{}' "
-                            "with the field '{}' and the value '{}'"
-                        ).format(_(record._description), subfield, value)
+                            "Fail to process field '%%(field)s'.\n"
+                            "Too many records found for '%s' "
+                            "with the field '%s' and the value '%s'"
+                        ),
+                        (_(record._description), subfield, value),
                     )
                 elif len(record) == 0:
-                    raise UserError(
+                    raise self._format_import_error(
+                        ValueError,
                         _(
-                            "No value found for model '{}' with the field '{}' "
-                            "and the value '{}'"
-                        ).format(_(record._description), subfield, value)
+                            "Fail to process field '%%(field)s'.\n"
+                            "No value found for model '%s' with the field '%s' "
+                            "and the value '%s'"
+                        ),
+                        (_(record._description), subfield, value),
                     )
             else:
                 record = self.env[field._related_comodel_name].browse()

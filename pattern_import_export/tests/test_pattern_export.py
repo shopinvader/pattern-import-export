@@ -292,7 +292,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
     def test_get_data_to_export_is_key1(self):
         """
         Ensure the _get_data_to_export return expected data with correct header
-        when one export line is considered as key (on simple fields)
+        when export line are considered as key
         @return:
         """
         expected_results = [
@@ -300,25 +300,26 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
                 "id": self.partner_1.id,
                 "name#key": "Wood Corner",
                 "street": "1164 Cambridge Drive",
-                "country_id|code": "US",
+                "country_id#key|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
                 "id": self.partner_2.id,
                 "name#key": "Deco Addict",
                 "street": "325 Elsie Drive",
-                "country_id|code": "US",
+                "country_id#key|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
                 "id": self.partner_3.id,
                 "name#key": "Gemini Furniture",
                 "street": "1128 Lunetta Street",
-                "country_id|code": "US",
+                "country_id#key|code": "US",
                 "parent_id|country_id|code": None,
             },
         ]
         self.env.ref("pattern_import_export.demo_export_line_2").write({"is_key": True})
+        self.env.ref("pattern_import_export.demo_export_line_4").write({"is_key": True})
         results = self.ir_exports._get_data_to_export(self.partners)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)

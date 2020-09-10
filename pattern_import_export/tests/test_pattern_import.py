@@ -80,6 +80,30 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEquals(unique_name, new_records.name)
         self.assertEquals(unique_login, new_records.login)
 
+    def test_empty_external_id(self):
+        unique_name = str(uuid4())
+        unique_login = str(uuid4())
+        main_data = [{"name": unique_name, "login": unique_login, "id": None}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        partner = self.env["res.users"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+
+    def test_empty_id(self):
+        unique_name = str(uuid4())
+        unique_login = str(uuid4())
+        main_data = [{"name": unique_name, "login": unique_login, ".id": None}]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports_m2m._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        partner = self.env["res.users"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+
     def test_update_o2m_with_external_id(self):
         """
         For this test, simulate the case of a complex update (O2M) on existing record
@@ -291,18 +315,55 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.child_ids), 1)
 
-    def disable_test_missing_record(self):
+    def test_empty_m2m_with_o2m(self):
+        unique_name = str(uuid4())
+        partner2_name = str(uuid4())
+        main_data = [
+            {
+                "name": unique_name,
+                "child_ids|1|name": partner2_name,
+                "child_ids|1|country_id|code": "FR",
+                "child_ids|1|category_id|1|name": "Prospects",
+                "child_ids|1|category_id|2|name": "Services",
+                "child_ids|1|category_id|3|name": None,
+            }
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        self.assertEqual(
+            self.empty_patterned_import_export.status,
+            "success",
+            self.empty_patterned_import_export.info,
+        )
+        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner), 1)
+        self.assertEqual(len(partner.child_ids), 1)
+        self.assertEqual(
+            set(partner.child_ids.category_id.mapped("name")), {"Prospects", "Services"}
+        )
+
+    def test_missing_record(self):
         main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
         with self._mock_read_import_data(main_data):
             self.ir_exports._generate_import_with_pattern_job(
                 self.empty_patterned_import_export
             )
         self.assertEqual(self.empty_patterned_import_export.status, "fail")
+        self.assertIn(
+            (
+                "Fail to process field 'Country'.\n"
+                "No value found for model 'Country' with the field 'code' "
+                "and the value 'Fake'"
+            ),
+            self.empty_patterned_import_export.info,
+        )
 
-    def disable_test_import_m2o_key(self):
+    def test_import_m2o_key(self):
         name = str(uuid4())
         ref = str(uuid4())
-        main_data = [{"name": name, "country_id|code#key": "FR", "ref#key": ref}]
+        main_data = [{"name": name, "country_id#key|code": "FR", "ref#key": ref}]
         with self._mock_read_import_data(main_data):
             self.ir_exports._generate_import_with_pattern_job(
                 self.empty_patterned_import_export
@@ -314,6 +375,6 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         )
         partner = self.env["res.partner"].search([("name", "=", name)])
         self.assertEqual(len(partner), 1)
-        self.assertEqual(len(partner.ref), ref)
-        self.assertEqual(len(partner.name), name)
-        self.assertEqual(len(partner.country_id.code), "FR")
+        self.assertEqual(partner.ref, ref)
+        self.assertEqual(partner.name, name)
+        self.assertEqual(partner.country_id.code, "FR")

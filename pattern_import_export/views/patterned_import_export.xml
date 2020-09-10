@@ -22,11 +22,12 @@
             <form string="patterned_import_export_form">
                 <sheet>
                     <group>
-                        <field name="attachment_id" attrs="{'readonly': 1}"/>
-                        <field name="create_date" attrs="{'readonly': 1}"/>
-                        <field name="status" attrs="{'readonly': 1}"/>
-                        <field name="kind" attrs="{'readonly': 1}"/>
-                        <field name="info" attrs="{'readonly': 1}"/>
+                        <field name="datas" filename="datas_fname" readonly="1"/>
+                        <field name="datas_fname" invisible="1"/>
+                        <field name="create_date" readonly="1"/>
+                        <field name="status" readonly="1"/>
+                        <field name="kind" readonly="1"/>
+                        <field name="info" readonly="1"/>
                     </group>
                 </sheet>
             </form>

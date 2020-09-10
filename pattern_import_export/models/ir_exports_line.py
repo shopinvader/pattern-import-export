@@ -166,7 +166,10 @@ class IrExportsLine(models.Model):
             if use_description:
                 base_header.append(field.field_description)
             else:
-                base_header.append(field.name)
+                field_name = field.name
+                if idx == 1 and self.is_key:
+                    field_name += IDENTIFIER_SUFFIX
+                base_header.append(field_name)
         return COLUMN_X2M_SEPARATOR.join(base_header)
 
     @api.multi

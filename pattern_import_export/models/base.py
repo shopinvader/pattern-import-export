@@ -11,21 +11,19 @@ from odoo.addons.queue_job.job import job
 from .common import IDENTIFIER_SUFFIX
 
 
-def is_empty(item):
+def is_not_empty(item):
     if not item:
-        return True
+        return False
     elif isinstance(item, dict):
         for key in item:
-            empty = is_empty(item[key])
-            if empty:
+            if is_not_empty(item[key]):
                 return True
     elif isinstance(item, list):
         for subitem in item:
-            empty = is_empty(subitem)
-            if empty:
+            if is_not_empty(subitem):
                 return True
     else:
-        return False
+        return True
 
 
 class Base(models.AbstractModel):
@@ -97,6 +95,9 @@ class Base(models.AbstractModel):
         return super()._load_records_create(copy.deepcopy(values))
 
     def _flatty2json(self, row):
+        for key in ["id", ".id"]:
+            if key in row and row[key] is None:
+                row.pop(key)
         res = {}
         items = [(k, v) for k, v in row.items()]
         items.sort()
@@ -130,13 +131,24 @@ class Base(models.AbstractModel):
             if key in res:
                 res[key.replace(IDENTIFIER_SUFFIX, "")] = res.pop(key)
 
+    def _convert_value_to_domain(self, field_name, value):
+        if isinstance(value, dict):
+            domain = []
+            for key, val in value.items():
+                domain.append(("{}.{}".format(field_name, key), "=", val))
+        else:
+            domain = [(field_name, "=", value)]
+        return domain
+
     def _get_domain_from_identifier_key(self, res):
         ident_keys = []
         domain = []
         for key in list(res.keys()):
             if key.endswith(IDENTIFIER_SUFFIX):
                 field_name = key.replace(IDENTIFIER_SUFFIX, "")
-                domain.append((field_name, "=", res[key]))
+                domain = expression.AND(
+                    [domain, self._convert_value_to_domain(field_name, res[key])]
+                )
                 ident_keys.append(key)
         return domain, ident_keys
 
@@ -157,7 +169,7 @@ class Base(models.AbstractModel):
                 # empty subitem are removed
                 valid_subitems = []
                 for subitem in res[key]:
-                    if not is_empty(subitem):
+                    if is_not_empty(subitem):
                         valid_subitems.append(subitem)
                         self.env[field._related_comodel_name]._post_process_key(
                             subitem, subdomain, not bool(parent_id)
