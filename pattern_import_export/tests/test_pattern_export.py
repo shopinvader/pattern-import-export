@@ -21,6 +21,17 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         ]
         self.assertEquals(expected_header, headers)
 
+    def test_get_header1_descriptive(self):
+        headers = self.ir_exports._get_header(use_description=True)
+        expected_header = [
+            "ID",
+            "Name",
+            "Street",
+            "Country|Country Code",
+            "Related Company|Country|Country Code",
+        ]
+        self.assertEquals(expected_header, headers)
+
     def test_get_header2(self):
         """
         Ensure the header is correctly generated in case of M2M with 1 occurrence

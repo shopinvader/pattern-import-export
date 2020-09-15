@@ -41,8 +41,16 @@ class IrExports(models.Model):
         """
         main_sheet = book["Sheet"]
         main_sheet.title = self.name
-        for col, header in enumerate(self._get_header(), start=1):
-            main_sheet.cell(row=1, column=col, value=header)
+        if self.use_description:
+            for col, header in enumerate(
+                self._get_header(use_description=True), start=1
+            ):
+                main_sheet.cell(row=1, column=col, value=header)
+            for col, header in enumerate(self._get_header(), start=1):
+                main_sheet.cell(row=2, column=col, value=header)
+        else:
+            for col, header in enumerate(self._get_header(), start=1):
+                main_sheet.cell(row=1, column=col, value=header)
         return main_sheet
 
     def _populate_main_sheet_rows(self, main_sheet, records):
@@ -50,7 +58,9 @@ class IrExports(models.Model):
         Get the actual data and write it row by row on the main sheet
         """
         headers = self._get_header()
-        for row, values in enumerate(self._get_data_to_export(records), start=2):
+        for row, values in enumerate(
+            self._get_data_to_export(records), start=self.row_start_records
+        ):
             for col, header in enumerate(headers, start=1):
                 main_sheet.cell(row=row, column=col, value=values.get(header, ""))
 
@@ -79,8 +89,11 @@ class IrExports(models.Model):
             )
             formula_range_src = "=" + quote_sheetname(tab_name) + "!" + range_src
             validation = DataValidation(type="list", formula1=formula_range_src)
-            range_dst = "${}$2:${}${}".format(
-                col_letter_dst, col_letter_dst, str(main_sheet_length)
+            range_dst = "${}${}:${}${}".format(
+                col_letter_dst,
+                str(self.row_start_records),
+                col_letter_dst,
+                str(main_sheet_length),
             )
             validation.add(range_dst)
             main_sheet.add_data_validation(validation)
@@ -145,12 +158,12 @@ class IrExports(models.Model):
         headers = []
         real_last_column = self._find_real_last_column(worksheet)
         for col in range(real_last_column):
-            headers.append(worksheet.cell(1, col + 1).value)
+            headers.append(worksheet.cell(self.nr_of_header_rows, col + 1).value)
         real_last_row = self._find_real_last_row(worksheet, real_last_column)
-        for row in range(real_last_row - 1):
+        for row in range(self.row_start_records, real_last_row + 1):
             elm = {}
             for col in range(real_last_column):
-                elm[headers[col]] = worksheet.cell(row + 2, col + 1).value
+                elm[headers[col]] = worksheet.cell(row, col + 1).value
             yield elm
 
     def _process_load_result_for_xls(self, attachment, res):

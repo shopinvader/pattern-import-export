@@ -179,6 +179,18 @@ class TestPatternImport(SavepointCase):
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
+    def test_import_users_descriptive_ok(self):
+        """
+        * Use descriptive headers
+        * Lookup by DB ID
+        * Simple update
+        """
+        self.ir_export_users.use_description = True
+        self._load_file("example.users.descriptive.ok.xlsx", self.ir_export_users)
+        self.env.clear()
+        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
+        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+
     # TODO FIXME
     @mute_logger("odoo.sql_db")
     def disable_test_import_users_fail(self):

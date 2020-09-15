@@ -21,15 +21,26 @@ class IrExports(models.Model):
 
     _inherit = "ir.exports"
 
-    is_pattern = fields.Boolean(default=False)
+    use_description = fields.Boolean(
+        string="Use descriptive in addition to technical headers"
+    )
+    is_pattern = fields.Boolean()
     pattern_file = fields.Binary(string="Pattern file", readonly=True)
     pattern_last_generation_date = fields.Datetime(
         string="Pattern last generation date", readonly=True
     )
     export_format = fields.Selection(selection=[])
 
+    @property
+    def row_start_records(self):
+        return self.nr_of_header_rows + 1
+
+    @property
+    def nr_of_header_rows(self):
+        return 1 + int(self.use_description)
+
     @api.multi
-    def _get_header(self):
+    def _get_header(self, use_description=False):
         """
         Build header of data-structure.
         Could be recursive in case of lines with pattern_export_id.
@@ -38,7 +49,7 @@ class IrExports(models.Model):
         self.ensure_one()
         header = []
         for export_line in self.export_fields:
-            header.extend(export_line._get_header())
+            header.extend(export_line._get_header(use_description))
         return header
 
     @api.multi
