@@ -207,3 +207,11 @@ class TestPatternImport(SavepointCase):
         self.assertEqual(ws["A1"].value, "#Error")
         self.assertTrue(ws["A2"].value)
         self.assertTrue(ws["A3"].value)
+
+    def test_import_partners_with_parents(self):
+        self._load_file("example.partners.parent.xlsx", self.ir_export_partner)
+        self.env.clear()
+        partner_parent = self.env["res.partner"].search([("name", "=", "Apple")])
+        self.assertTrue(partner_parent)
+        partner_child = self.env["res.partner"].search([("name", "=", "Steve Jobs")])
+        self.assertTrue(partner_child.parent_id == partner_parent)

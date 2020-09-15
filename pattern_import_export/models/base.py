@@ -218,3 +218,7 @@ class Base(models.AbstractModel):
                 yield self._flatty2json(row), {"rows": {"from": idx + 1, "to": idx + 1}}
         else:
             yield from super()._extract_records(fields_, data, log=log)
+
+    def load(self, fields, data):
+        self = self.with_context(pattern_import_export_model=self._name)
+        return super().load(fields, data)
