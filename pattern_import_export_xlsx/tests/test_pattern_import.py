@@ -175,7 +175,17 @@ class TestPatternImport(SavepointCase):
         * Simple update
         """
         self._load_file("example.users.ok.xlsx", self.ir_export_users)
-        self.env.clear()
+        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
+        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+
+    def test_import_users_descriptive_ok(self):
+        """
+        * Use descriptive headers
+        * Lookup by DB ID
+        * Simple update
+        """
+        self.ir_export_users.use_description = True
+        self._load_file("example.users.descriptive.ok.xlsx", self.ir_export_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
@@ -187,7 +197,6 @@ class TestPatternImport(SavepointCase):
         * Report error in excel file through external id not found
         """
         self._load_file("example.users.fail.xlsx", self.ir_export_users)
-        self.env.clear()
         attachment = self.env["ir.attachment"].search([], order="id desc", limit=1)
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
@@ -195,3 +204,10 @@ class TestPatternImport(SavepointCase):
         self.assertEqual(ws["A1"].value, "#Error")
         self.assertTrue(ws["A2"].value)
         self.assertTrue(ws["A3"].value)
+
+    def test_import_partners_with_parents(self):
+        self._load_file("example.partners.parent.xlsx", self.ir_export_partner)
+        partner_parent = self.env["res.partner"].search([("name", "=", "Apple")])
+        self.assertTrue(partner_parent)
+        partner_child = self.env["res.partner"].search([("name", "=", "Steve Jobs")])
+        self.assertTrue(partner_child.parent_id == partner_parent)

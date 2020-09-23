@@ -55,6 +55,19 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         ]
         self._helper_check_headers(sheet, expected_headers)
 
+    def test_export_headers_descriptive(self):
+        self.ir_exports.use_description = True
+        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        sheet = wb["Partner list"]
+        expected_headers = [
+            "ID",
+            "Name",
+            "Street",
+            "Country|Country Code",
+            "Related Company|Country|Country Code",
+        ]
+        self._helper_check_headers(sheet, expected_headers)
+
     def test_export_vals(self):
         wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
         sheet = wb["Partner list"]

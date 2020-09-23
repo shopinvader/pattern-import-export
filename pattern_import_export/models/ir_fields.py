@@ -58,6 +58,11 @@ class IrFieldsConverter(models.AbstractModel):
                 else:
                     domain = []
                 domain = expression.AND([domain, [(subfield, "=", value)]])
+                if (
+                    self.env.context.get("pattern_import_export_model")
+                    == field._related_comodel_name
+                ):
+                    self._context["import_flush"]()
                 record = self.env[field._related_comodel_name].search(domain)
                 if len(record) > 1:
                     raise self._format_import_error(

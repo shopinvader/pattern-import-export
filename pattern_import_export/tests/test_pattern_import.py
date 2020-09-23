@@ -378,3 +378,22 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         self.assertEqual(partner.ref, ref)
         self.assertEqual(partner.name, name)
         self.assertEqual(partner.country_id.code, "FR")
+
+    def test_import_m2o_parents(self):
+        """
+        Test import works when records reference a parent (=m2o with same model)
+         that was defined in a previous row
+        """
+        main_data = [
+            {"name#key": "Apple"},
+            {"name#key": "Steve Jobs", "parent_id|name": "Apple"},
+        ]
+        with self._mock_read_import_data(main_data):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        company = self.env["res.partner"].search([("name", "=", "Apple")])
+        child_of_company = self.env["res.partner"].search(
+            [("name", "=", "Steve Jobs"), ("parent_id", "=", company.id)]
+        )
+        self.assertTrue(child_of_company)
