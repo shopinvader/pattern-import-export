@@ -94,7 +94,7 @@ class Base(models.AbstractModel):
     def _load_records_create(self, values):
         return super()._load_records_create(copy.deepcopy(values))
 
-    def _flatty2json(self, row):
+    def _pattern_format2json(self, row):
         for key in ["id", ".id"]:
             if key in row and row[key] is None:
                 row.pop(key)
@@ -210,11 +210,13 @@ class Base(models.AbstractModel):
 
     @api.model
     def _extract_records(self, fields_, data, log=lambda a: None):
-        if self._context.get("load_format") == "flatty":
+        if self._context.get("load_format") == "pattern_format":
             for idx, row in enumerate(data):
                 self._remove_commented_columns(row)
                 if not any(row.values()):
                     continue
-                yield self._flatty2json(row), {"rows": {"from": idx + 1, "to": idx + 1}}
+                yield self._pattern_format2json(row), {
+                    "rows": {"from": idx + 1, "to": idx + 1}
+                }
         else:
             yield from super()._extract_records(fields_, data, log=log)
