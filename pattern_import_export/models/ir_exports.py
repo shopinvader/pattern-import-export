@@ -222,14 +222,15 @@ class IrExports(models.Model):
 
     def _process_load_result(self, patterned_import, res):
         ids = res["ids"] or []
-        info = _("Number of record imported {}\ndetails {}").format(len(ids), ids)
+        info = _("Number of record imported {}").format(len(ids))
+        info_detail = _("Details: {}".format(ids))
         if res.get("messages"):
             info += self._process_load_message(res["messages"])
         if res.get("messages"):
             status = "fail"
         else:
             status = "success"
-        return info, status
+        return info, info_detail, status
 
     @job(default_channel="root.importwithpattern")
     def _generate_import_with_pattern_job(self, patterned_import):
@@ -238,7 +239,8 @@ class IrExports(models.Model):
             datas = self._read_import_data(attachment_data)
         except Exception as e:
             patterned_import.status = "fail"
-            patterned_import.info = e
+            patterned_import.info = _("Failed (check details)")
+            patterned_import.info_detail = e
         res = (
             self.with_context(
                 pattern_config={
@@ -250,7 +252,7 @@ class IrExports(models.Model):
             .env[self.model_id.model]
             .load([], datas)
         )
-        patterned_import.info, patterned_import.status = self._process_load_result(
+        patterned_import.info, patterned_import.info_detail, patterned_import.status = self._process_load_result(
             patterned_import, res
         )
         return self._notify_user(patterned_import)

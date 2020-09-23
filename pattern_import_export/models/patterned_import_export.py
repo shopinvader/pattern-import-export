@@ -15,4 +15,5 @@ class PatternedImportExport(models.Model):
         default="pending",
     )
     info = fields.Char()
+    info_detail = fields.Char()
     kind = fields.Selection([("import", "import"), ("export", "export")], required=True)
