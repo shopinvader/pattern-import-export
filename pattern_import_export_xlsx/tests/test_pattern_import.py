@@ -137,6 +137,7 @@ class TestPatternImport(SavepointCase):
         * Lookup by email
         * Report error in excel file through wrong email
         """
+        self.ir_export_partner.partial_commit = False
         self._load_file("example.partners.fail.xlsx", self.ir_export_partner)
         self.env.clear()
 

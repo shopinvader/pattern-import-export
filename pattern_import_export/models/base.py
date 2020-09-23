@@ -1,6 +1,7 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import copy
+import logging
 
 from odoo import _, api, models
 from odoo.exceptions import ValidationError
@@ -9,6 +10,8 @@ from odoo.osv import expression
 from odoo.addons.queue_job.job import job
 
 from .common import IDENTIFIER_SUFFIX
+
+_logger = logging.getLogger(__name__)
 
 
 def is_not_empty(item):
@@ -210,7 +213,10 @@ class Base(models.AbstractModel):
 
     @api.model
     def _extract_records(self, fields_, data, log=lambda a: None):
-        if self._context.get("load_format") == "pattern_format":
+        pattern_config = self._context.get("pattern_config")
+        if pattern_config:
+            partial_commit = pattern_config["partial_commit"]
+            flush = self._context["import_flush"]
             for idx, row in enumerate(data):
                 self._remove_commented_columns(row)
                 if not any(row.values()):
@@ -218,5 +224,20 @@ class Base(models.AbstractModel):
                 yield self._pattern_format2json(row), {
                     "rows": {"from": idx + 1, "to": idx + 1}
                 }
+                if idx % pattern_config["flush_step"] == 0:
+                    flush()
+                    _logger.info("Progress status: record imported {}".format(idx))
+                    if partial_commit:
+                        # if we want to have a partial commit we need to change the
+                        # model_load savepoint so roolback in the case of error will
+                        # roolback here
+                        self._cr.execute("SAVEPOINT model_load")
+            # we force to flush before ending the loop
+            # so we can log correctly and commit if needed
+            flush()
+            _logger.info("Progress status: Total record imported {}".format(idx))
+            if partial_commit:
+                # so we can update the savepoint
+                self._cr.execute("SAVEPOINT model_load")
         else:
             yield from super()._extract_records(fields_, data, log=log)

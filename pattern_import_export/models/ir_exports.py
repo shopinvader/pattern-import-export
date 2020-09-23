@@ -30,6 +30,10 @@ class IrExports(models.Model):
         string="Pattern last generation date", readonly=True
     )
     export_format = fields.Selection(selection=[])
+    partial_commit = fields.Boolean(
+        default=True, help="Import data even if some line have failed"
+    )
+    flush_step = fields.Integer(default=500, help="Define the size of batch import")
 
     @property
     def row_start_records(self):
@@ -237,8 +241,11 @@ class IrExports(models.Model):
             patterned_import.info = e
         res = (
             self.with_context(
-                load_format="pattern_format",
-                pattern_import_export_model=self.model_id.model,
+                pattern_config={
+                    "model": self.model_id.model,
+                    "flush_step": self.flush_step,
+                    "partial_commit": self.partial_commit,
+                }
             )
             .env[self.model_id.model]
             .load([], datas)

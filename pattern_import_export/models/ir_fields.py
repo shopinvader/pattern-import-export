@@ -107,10 +107,7 @@ class IrFieldsConverter(models.AbstractModel):
 
     @api.model
     def _str_to_many2many(self, model, field, value):
-        if (
-            isinstance(value, list)
-            and self._context.get("load_format") == "pattern_format"
-        ):
+        if isinstance(value, list) and self._context.get("pattern_config"):
             # TODO it will be great if we can modify odoo to directy call this method
             # odoo/addons/base/models/ir_fields.py:136
             return self._list_to_many2many(model, field, value)
