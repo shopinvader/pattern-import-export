@@ -284,8 +284,11 @@ class IrExports(models.Model):
             datas = self._read_import_data(attachment_data)
             res = (
                 self.with_context(
-                    load_format="pattern_format",
-                    pattern_import_export_model=self.model_id.model,
+                    pattern_config={
+                        "model": self.model_id.model,
+                        "flush_step": self.flush_step,
+                        "partial_commit": self.partial_commit,
+                    }
                 )
                 .env[self.model_id.model]
                 .load([], datas)
