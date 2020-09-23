@@ -44,6 +44,7 @@ class ImportPatternWizard(models.TransientModel):
                 "datas": self.import_file,
                 "datas_fname": self.filename,
                 "kind": "import",
+                "export_id": self.ir_exports_id.id,
             }
         )
         self.ir_exports_id.with_delay(

@@ -172,6 +172,7 @@ class IrExports(models.Model):
                 "datas_fname": name,
                 "kind": "export",
                 "status": "success",
+                "export_id": self.id,
             }
         )
 

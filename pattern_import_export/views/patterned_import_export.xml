@@ -11,6 +11,7 @@
                 <field name="status"/>
                 <field name="kind"/>
                 <field name="info"/>
+                <field name="export_id"/>
             </tree>
         </field>
     </record>
@@ -29,6 +30,7 @@
                         <field name="kind" readonly="1"/>
                         <field name="info" readonly="1"/>
                         <field name="info_detail" readonly="1"/>
+                        <field name="export_id" readonly="1"/>
                     </group>
                 </sheet>
             </form>
