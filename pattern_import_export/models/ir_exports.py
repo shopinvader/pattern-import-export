@@ -284,7 +284,7 @@ class IrExports(models.Model):
             datas = self._read_import_data(attachment_data)
             res = (
                 self.with_context(
-                    load_format="flatty",
+                    load_format="pattern_format",
                     pattern_import_export_model=self.model_id.model,
                 )
                 .env[self.model_id.model]
