@@ -236,9 +236,10 @@ class IrExports(models.Model):
             patterned_import.status = "fail"
             patterned_import.info = e
         res = (
-            self.with_context(load_format="flatty")
+            self.with_context(
+                load_format="flatty", pattern_import_export_model=self.model_id.model
+            )
             .env[self.model_id.model]
-            .with_context(pattern_import_export_model=self.model_id.model)
             .load([], datas)
         )
         patterned_import.info, patterned_import.status = self._process_load_result(
