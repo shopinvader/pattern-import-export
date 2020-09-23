@@ -34,6 +34,50 @@ class IrExports(models.Model):
         default=True, help="Import data even if some line have failed"
     )
     flush_step = fields.Integer(default=500, help="Define the size of batch import")
+    count_pattimpex_fail = fields.Integer(compute="_compute_pattimpex_counts")
+    count_pattimpex_pending = fields.Integer(compute="_compute_pattimpex_counts")
+    count_pattimpex_success = fields.Integer(compute="_compute_pattimpex_counts")
+    pattimpex_ids = fields.One2many("patterned.import.export", "export_id")
+
+    def _compute_pattimpex_counts(self):
+        for rec in self:
+            for state in ("fail", "pending", "success"):
+                field_name = "count_pattimpex_" + state
+                count = len(rec.pattimpex_ids.filtered(lambda r: r.status == state).ids)
+                setattr(rec, field_name, count)
+
+    def button_open_pattimpex_fail(self):
+        ids = self.pattimpex_ids.filtered(lambda r: r.status == "fail").ids
+        return {
+            "name": _("Patterned imports/exports"),
+            "view_type": "form",
+            "view_mode": "tree,form",
+            "res_model": "patterned.import.export",
+            "type": "ir.actions.act_window",
+            "domain": [("id", "in", ids)],
+        }
+
+    def button_open_pattimpex_pending(self):
+        ids = self.pattimpex_ids.filtered(lambda r: r.status == "pending").ids
+        return {
+            "name": _("Patterned imports/exports"),
+            "view_type": "form",
+            "view_mode": "tree,form",
+            "res_model": "patterned.import.export",
+            "type": "ir.actions.act_window",
+            "domain": [("id", "in", ids)],
+        }
+
+    def button_open_pattimpex_success(self):
+        ids = self.pattimpex_ids.filtered(lambda r: r.status == "success").ids
+        return {
+            "name": _("Patterned imports/exports"),
+            "view_type": "form",
+            "view_mode": "tree,form",
+            "res_model": "patterned.import.export",
+            "type": "ir.actions.act_window",
+            "domain": [("id", "in", ids)],
+        }
 
     @property
     def row_start_records(self):
