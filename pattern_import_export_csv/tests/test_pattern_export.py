@@ -13,7 +13,7 @@ from odoo.tests.common import SavepointCase
 DEBUG_SAVE_EXPORTS = True
 
 PATH = path.dirname(__file__)
-CELL_VALUE_EMPTY = None
+CELL_VALUE_EMPTY = ""
 
 
 class TestPatternExportCsv(ExportPatternCommon, SavepointCase):
@@ -33,36 +33,25 @@ class TestPatternExportCsv(ExportPatternCommon, SavepointCase):
             full_path = PATH + export.name + ".csv"
             with open(full_path, "wt") as out:
                 out.write(decoded_data)
-            # with open(full_path, "wt") as out:
-            #     writer = csv.writer(out)
-            #     writer.writerow(decoded_data)
-        res = csv.reader(decoded_data, delimiter=",")
-        for el in res:
-            print(el)
-        return
-
-
-    def _helper_check_rows(self, reader, values):
-        # skip header
-        reader.__next__()
-        for row in reader:
-            self.assertEqual(row, values)
+        result = []
+        for line in decoded_data.split("\r\n"):
+            result.append([val for val in line.split(",")])
+        return result
 
     def test_export_headers(self):
-        reader = self._helper_get_resulting_csv(self.ir_exports, self.partners)
-        expected_headers = [
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        expected_content = [
             "id",
             "name",
             "street",
             "country_id|code",
             "parent_id|country_id|code",
         ]
-        headers = reader.__next__()
-        self.assertEqual(headers, expected_headers)
+        self.assertEqual(csv_file_lines[0], expected_content)
 
     def test_export_headers_descriptive(self):
         self.ir_exports.use_description = True
-        reader = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
         expected_headers = [
             "ID",
             "Name",
@@ -70,38 +59,36 @@ class TestPatternExportCsv(ExportPatternCommon, SavepointCase):
             "Country|Country Code",
             "Related Company|Country|Country Code",
         ]
-        headers = reader.__next__()
-        self.assertEqual(headers, expected_headers)
+        self.assertEqual(csv_file_lines[0], expected_headers)
 
     def test_export_vals(self):
-        reader = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
         id1 = self.env.ref("base.res_partner_1").id
         id2 = self.env.ref("base.res_partner_2").id
         id3 = self.env.ref("base.res_partner_3").id
-        expected_values = [
-            [id1, "Wood Corner", "1164 Cambridge Drive", "US"],
-            [id2, "Deco Addict", "325 Elsie Drive", "US"],
-            [id3, "Gemini Furniture", "1128 Lunetta Street", "US"],
+        expected_content = [
+            [str(id1), "Wood Corner", "1164 Cambridge Drive", "US", ""],
+            [str(id2), "Deco Addict", "325 Elsie Drive", "US", ""],
+            [str(id3), "Gemini Furniture", "1128 Lunetta Street", "US", ""],
         ]
-        self._helper_check_rows(reader, expected_values)
+        self.assertEqual(csv_file_lines[1:4], expected_content)
 
     def test_export_m2m_headers(self):
-        reader = self._helper_get_resulting_csv(self.ir_exports_m2m, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_m2m, self.users)
         expected_headers = ["id", "name", "company_ids|1|name"]
-        headers = reader.__next__()
-        self.assertEqual(headers, expected_headers)
+        self.assertEqual(csv_file_lines[0], expected_headers)
 
     def test_export_m2m_values(self):
-        reader = self._helper_get_resulting_csv(self.ir_exports_m2m, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_m2m, self.users)
         expected_values = [
-            [self.user1.id, "Wood Corner", "Awesome company"],
-            [self.user2.id, "Wood Corner", "Awesome company"],
-            [self.user3.id, "Deco Addict", "YourCompany"],
+            [str(self.user1.id), "Wood Corner", "Awesome company"],
+            [str(self.user2.id), "Wood Corner", "Awesome company"],
+            [str(self.user3.id), "Deco Addict", "YourCompany"],
         ]
-        self._helper_check_rows(reader, expected_values)
+        self.assertEqual(csv_file_lines[1:4], expected_values)
 
     def test_export_o2m_headers(self):
-        reader = self._helper_get_resulting_csv(self.ir_exports_o2m, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_o2m, self.partners)
         expected_headers = [
             "id",
             "name",
@@ -115,33 +102,33 @@ class TestPatternExportCsv(ExportPatternCommon, SavepointCase):
             "user_ids|3|name",
             "user_ids|3|company_ids|1|name",
         ]
-        headers = reader.__next__()
-        self.assertEqual(headers, expected_headers)
+        self.assertEqual(csv_file_lines[0], expected_headers)
 
     def test_export_o2m_values(self):
-        reader = self._helper_get_resulting_csv(self.ir_exports_o2m, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_o2m, self.partners)
         id1 = self.env.ref("base.res_partner_1").id
         id2 = self.env.ref("base.res_partner_2").id
         expected_values = [
             [
-                id1,
+                str(id1),
                 "Wood Corner",
-                self.user2.id,
-                self.user2.name,
-                self.user2.company_ids[0].name,
-                self.user1.id,
-                self.user1.name,
-                self.user1.company_ids[0].name,
+                str(self.user2.id),
+                str(self.user2.name),
+                str(self.user2.company_ids[0].name),
+                str(self.user1.id),
+                str(self.user1.name),
+                str(self.user1.company_ids[0].name),
                 CELL_VALUE_EMPTY,
                 CELL_VALUE_EMPTY,
                 CELL_VALUE_EMPTY,
             ],
             [
-                id2,
+                str(id2),
                 "Deco Addict",
-                self.user3.id,
-                self.user3.name,
-                self.user3.company_ids[0].name,
+                str(self.user3.id),
+                str(self.user3.name),
+                str(self.user3.company_ids[0].name),
+                CELL_VALUE_EMPTY,
                 CELL_VALUE_EMPTY,
                 CELL_VALUE_EMPTY,
                 CELL_VALUE_EMPTY,
@@ -149,4 +136,4 @@ class TestPatternExportCsv(ExportPatternCommon, SavepointCase):
                 CELL_VALUE_EMPTY,
             ],
         ]
-        self._helper_check_rows(reader, expected_values)
+        self.assertEqual(csv_file_lines[1:3], expected_values)

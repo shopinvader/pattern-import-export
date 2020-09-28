@@ -2,25 +2,16 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import base64
-from io import BytesIO
 from os import path
-
-# TODO FIXME somehow Travis complains that openpyxl isn't there,
-# the warning shows only here and not in any other import of openpyxl?
-# pylint: disable=missing-manifest-dependency
-import openpyxl
-
+import io
 from odoo.tests import SavepointCase
 from odoo.tools import mute_logger
-
 # helper to dump the result of the import into an excel file
-DUMP_OUTPUT = False
-
-
+DUMP_OUTPUT = True
 PATH = path.dirname(__file__) + "/fixtures/"
 
 
-class TestPatternImport(SavepointCase):
+class TestPatternImportCsv(SavepointCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -34,7 +25,7 @@ class TestPatternImport(SavepointCase):
                 "name": "Partner",
                 "resource": "res.partner",
                 "is_pattern": True,
-                "export_format": "xlsx",
+                "export_format": "csv",
             }
         )
         cls.ir_export_users = cls.env["ir.exports"].create(
@@ -42,7 +33,7 @@ class TestPatternImport(SavepointCase):
                 "name": "User",
                 "resource": "res.users",
                 "is_pattern": True,
-                "export_format": "xlsx",
+                "export_format": "csv",
             }
         )
         cls.user_admin = cls.env.ref("base.user_admin")
@@ -64,7 +55,7 @@ class TestPatternImport(SavepointCase):
             attachment = cls.env["patterned.import.export"].search(
                 [], limit=1, order="id desc"
             )
-            output_name = filename.replace(".xlsx", ".result.xlsx")
+            output_name = filename.replace(".csv", ".result.csv")
             with open(output_name, "wb") as output:
                 output.write(base64.b64decode(attachment.datas))
 
@@ -73,7 +64,7 @@ class TestPatternImport(SavepointCase):
         * Lookup by email
         * Update some o2m fields
         """
-        self._load_file("example.partners.ok.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.ok.csv", self.ir_export_partner)
         # check first line
         partner = self.env.ref("base.res_partner_1")
 
@@ -137,7 +128,7 @@ class TestPatternImport(SavepointCase):
         * Lookup by email
         * Report error in excel file through wrong email
         """
-        self._load_file("example.partners.fail.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.fail.csv", self.ir_export_partner)
         self.env.clear()
 
         # check that nothong have been done
@@ -156,7 +147,7 @@ class TestPatternImport(SavepointCase):
         attachment = self.env["patterned.import.export"].search(
             [], order="id desc", limit=1
         )
-        infile = BytesIO(base64.b64decode(attachment.datas))
+        infile = io.BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
         ws = wb.worksheets[0]
         self.assertEqual(ws["A1"].value, "#Error")
@@ -174,7 +165,7 @@ class TestPatternImport(SavepointCase):
         * Lookup by DB ID
         * Simple update
         """
-        self._load_file("example.users.ok.xlsx", self.ir_export_users)
+        self._load_file("example.users.ok.csv", self.ir_export_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
@@ -185,10 +176,10 @@ class TestPatternImport(SavepointCase):
         * Simple update
         """
         self.ir_export_users.use_description = True
-        self._load_file("example.users.descriptive.ok.xlsx", self.ir_export_users)
+        self._load_file("example.users.descriptive.ok.csv", self.ir_export_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
-
+attention use_desc
     # TODO FIXME
     @mute_logger("odoo.sql_db")
     def disable_test_import_users_fail(self):
@@ -196,7 +187,7 @@ class TestPatternImport(SavepointCase):
         * Lookup by external ID
         * Report error in excel file through external id not found
         """
-        self._load_file("example.users.fail.xlsx", self.ir_export_users)
+        self._load_file("example.users.fail.csv", self.ir_export_users)
         attachment = self.env["ir.attachment"].search([], order="id desc", limit=1)
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
@@ -206,7 +197,7 @@ class TestPatternImport(SavepointCase):
         self.assertTrue(ws["A3"].value)
 
     def test_import_partners_with_parents(self):
-        self._load_file("example.partners.parent.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.parent.csv", self.ir_export_partner)
         partner_parent = self.env["res.partner"].search([("name", "=", "Apple")])
         self.assertTrue(partner_parent)
         partner_child = self.env["res.partner"].search([("name", "=", "Steve Jobs")])

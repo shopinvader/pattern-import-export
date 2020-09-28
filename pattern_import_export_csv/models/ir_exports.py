@@ -5,42 +5,44 @@ import csv
 import io
 from odoo import _, api, fields, models
 
-
 class IrExports(models.Model):
     _inherit = "ir.exports"
 
     export_format = fields.Selection(selection_add=[("csv", "CSV")])
 
-    @api.multi
-    def _create_csv_file(self, records):
-        self.ensure_one()
-        csv_content = io.StringIO()
-        writer = csv.writer(csv_content, delimiter=",")
-        self._write_headers(writer)
-        self._write_rows(writer, records)
-        return csv_content
-
     def _write_headers(self, writer):
         if self.use_description:
-            writer.writerow((self._get_header(True)))
-        writer.writerow(self._get_header())
+            writer.writerow(self._get_header(use_description=True))
+        writer.writerow(self._get_header(False))
 
     def _write_rows(self, writer, records):
         for row in self._get_data_to_export(records):
             writer.writerow(row.values())
 
     @api.multi
+    def _create_csv_file(self, records):
+        self.ensure_one()
+        virtual_file = io.StringIO()
+        writer = csv.writer(virtual_file)
+        self._write_headers(writer)
+        self._write_rows(writer, records)
+        return virtual_file
+
+    @api.multi
     def _export_with_record_csv(self, records):
         self.ensure_one()
-        csv_file = self._create_csv_file(records)
-        return csv_file.getvalue().encode("utf-8")
+        csv_contents = self._create_csv_file(records)
+        csv_contents.seek(0)
+        return csv_contents.getvalue().encode("utf-8")
 
     # Import part
 
     @api.multi
     def _read_import_data_csv(self, datafile):
-        reader = csv.reader(datafile)
+        file_fmtd = io.StringIO(datafile.decode("utf-8"))
+        reader = csv.DictReader(file_fmtd)
         for line in reader:
+            print(line)
             yield line
 
     def _process_load_result_for_csv(self, attachment, res):
