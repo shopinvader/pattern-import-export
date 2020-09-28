@@ -32,7 +32,7 @@ class IrExports(models.Model):
     )
     export_format = fields.Selection(selection=[])
     partial_commit = fields.Boolean(
-        default=True, help="Import data even if some line have failed"
+        default=True, help="Import data even if some lines fail to import"
     )
     flush_step = fields.Integer(default=500, help="Define the size of batch import")
     count_pattimpex_fail = fields.Integer(compute="_compute_pattimpex_counts")
@@ -302,10 +302,11 @@ class IrExports(models.Model):
             .env[self.model_id.model]
             .load([], datas)
         )
-        load_result = self._process_load_result(patterned_import, res)
-        patterned_import.info = load_result[0]
-        patterned_import.info_detail = load_result[1]
-        patterned_import.status = load_result[2]
+        (
+            patterned_import.info,
+            patterned_import.info_detail,
+            patterned_import.status,
+        ) = self._process_load_result(patterned_import, res)
         return self._notify_user(patterned_import)
 
     def _notify_user(self, patterned_import_export):
