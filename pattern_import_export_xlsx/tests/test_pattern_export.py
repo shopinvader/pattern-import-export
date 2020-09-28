@@ -15,7 +15,7 @@ from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
 CELL_VALUE_EMPTY = None
 
 
-class TestPatternExport(ExportPatternCommon, SavepointCase):
+class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

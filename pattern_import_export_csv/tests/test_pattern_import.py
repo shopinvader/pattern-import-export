@@ -20,7 +20,7 @@ DUMP_OUTPUT = False
 PATH = path.dirname(__file__) + "/fixtures/"
 
 
-class TestPatternImportExcel(SavepointCase):
+class TestPatternImport(SavepointCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -137,7 +137,6 @@ class TestPatternImportExcel(SavepointCase):
         * Lookup by email
         * Report error in excel file through wrong email
         """
-        self.ir_export_partner.partial_commit = False
         self._load_file("example.partners.fail.xlsx", self.ir_export_partner)
         self.env.clear()
 
