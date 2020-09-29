@@ -61,21 +61,6 @@ class IrExports(models.Model):
         reader = self._bytes_to_csv_reader(datafile)
         yield from reader
 
-    def _inject_error_msgs_into_csv_attachment(self, attachment, errors):
-        # Convention for editing CSV file is to slurp it into memory then
-        #   modify it, then save it into a new file
-        reader = self._read_import_data_csv(attachment.datas)
-        has_error_column = self._check_csv_has_error_column(attachment)
-        writer, file = self._attachment_to_csv_writer(attachment)
-        if has_error_column:
-            for idx, line in enumerate(reader, start=0):
-                del line[_("#Error")]
-
-                # Clear previous errors if they exist
-                # Inject them
-        attachment.datas = self._csv_stringio_to_bytes(file)
-        return attachment
-
     def _process_load_result_for_csv(self, attachment, res):
         ids = res["ids"] or []
         info = _(

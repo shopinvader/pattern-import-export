@@ -144,17 +144,6 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         attachment = self.env["patterned.import.export"].search(
             [], order="id desc", limit=1
         )
-        csv_str = base64.b64decode(attachment.datas).decode("utf-8")
-        data = self._split_csv_str(csv_str)
-        # check first column is for errors
-        self.assertEqual(data[0][0], "#Error")
-        for i in range(1, 4):
-            self.assertFalse(data[i][0])
-        self.assertIn(
-            'new row for relation "res_partner" '
-            'violates check constraint "res_partner_check_name"',
-            data[4][0],
-        )
 
     def test_import_users_ok(self):
         """
