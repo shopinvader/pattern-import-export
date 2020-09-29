@@ -2,16 +2,17 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import base64
-from os import path
 import io
-from odoo.tests import SavepointCase
+from os import path
+
 from odoo.tools import mute_logger
+
 # helper to dump the result of the import into an excel file
 DUMP_OUTPUT = True
 PATH = path.dirname(__file__) + "/fixtures/"
+from .common import ExportPatternCsvCommon
 
-
-class TestPatternImportCsv(SavepointCase):
+class TestPatternImportCsv(ExportPatternCsvCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -133,13 +134,9 @@ class TestPatternImportCsv(SavepointCase):
 
         # check that nothong have been done
         partner = self.env.ref("base.res_partner_1")
-
         self.assertEqual(partner.name, "Wood Corner")
-
         partner = self.env.ref("base.res_partner_2")
-
         self.assertEqual(partner.name, "Deco Addict")
-
         partner = self.env["res.partner"].search(
             [("email", "=", "akretion-pattern@example.com")]
         )
@@ -147,17 +144,16 @@ class TestPatternImportCsv(SavepointCase):
         attachment = self.env["patterned.import.export"].search(
             [], order="id desc", limit=1
         )
-        infile = io.BytesIO(base64.b64decode(attachment.datas))
-        wb = openpyxl.load_workbook(filename=infile)
-        ws = wb.worksheets[0]
-        self.assertEqual(ws["A1"].value, "#Error")
-        self.assertIsNone(ws["A2"].value)
-        self.assertIsNone(ws["A3"].value)
-        self.assertIsNone(ws["A4"].value)
+        csv_str = base64.b64decode(attachment.datas).decode("utf-8")
+        data = self._split_csv_str(csv_str)
+        # check first column is for errors
+        self.assertEqual(data[0][0], "#Error")
+        for i in range(1, 4):
+            self.assertFalse(data[i][0])
         self.assertIn(
             'new row for relation "res_partner" '
             'violates check constraint "res_partner_check_name"',
-            ws["A5"].value,
+            data[4][0],
         )
 
     def test_import_users_ok(self):
@@ -179,7 +175,7 @@ class TestPatternImportCsv(SavepointCase):
         self._load_file("example.users.descriptive.ok.csv", self.ir_export_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
-attention use_desc
+
     # TODO FIXME
     @mute_logger("odoo.sql_db")
     def disable_test_import_users_fail(self):

@@ -3,12 +3,10 @@
 # pylint: disable=missing-manifest-dependency
 
 import base64
-import csv
-import io
 from os import path
+
 # pylint: disable=odoo-addons-relative-import
-from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
-from odoo.tests.common import SavepointCase
+from .common import ExportPatternCsvCommon
 
 DEBUG_SAVE_EXPORTS = True
 
@@ -16,7 +14,7 @@ PATH = path.dirname(__file__)
 CELL_VALUE_EMPTY = ""
 
 
-class TestPatternExportCsv(ExportPatternCommon, SavepointCase):
+class TestPatternExportCsv(ExportPatternCsvCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -33,10 +31,7 @@ class TestPatternExportCsv(ExportPatternCommon, SavepointCase):
             full_path = PATH + export.name + ".csv"
             with open(full_path, "wt") as out:
                 out.write(decoded_data)
-        result = []
-        for line in decoded_data.split("\r\n"):
-            result.append([val for val in line.split(",")])
-        return result
+        return self._split_csv_str(decoded_data)
 
     def test_export_headers(self):
         csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
