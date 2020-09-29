@@ -2,27 +2,27 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 # pylint: disable=missing-manifest-dependency
 
-import base64
-import csv
 import io
+import base64
 from os import path
+import csv
 # pylint: disable=odoo-addons-relative-import
 from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
 from odoo.tests.common import SavepointCase
-
 DEBUG_SAVE_EXPORTS = True
-CSV_LINE_DELIMITER = "\n"
-CSV_VAL_DELIMITER = ","
 PATH = path.dirname(__file__)
 CELL_VALUE_EMPTY = ""
+from ..constants import CSV_LINE_DELIMITER, CSV_VAL_DELIMITER
+from odoo.addons.queue_job.tests.common import JobMixin
 
 
-class ExportPatternCsvCommon(ExportPatternCommon, SavepointCase):
+class ExportPatternCsvCommon(JobMixin, SavepointCase):
 
     def _split_csv_str(self, astring):
         result = []
-        for line in astring.split(CSV_LINE_DELIMITER):
-            result.append([val for val in line.split(CSV_VAL_DELIMITER)])
+        virtual_file = io.StringIO(astring)
+        for line in csv.reader(virtual_file):
+            result.append(line)
         return result
 
     def _helper_get_resulting_csv(self, export, records):

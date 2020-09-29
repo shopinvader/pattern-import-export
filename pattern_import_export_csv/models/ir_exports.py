@@ -5,11 +5,14 @@ import csv
 import io
 from odoo import _, api, fields, models
 import base64
+from ..constants import CSV_LINE_DELIMITER, CSV_VAL_DELIMITER
 
 class IrExports(models.Model):
     _inherit = "ir.exports"
 
     export_format = fields.Selection(selection_add=[("csv", "CSV")])
+
+    # CSV Helpers
 
     def _bytes_to_csv_writer(self, bytes):
         file_fmtd = io.StringIO(bytes.decode("utf-8"))
@@ -24,6 +27,12 @@ class IrExports(models.Model):
         #   modify it, then save it into a new file
         bytes = base64.b64decode(attachment.datas)
         return self._bytes_to_csv_writer(bytes)
+
+    def _bytes_to_csv_reader(self, bytes):
+        file_fmtd = io.StringIO(bytes.decode("utf-8"))
+        return csv.DictReader(file_fmtd)
+
+    # Export part
 
     def _write_headers(self, writer):
         if self.use_description:
@@ -45,10 +54,6 @@ class IrExports(models.Model):
 
     # Import part
 
-    def _bytes_to_csv_reader(self, bytes):
-        file_fmtd = io.StringIO(bytes.decode("utf-8"))
-        return csv.DictReader(file_fmtd)
-
     def _check_csv_has_error_column(self, attachment):
         reader = self._read_import_data_csv(attachment)
         first_line = next(reader, None)
@@ -56,10 +61,23 @@ class IrExports(models.Model):
             return True
         return False
 
+    def _csv_make_nondescriptive(self, datafile):
+        contents = datafile.decode("utf-8")
+        # manually delete first line
+        idx_second_line = contents.find(CSV_LINE_DELIMITER) + 1
+        contents_no_first_line = contents[idx_second_line:]
+        return contents_no_first_line.encode("utf-8")
+
     @api.multi
     def _read_import_data_csv(self, datafile):
+        if self.use_description:
+            datafile = self._csv_make_nondescriptive(datafile)
         reader = self._bytes_to_csv_reader(datafile)
-        yield from reader
+        for line in reader:
+            for k, v in line.items():
+                if v == "":
+                    line[k] = None
+            yield line
 
     def _process_load_result_for_csv(self, attachment, res):
         ids = res["ids"] or []

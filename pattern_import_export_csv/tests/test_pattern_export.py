@@ -4,7 +4,7 @@
 
 import base64
 from os import path
-
+import csv
 # pylint: disable=odoo-addons-relative-import
 from .common import ExportPatternCsvCommon
 
