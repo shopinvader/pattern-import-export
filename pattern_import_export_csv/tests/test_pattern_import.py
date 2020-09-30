@@ -154,6 +154,27 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
+    def test_import_users_ok_fmt2(self):
+        """
+        Change CSV format parameters
+        """
+        self.ir_export_users.csv_value_delimiter = "²"
+        self.ir_export_users.csv_quote_character = "%"
+        self._load_file("example.users.ok.fmt2.csv", self.ir_export_users)
+        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
+        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+
+    # TODO FIXME
+    def disable_test_import_users_fail_bad_fmt(self):
+        """
+        Use working file for default config; change config to mismatch
+        """
+        self.ir_export_users.csv_value_delimiter = "²"
+        self.ir_export_users.csv_quote_character = "%"
+        self._load_file("example.users.ok.csv", self.ir_export_users)
+        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
+        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+
     def test_import_users_descriptive_ok(self):
         """
         * Use descriptive headers

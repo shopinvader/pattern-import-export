@@ -14,12 +14,21 @@ class IrExports(models.Model):
     _inherit = "ir.exports"
 
     export_format = fields.Selection(selection_add=[("csv", "CSV")])
+    csv_value_delimiter = fields.Char(default=",")
+    csv_quote_character = fields.Char(default='"')
 
     # CSV Helpers
 
     def _bytes_to_csv_writer(self, bytes_content):
         file_fmtd = io.StringIO(bytes_content.decode("utf-8"))
-        return csv.DictWriter(file_fmtd), file_fmtd
+        return (
+            csv.DictWriter(
+                file_fmtd,
+                delimiter=self.csv_value_delimiter,
+                quotechar=self.csv_quote_character,
+            ),
+            file_fmtd,
+        )
 
     def _csv_stringio_to_bytes(self, stringio):
         stringio.seek(0)
@@ -33,7 +42,11 @@ class IrExports(models.Model):
 
     def _bytes_to_csv_reader(self, bytes_content):
         file_fmtd = io.StringIO(bytes_content.decode("utf-8"))
-        return csv.DictReader(file_fmtd)
+        return csv.DictReader(
+            file_fmtd,
+            delimiter=self.csv_value_delimiter,
+            quotechar=self.csv_quote_character,
+        )
 
     # Export part
 
@@ -50,7 +63,11 @@ class IrExports(models.Model):
     def _export_with_record_csv(self, records):
         self.ensure_one()
         virtual_file = io.StringIO()
-        writer = csv.writer(virtual_file)
+        writer = csv.writer(
+            virtual_file,
+            delimiter=self.csv_value_delimiter,
+            quotechar=self.csv_quote_character,
+        )
         self._write_headers(writer)
         self._write_rows(writer, records)
         return self._csv_stringio_to_bytes(virtual_file)

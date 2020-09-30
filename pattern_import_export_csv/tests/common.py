@@ -18,10 +18,14 @@ CELL_VALUE_EMPTY = ""
 
 
 class ExportPatternCsvCommon(ExportPatternCommon, SavepointCase):
-    def _split_csv_str(self, astring):
+    def _split_csv_str(self, astring, export_id):
         result = []
         virtual_file = io.StringIO(astring)
-        for line in csv.reader(virtual_file):
+        for line in csv.reader(
+            virtual_file,
+            delimiter=export_id.csv_value_delimiter,
+            quotechar=export_id.csv_quote_character,
+        ):
             result.append(line)
         return result
 

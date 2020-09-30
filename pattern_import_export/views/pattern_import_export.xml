@@ -39,7 +39,7 @@
 
             </xpath>
             <xpath expr="//form/group[1]" position="after">
-                <group>
+                <group name="general_info">
                     <field name="export_format" required="True"/>
                     <field name="pattern_file"/>
                     <field name="pattern_last_generation_date"/>

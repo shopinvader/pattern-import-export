@@ -8,7 +8,7 @@ from os import path
 # pylint: disable=odoo-addons-relative-import
 from .common import ExportPatternCsvCommon
 
-DEBUG_SAVE_EXPORTS = True
+DEBUG_SAVE_EXPORTS = False
 
 PATH = path.dirname(__file__)
 CELL_VALUE_EMPTY = ""
@@ -35,9 +35,22 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
             full_path = PATH + export.name + ".csv"
             with open(full_path, "wt") as out:
                 out.write(decoded_data)
-        return self._split_csv_str(decoded_data)
+        return self._split_csv_str(decoded_data, export)
 
     def test_export_headers(self):
+        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        expected_content = [
+            "id",
+            "name",
+            "street",
+            "country_id|code",
+            "parent_id|country_id|code",
+        ]
+        self.assertEqual(csv_file_lines[0], expected_content)
+
+    def test_export_headers_fmt2(self):
+        self.ir_exports.csv_value_delimiter = "²"
+        self.ir_exports.csv_quote_character = "%"
         csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
         expected_content = [
             "id",
