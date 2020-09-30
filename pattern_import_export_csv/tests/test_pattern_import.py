@@ -9,7 +9,7 @@ from odoo.tools import mute_logger
 from .common import ExportPatternCsvCommon
 
 # helper to dump the result of the import into an excel file
-DUMP_OUTPUT = True
+DUMP_OUTPUT = False
 PATH = path.dirname(__file__) + "/fixtures/"
 
 

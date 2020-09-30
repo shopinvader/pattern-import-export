@@ -12,7 +12,7 @@ from odoo.tests.common import SavepointCase
 # pylint: disable=odoo-addons-relative-import
 from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
 
-DEBUG_SAVE_EXPORTS = True
+DEBUG_SAVE_EXPORTS = False
 PATH = path.dirname(__file__)
 CELL_VALUE_EMPTY = ""
 
