@@ -1,11 +1,14 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 # pylint: disable=missing-manifest-dependency
+import base64
 import csv
 import io
+
 from odoo import _, api, fields, models
-import base64
-from ..constants import CSV_LINE_DELIMITER, CSV_VAL_DELIMITER
+
+from ..constants import CSV_LINE_DELIMITER
+
 
 class IrExports(models.Model):
     _inherit = "ir.exports"
@@ -14,8 +17,8 @@ class IrExports(models.Model):
 
     # CSV Helpers
 
-    def _bytes_to_csv_writer(self, bytes):
-        file_fmtd = io.StringIO(bytes.decode("utf-8"))
+    def _bytes_to_csv_writer(self, bytes_content):
+        file_fmtd = io.StringIO(bytes_content.decode("utf-8"))
         return csv.DictWriter(file_fmtd), file_fmtd
 
     def _csv_stringio_to_bytes(self, stringio):
@@ -25,11 +28,11 @@ class IrExports(models.Model):
     def _attachment_to_csv_writer(self, attachment):
         # Convention for editing CSV file is to slurp it into memory then
         #   modify it, then save it into a new file
-        bytes = base64.b64decode(attachment.datas)
-        return self._bytes_to_csv_writer(bytes)
+        bytes_content = base64.b64decode(attachment.datas)
+        return self._bytes_to_csv_writer(bytes_content)
 
-    def _bytes_to_csv_reader(self, bytes):
-        file_fmtd = io.StringIO(bytes.decode("utf-8"))
+    def _bytes_to_csv_reader(self, bytes_content):
+        file_fmtd = io.StringIO(bytes_content.decode("utf-8"))
         return csv.DictReader(file_fmtd)
 
     # Export part

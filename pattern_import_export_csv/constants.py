@@ -1,3 +1,2 @@
-
 CSV_LINE_DELIMITER = "\n"
 CSV_VAL_DELIMITER = ","

@@ -4,7 +4,7 @@
 
 import base64
 from os import path
-import csv
+
 # pylint: disable=odoo-addons-relative-import
 from .common import ExportPatternCsvCommon
 
@@ -19,8 +19,12 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
     def setUpClass(cls):
         super().setUpClass()
         cls.ir_exports = cls.env.ref("pattern_import_export_csv.demo_export_csv")
-        cls.ir_exports_m2m = cls.env.ref("pattern_import_export_csv.demo_export_m2m_csv")
-        cls.ir_exports_o2m = cls.env.ref("pattern_import_export_csv.demo_export_o2m_csv")
+        cls.ir_exports_m2m = cls.env.ref(
+            "pattern_import_export_csv.demo_export_m2m_csv"
+        )
+        cls.ir_exports_o2m = cls.env.ref(
+            "pattern_import_export_csv.demo_export_o2m_csv"
+        )
 
     def _helper_get_resulting_csv(self, export, records):
         export._export_with_record(records)
@@ -83,7 +87,9 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.assertEqual(csv_file_lines[1:4], expected_values)
 
     def test_export_o2m_headers(self):
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_o2m, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.ir_exports_o2m, self.partners
+        )
         expected_headers = [
             "id",
             "name",
@@ -100,7 +106,9 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.assertEqual(csv_file_lines[0], expected_headers)
 
     def test_export_o2m_values(self):
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_o2m, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.ir_exports_o2m, self.partners
+        )
         id1 = self.env.ref("base.res_partner_1").id
         id2 = self.env.ref("base.res_partner_2").id
         expected_values = [
