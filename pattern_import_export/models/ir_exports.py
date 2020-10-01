@@ -282,6 +282,17 @@ class IrExports(models.Model):
         try:
             attachment_data = base64.b64decode(patterned_import.datas.decode("utf-8"))
             datas = self._read_import_data(attachment_data)
+            res = (
+                self.with_context(
+                    load_format="flatty",
+                    pattern_import_export_model=self.model_id.model,
+                )
+                .env[self.model_id.model]
+                .load([], datas)
+            )
+            patterned_import.info, patterned_import.status = self._process_load_result(
+                patterned_import, res
+            )
         except Exception as e:
             patterned_import.status = "fail"
             patterned_import.info = _("Failed (check details)")
