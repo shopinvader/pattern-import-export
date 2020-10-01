@@ -164,16 +164,18 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
-    # TODO FIXME
-    def disable_test_import_users_fail_bad_fmt(self):
+    def test_import_users_fail_bad_fmt(self):
         """
         Use working file for default config; change config to mismatch
         """
+        pattimpex_start = self.env["patterned.import.export"].search([])
         self.ir_export_users.csv_value_delimiter = "²"
         self.ir_export_users.csv_quote_character = "%"
         self._load_file("example.users.ok.csv", self.ir_export_users)
-        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
-        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+        pattimpex_new = self.env["patterned.import.export"].search(
+            [("id", "not in", pattimpex_start.ids)]
+        )
+        self.assertEqual(pattimpex_new.status, "fail")
 
     def test_import_users_descriptive_ok(self):
         """
@@ -186,12 +188,17 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
+    def test_import_users_fail_bad_id(self):
+        pattimpex_start = self.env["patterned.import.export"].search([])
+        self._load_file("example.users.fail.csv", self.ir_export_users)
+        pattimpex_new = self.env["patterned.import.export"].search(
+            [("id", "not in", pattimpex_start.ids)]
+        )
+        self.assertEqual(pattimpex_new.status, "fail")
+
     def test_import_partners_with_parents(self):
         self._load_file("example.partners.parent.csv", self.ir_export_partner)
         partner_parent = self.env["res.partner"].search([("name", "=", "Apple")])
         self.assertTrue(partner_parent)
         partner_child = self.env["res.partner"].search([("name", "=", "Steve Jobs")])
         self.assertTrue(partner_child.parent_id == partner_parent)
-
-    # TODO FIXME use example.users.fail.csv, which should fail lookup by extid
-    #  currently does not work (get error message directly at import screen)
