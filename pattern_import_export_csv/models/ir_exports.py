@@ -50,12 +50,12 @@ class IrExports(models.Model):
 
     # Export part
 
-    def _write_headers(self, writer):
+    def _csv_write_headers(self, writer):
         if self.use_description:
             writer.writerow(self._get_header(use_description=True))
         writer.writerow(self._get_header(False))
 
-    def _write_rows(self, writer, records):
+    def _csv_write_rows(self, writer, records):
         for row in self._get_data_to_export(records):
             writer.writerow(row.values())
 
@@ -68,18 +68,11 @@ class IrExports(models.Model):
             delimiter=self.csv_value_delimiter,
             quotechar=self.csv_quote_character,
         )
-        self._write_headers(writer)
-        self._write_rows(writer, records)
+        self._csv_write_headers(writer)
+        self._csv_write_rows(writer, records)
         return self._csv_stringio_to_bytes(virtual_file)
 
     # Import part
-
-    def _check_csv_has_error_column(self, attachment):
-        reader = self._read_import_data_csv(attachment)
-        first_line = next(reader, None)
-        if first_line[0] == _("#Error"):
-            return True
-        return False
 
     def _csv_make_nondescriptive(self, datafile):
         contents = datafile.decode("utf-8")
