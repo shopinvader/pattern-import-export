@@ -30,6 +30,10 @@ class IrExports(models.Model):
         string="Pattern last generation date", readonly=True
     )
     export_format = fields.Selection(selection=[])
+    partial_commit = fields.Boolean(
+        default=True, help="Import data even if some line have failed"
+    )
+    flush_step = fields.Integer(default=500, help="Define the size of batch import")
 
     @property
     def row_start_records(self):
@@ -83,7 +87,7 @@ class IrExports(models.Model):
         for record in records:
             yield self._get_data_to_export_by_record(record, json_parser)
 
-    def json2flatty(self, data):
+    def json2pattern_format(self, data):
         res = {}
         for header in self._get_header():
             try:
@@ -112,7 +116,7 @@ class IrExports(models.Model):
         self.ensure_one()
         record.ensure_one()
         data = record.jsonify(parser)[0]
-        return self.json2flatty(data)
+        return self.json2pattern_format(data)
 
     @api.multi
     def _generate_with_records(self, records):
@@ -237,7 +241,11 @@ class IrExports(models.Model):
             patterned_import.info = e
         res = (
             self.with_context(
-                load_format="flatty", pattern_import_export_model=self.model_id.model
+                pattern_config={
+                    "model": self.model_id.model,
+                    "flush_step": self.flush_step,
+                    "partial_commit": self.partial_commit,
+                }
             )
             .env[self.model_id.model]
             .load([], datas)

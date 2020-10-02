@@ -17,6 +17,8 @@
                     <field name="pattern_file"/>
                     <field name="pattern_last_generation_date"/>
                     <field name="id" invisible="1"/>
+                    <field name="partial_commit"/>
+                    <field name="flush_step"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='field2_id']" position="attributes">
