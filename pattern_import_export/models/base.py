@@ -224,13 +224,12 @@ class Base(models.AbstractModel):
                 yield self._pattern_format2json(row), {
                     "rows": {"from": idx + 1, "to": idx + 1}
                 }
-                if idx % pattern_config["flush_step"] == 0:
+                if (idx + 1) % pattern_config["flush_step"] == 0:
                     flush()
                     _logger.info("Progress status: record imported {}".format(idx))
                     if partial_commit:
-                        # if we want to have a partial commit we need to change the
-                        # model_load savepoint so roolback in the case of error will
-                        # roolback here
+                        # set the model_load savepoint so that in case of error,
+                        # rollback to this point
                         self._cr.execute("SAVEPOINT model_load")
             # we force to flush before ending the loop
             # so we can log correctly and commit if needed

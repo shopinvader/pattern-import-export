@@ -52,21 +52,29 @@ class IrExports(models.Model):
 
     def _csv_write_headers(self, writer):
         if self.use_description:
-            writer.writerow(self._get_header(use_description=True))
-        writer.writerow(self._get_header(False))
+            # note DictWriter needs a dict; uses keys to determine order
+            headers_zipped = zip(
+                self._get_header(use_description=False),
+                self._get_header(use_description=True),
+            )
+            headers = {k: v for k, v in headers_zipped}
+            writer.writerow(headers)
+        headers = {k: k for k in self._get_header(use_description=False)}
+        writer.writerow(headers)
 
     def _csv_write_rows(self, writer, records):
         for row in self._get_data_to_export(records):
-            writer.writerow(row.values())
+            writer.writerow(row)
 
     @api.multi
     def _export_with_record_csv(self, records):
         self.ensure_one()
         virtual_file = io.StringIO()
-        writer = csv.writer(
+        writer = csv.DictWriter(
             virtual_file,
             delimiter=self.csv_value_delimiter,
             quotechar=self.csv_quote_character,
+            fieldnames=self._get_header(),
         )
         self._csv_write_headers(writer)
         self._csv_write_rows(writer, records)

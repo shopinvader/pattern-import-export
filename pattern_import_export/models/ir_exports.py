@@ -31,7 +31,7 @@ class IrExports(models.Model):
     )
     export_format = fields.Selection(selection=[])
     partial_commit = fields.Boolean(
-        default=True, help="Import data even if some line have failed"
+        default=True, help="Import data even if some lines fail to import"
     )
     flush_step = fields.Integer(default=500, help="Define the size of batch import")
     count_pattimpex_fail = fields.Integer(compute="_compute_pattimpex_counts")
