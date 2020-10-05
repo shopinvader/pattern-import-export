@@ -8,7 +8,7 @@ from os import path
 # pylint: disable=odoo-addons-relative-import
 from .common import ExportPatternCsvCommon
 
-DEBUG_SAVE_EXPORTS = True
+DEBUG_SAVE_EXPORTS = False
 
 PATH = path.dirname(__file__)
 CELL_VALUE_EMPTY = ""

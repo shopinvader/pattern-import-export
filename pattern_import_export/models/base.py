@@ -224,7 +224,7 @@ class Base(models.AbstractModel):
                 yield self._pattern_format2json(row), {
                     "rows": {"from": idx + 1, "to": idx + 1}
                 }
-                if (idx + 1) % pattern_config["flush_step"] == 0:
+                if idx % pattern_config["flush_step"] == 0:
                     flush()
                     _logger.info("Progress status: record imported {}".format(idx))
                     if partial_commit:
