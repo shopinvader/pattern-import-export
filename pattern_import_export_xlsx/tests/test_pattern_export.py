@@ -2,47 +2,15 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 # pylint: disable=missing-manifest-dependency
 
-import base64
-from io import BytesIO
-
-import openpyxl
-
 from odoo.tests.common import SavepointCase
 
 # pylint: disable=odoo-addons-relative-import
-from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
+from .common import ExportPatternExcelCommon
 
 CELL_VALUE_EMPTY = None
 
 
-class TestPatternExport(ExportPatternCommon, SavepointCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        for el in cls.ir_exports, cls.ir_exports_m2m, cls.ir_exports_o2m:
-            el.export_format = "xlsx"
-
-    def _helper_get_resulting_wb(self, export, records):
-        export._export_with_record(records)
-        attachment = self._get_attachment(export)
-        self.assertEqual(attachment.name, export.name + ".xlsx")
-        decoded_data = base64.b64decode(attachment.datas)
-        decoded_obj = BytesIO(decoded_data)
-        return openpyxl.load_workbook(decoded_obj)
-
-    def _helper_check_cell_values(self, sheet, expected_values):
-        """ To allow for csv-like syntax in tests, just give a list
-        of lists, with 1 list <=> 1 row """
-        for itr_row, row in enumerate(expected_values, start=2):
-            for itr_col, expected_cell_value in enumerate(row, start=1):
-                cell_value = sheet.cell(row=itr_row, column=itr_col).value
-                self.assertEqual(cell_value, expected_cell_value)
-
-    def _helper_check_headers(self, sheet, expected_headers):
-        for itr_col, expected_cell_value in enumerate(expected_headers, start=1):
-            cell_value = sheet.cell(row=1, column=itr_col).value
-            self.assertEqual(cell_value, expected_cell_value)
-
+class TestPatternExport(ExportPatternExcelCommon, SavepointCase):
     def test_export_headers(self):
         wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
         sheet = wb["Partner list"]

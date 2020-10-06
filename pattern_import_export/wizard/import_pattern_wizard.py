@@ -49,4 +49,4 @@ class ImportPatternWizard(models.TransientModel):
         self.ir_exports_id.with_delay(
             description=description
         )._generate_import_with_pattern_job(patterned_import)
-        return {}
+        return patterned_import

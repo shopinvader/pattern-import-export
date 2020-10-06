@@ -45,6 +45,9 @@ class ExportPatternCommon(JobMixin):
             partner_id=cls.partner_2.id,
         )
         cls.users = cls.user1 | cls.user2 | cls.user3
+        # above operations change the email address of partners, reset them to default
+        cls.partner_1.email = "wood.corner26@example.com"
+        cls.partner_2.email = "deco.addict82@example.com"
         # generate xmlid
         cls.users.export_data(["id"])
         cls.partners = cls.partner_1 | cls.partner_2 | cls.partner_3
