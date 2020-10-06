@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_attachment_queue_form" model="ir.ui.view">
+        <field name="model">attachment.queue</field>
+        <field name="inherit_id" ref="attachment_queue.view_attachment_queue_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='url']" position="after">
+                <field name="export_id" attrs="{'invisible': [('export_id', '=', False)]}"/>
+                <field name="pattimpex_id"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
