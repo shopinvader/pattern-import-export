@@ -25,6 +25,8 @@ class TestSyncPattimpexImport(SyncPattimpexCommon):
             self.backend._delete(path.join("test_import_pattimpex/", file))
 
     def _inject_attachment(self, path):
+        """ Creates an attachment.queue (this should already be tested in
+         attachment_synchronize) """
         data = open(PATH_BASE + path, "rb").read()
         attachment_data = base64.b64encode(data)
         vals = {
@@ -54,8 +56,8 @@ class TestSyncPattimpexImport(SyncPattimpexCommon):
         self.assertEqual(self.user.name, "Mitchell Admin Updated")
 
     def test_import_state_correct(self):
-        """ Test the tasks type, attachment.queue type/methods are correctly
-        chained and put in context for correct final result """
+        """ Test attachment.queue has correct values """
         attachment = self._inject_attachment("/fixtures/example.users.xlsx")
         self.task_import.run_task_import_using_patterns_scheduler_step_2()
         self.assertEqual(attachment.state, "done")
+        self.assertEqual(attachment.file_type, "import_pattern")

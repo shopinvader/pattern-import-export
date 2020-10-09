@@ -18,6 +18,10 @@ class TestSyncPattimpexExport(SyncPattimpexCommon):
         super().tearDown()
 
     def test_exports_triggered(self):
+        """ Test the two steps are triggered:
+        1. Export the records in correct format (excel)
+        2. Create an attachment.queue type with the correct file (attachment)
+           and file_type (simple export) """
         pattimpex_before = self.env["patterned.import.export"].search([])
         att_queue_before = self.env["attachment.queue"].search([])
         self.task_export.service_trigger_exports()
@@ -28,7 +32,10 @@ class TestSyncPattimpexExport(SyncPattimpexCommon):
             [("id", "not in", att_queue_before.ids)]
         )
         self.assertEqual(pattimpex_after.attachment_id, att_queue_after.attachment_id)
+        self.assertEqual(att_queue_after.file_type, "export")
 
     def test_domain_works(self):
+        """ Test we get the correct records by specifying export domain
+        on the export sync task """
         user = self.task_export._get_records_to_export()
         self.assertEqual(user.name, "Mitchell Admin")
