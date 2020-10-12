@@ -1,23 +1,21 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-from odoo import _, api, exceptions, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.tools import safe_eval
 
-from .ir_exports import COLUMN_X2M_SEPARATOR
+from odoo.addons.base_jsonify.models.ir_export import convert_dict, update_dict
+
+from _collections import OrderedDict
+
+from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 
 
 class IrExportsLine(models.Model):
     _inherit = "ir.exports.line"
 
-    select_tab_id = fields.Many2one("ir.exports.select.tab", string="Select tab")
-    is_many2x = fields.Boolean(
-        string="Is Many2x field", compute="_compute_is_many2x", store=True
-    )
-    is_many2many = fields.Boolean(
-        string="Is Many2many field", compute="_compute_is_many2many", store=True
-    )
-    is_one2many = fields.Boolean(
-        string="Is One2many field", compute="_compute_is_one2many", store=True
-    )
+    add_select_tab = fields.Boolean()
+    tab_filter_id = fields.Many2one("ir.filters")
     is_key = fields.Boolean(
         default=False,
         help="Determine if this field is considered as key to update "
@@ -32,9 +30,19 @@ class IrExportsLine(models.Model):
     related_model_id = fields.Many2one(
         "ir.model",
         string="Related model",
-        compute="_compute_related_model_id",
+        compute="_compute_related_level_field",
         store=True,
     )
+    related_model_name = fields.Char(related="related_model_id.model")
+    last_field_id = fields.Many2one(
+        "ir.model.fields",
+        string="Last Field",
+        compute="_compute_related_level_field",
+        store=True,
+    )
+    level = fields.Integer(compute="_compute_related_level_field", store=True)
+    required_fields = fields.Char(compute="_compute_required_fields", store=True)
+    hidden_fields = fields.Char(compute="_compute_required_fields", store=True)
     number_occurence = fields.Integer(
         string="# Occurence",
         default=1,
@@ -43,148 +51,94 @@ class IrExportsLine(models.Model):
         "Value should be >= 1",
     )
 
-    @api.multi
-    @api.constrains("is_key", "export_id")
-    def _constrains_one_key_per_export(self):
-        """
-        Constrain function to ensure there is maximum 1 field considered as key
-        for an export.
-        :return:
-        """
-        groupby = "export_id"
-        domain = [(groupby, "in", self.mapped("export_id").ids), ("is_key", "=", True)]
-        read = [groupby]
-        # Get the read group
-        read_values = self.read_group(domain, read, groupby, lazy=False)
-        count_by_export = {
-            v.get(groupby, [0])[0]: v.get("__count", 0) for v in read_values
-        }
-        exceeded_ids = {
-            export_id: nb for export_id, nb in count_by_export.items() if nb > 1
-        }
-        if exceeded_ids:
-            bad_records = self.filtered(
-                lambda e: e.export_id.id in exceeded_ids
-            ).mapped("export_id")
-            details = "\n- ".join(bad_records.mapped("display_name"))
-            message = (
-                _(
-                    "These export pattern are not valid because there is too "
-                    "much field considered as key (1 max):\n- %s"
-                )
-                % details
-            )
-            raise exceptions.ValidationError(message)
-
-    @api.multi
-    @api.constrains("number_occurence", "is_many2many", "is_one2many")
-    def _constrains_number_occurence(self):
-        """
-        Constrain function for the field number_occurence.
-        Ensure the number_occurence is at least 1 when is_many2many or
-        is_one2many is True.
-        :return:
-        """
-        bad_records = self.filtered(
-            lambda r: (r.is_many2many or r.is_one2many) and r.number_occurence < 1
-        )
-        if bad_records:
-            details = "\n- ".join(bad_records.mapped("display_name"))
-            message = (
-                _(
-                    "Number of occurence for Many2many or One2many fields "
-                    "should be greater or equals to 1.\n"
-                    "These lines have an invalid number of "
-                    "occurence:\n- %s"
-                )
-                % details
-            )
-            raise exceptions.ValidationError(message)
-
-    @api.multi
-    @api.constrains("is_one2many", "pattern_export_id")
-    def _constrains_is_one2many(self):
-        """
-        Constrain function for the field is_one2many
-        :return:
-        """
-        if not self.env.context.get("skip_check"):
-            bad_records = self.filtered(
-                lambda r: r.is_one2many and not r.pattern_export_id
-            )
-            if bad_records:
-                details = "\n- ".join(bad_records.mapped("display_name"))
-                message = (
-                    _(
-                        "The pattern export is required for O2m fields.\n"
-                        "Please check these lines:\n- %s"
-                    )
-                    % details
-                )
-                raise exceptions.ValidationError(message)
-
     @api.model
-    def _get_last_field(self, model, path):
+    def _get_last_relation_field(self, model, path, level=1):
         if "/" not in path:
             path = path + "/"
         field, path = path.split("/", 1)
         if path:
-            model = self.env[model]._fields[field]._related_comodel_name
-            return self._get_last_field(model, path)
-        else:
-            return field, model
+            next_model = self.env[model]._fields[field]._related_comodel_name
+            next_field = path.split("/", 1)[0]
+            if self.env[next_model]._fields[next_field]._related_comodel_name:
+                return self._get_last_relation_field(next_model, path, level=level + 1)
+        return field, model, level
 
-    @api.multi
-    @api.depends("name", "export_id", "export_id.resource")
-    def _compute_is_many2x(self):
-        for export_line in self:
-            if export_line.export_id.resource and export_line.name:
-                field, model = export_line._get_last_field(
-                    export_line.export_id.resource, export_line.name
+    @api.depends("name")
+    def _compute_required_fields(self):
+        for record in self:
+            hidden_fields = [
+                "field1_id",
+                "field2_id",
+                "field3_id",
+                "field4_id",
+                "number_occurence",
+                "pattern_export_id",
+                "tab_filter_id",
+                "add_select_tab",
+            ]
+            if not record.name:
+                record.required_fields = ""
+                record.hidden_fields = ""
+            else:
+                required = []
+                field, model, level = self._get_last_relation_field(
+                    record.export_id.resource, record.name
                 )
-                if self.env[model]._fields[field].type in ["many2one", "many2many"]:
-                    export_line.is_many2x = True
+                ftype = self.env[model]._fields[field].type
+                if ftype in ["many2one", "many2many"]:
+                    level += 1
+                    hidden_fields.remove("add_select_tab")
+                for idx in range(2, level + 1):
+                    required.append("field{}_id".format(idx))
+                if ftype in ["one2many", "many2many"]:
+                    required.append("number_occurence")
+                if ftype in "one2many":
+                    required.append("pattern_export_id")
+                if record.add_select_tab:
+                    required.append("tab_filter_id")
+                record.required_fields = ",".join(required)
+                hidden_fields = list(set(hidden_fields) - set(required))
+                record.hidden_fields = ",".join(hidden_fields)
 
-    @api.multi
-    @api.depends("name", "export_id", "export_id.resource", "is_many2x")
-    def _compute_is_many2many(self):
-        for export_line in self:
-            is_many2many = False
-            if (
-                export_line.is_many2x
-                and export_line.export_id.resource
-                and export_line.name
-            ):
-                field, model = export_line._get_last_field(
-                    export_line.export_id.resource, export_line.name
-                )
-                if self.env[model]._fields[field].type == "many2many":
-                    is_many2many = True
-            export_line.is_many2many = is_many2many
+    def _inverse_name(self):
+        super()._inverse_name()
+        self._check_required_fields()
 
-    @api.multi
-    @api.depends("name", "export_id", "export_id.resource", "is_many2x")
-    def _compute_is_one2many(self):
-        for export_line in self:
-            is_one2many = False
-            if (
-                not export_line.is_many2x
-                and export_line.export_id.resource
-                and export_line.name
-            ):
-                field, model = export_line._get_last_field(
-                    export_line.export_id.resource, export_line.name
-                )
-                if self.env[model]._fields[field].type == "one2many":
-                    is_one2many = True
-            export_line.is_one2many = is_one2many
+    @api.constrains(
+        "export_id.is_pattern", "name", "number_occurence", "pattern_export_id"
+    )
+    def _check_required_fields(self):
+        for record in self:
+            if record._context.get("skip_check") or not record.field1_id:
+                return True
+            if record.export_id.is_pattern and record.required_fields:
+                required_fields = record.required_fields.split(",")
+                if (
+                    "number_occurence" in required_fields
+                    and record.number_occurence < 1
+                ):
+                    message = _(
+                        "Number of occurence for Many2many or One2many fields "
+                        "should be greater or equals to 1.\n"
+                        "The line {} have an invalid number of "
+                        "occurence:\n"
+                    ).format(record.name)
+                    raise ValidationError(message)
+
+                for key in record.required_fields.split(","):
+                    if not record[key]:
+                        raise ValidationError(
+                            _("The field {} is empty for the line {}").format(
+                                key, record.name
+                            )
+                        )
 
     @api.multi
     @api.depends("name")
-    def _compute_related_model_id(self):
+    def _compute_related_level_field(self):
         for export_line in self:
             if export_line.export_id.resource and export_line.name:
-                field, model = export_line._get_last_field(
+                field, model, level = export_line._get_last_relation_field(
                     export_line.export_id.resource, export_line.name
                 )
                 related_comodel = self.env[model]._fields[field]._related_comodel_name
@@ -193,86 +147,140 @@ class IrExportsLine(models.Model):
                         [("model", "=", related_comodel)], limit=1
                     )
                     export_line.related_model_id = comodel.id
+                    export_line.level = level
+                fields = export_line.name.split("/")
+                if len(fields) > level:
+                    last_field = fields[-1]
+                    last_model = related_comodel
+                else:
+                    last_field = field
+                    last_model = model
+                export_line.last_field_id = self.env["ir.model.fields"].search(
+                    [("name", "=", last_field), ("model_id.model", "=", last_model)]
+                )
+
+    def _build_header(self, level, use_description):
+        base_header = []
+        for idx in range(1, level + 1):
+            field = self["field{}_id".format(idx)]
+            if use_description:
+                base_header.append(field.field_description)
+            else:
+                field_name = field.name
+                if idx == 1 and self.is_key:
+                    field_name += IDENTIFIER_SUFFIX
+                base_header.append(field_name)
+        return COLUMN_X2M_SEPARATOR.join(base_header)
 
     @api.multi
-    def _get_header(self):
+    def _get_header(self, use_description=False):
         """
-
         @return: list of str
         """
-        self.ensure_one()
         headers = []
-        model_obj = self.env[self.export_id.model_id.model]
-        real_field = model_obj._fields.get(self.field1_id.name)
-        # The current (main) field shouldn't be into the list
-        real_fields = []
-        previous_real_field = real_field
-        if self.field2_id:
-            previous_real_field = self.env[
-                previous_real_field.comodel_name
-            ]._fields.get(self.field2_id.name)
-            real_fields.append(previous_real_field.string)
-        if self.field3_id:
-            previous_real_field = self.env[
-                previous_real_field.comodel_name
-            ]._fields.get(self.field3_id.name)
-            real_fields.append(previous_real_field.string)
-        if self.field4_id:
-            previous_real_field = self.env[
-                previous_real_field.comodel_name
-            ]._fields.get(self.field4_id.name)
-            real_fields.append(previous_real_field.string)
-
-        field_name = real_field.string
-        if self.is_key:
-            field_name += "/key"
-        if real_field.type in ("many2one", "one2many", "many2many"):
-            nb_occurence = self._get_nb_occurence()
-            for line_added in range(0, nb_occurence):
-                sub_name = "{sub_name}"
-                if real_fields:
-                    sub_name = COLUMN_X2M_SEPARATOR.join(real_fields)
-                    sub_name += COLUMN_X2M_SEPARATOR + "{sub_name}"
-                if real_field.type == "many2one":
-                    base_name = "{field_name}{sep}{sub_name}".format(
-                        field_name=field_name,
-                        sep=COLUMN_X2M_SEPARATOR,
-                        sub_name=sub_name,
+        for record in self:
+            if record.level == 0:
+                if use_description:
+                    header = record.field1_id.field_description
+                else:
+                    header = record.field1_id.name
+                if record.is_key:
+                    header += IDENTIFIER_SUFFIX
+                headers.append(header)
+            else:
+                last_relation_field = record["field{}_id".format(record.level)]
+                if last_relation_field.ttype == "many2one":
+                    headers.append(
+                        record._build_header(self.level + 1, use_description)
                     )
-                elif real_field.type in ("one2many", "many2many"):
-                    base_name = "{field_name}{sep}{ind}{sep}{sub_name}".format(
-                        field_name=field_name,
-                        sep=COLUMN_X2M_SEPARATOR,
-                        ind=line_added + 1,
-                        sub_name=sub_name,
-                    )
-                if self.select_tab_id:
-                    headers.extend(
-                        [
-                            base_name.format(sub_name=h)
-                            for h in self.select_tab_id._get_header()
-                        ]
-                    )
-                elif self.pattern_export_id:
-                    for sub_line in self.pattern_export_id.export_fields:
-                        headers.extend(
-                            [
-                                base_name.format(sub_name=h)
-                                for h in sub_line._get_header()
-                            ]
+                else:
+                    base_header = record._build_header(record.level, use_description)
+                    sub_pattern = record.pattern_export_id
+                    if sub_pattern:
+                        sub_headers = sub_pattern.export_fields._get_header(
+                            use_description
                         )
-        else:
-            headers.append(field_name)
+                        for idx in range(1, record.number_occurence + 1):
+                            headers.extend(
+                                [
+                                    COLUMN_X2M_SEPARATOR.join(
+                                        [base_header, str(idx), h]
+                                    )
+                                    for h in sub_headers
+                                ]
+                            )
+                    else:
+                        field = record["field{}_id".format(record.level + 1)]
+                        if use_description:
+                            field_name = field.field_description
+                        else:
+                            field_name = field.name
+                        for idx in range(1, record.number_occurence + 1):
+                            headers.append(
+                                COLUMN_X2M_SEPARATOR.join(
+                                    [base_header, str(idx), field_name]
+                                )
+                            )
         return headers
 
-    @api.multi
-    def _get_nb_occurence(self):
-        """
-
-        @return: int
-        """
+    def _get_tab_headers(self):
         self.ensure_one()
-        nb_occurence = 1
-        if self.is_many2many or self.is_one2many:
-            nb_occurence = max(1, self.number_occurence)
-        return nb_occurence
+        return [self.last_field_id.name]
+
+    def _format_tab_records(self, permitted_records):
+        return [
+            [getattr(record, self.last_field_id.name)] for record in permitted_records
+        ]
+
+    def _get_tab_data(self):
+        """
+        :return: iterable of 4-tuples of format:
+        (name, headers, data, origin_col)
+        one tuple for each tab
+        name: sheet name
+        headers: list of strings, each element mapping to one header cell
+        data: list of lists, each element mapping to one row/cells
+        origin_col: position of the column on the main sheet
+        """
+        result = []
+        for itr, rec in enumerate(self, start=1):
+            if not rec.add_select_tab:
+                continue
+            permitted_records = []
+            model_name = rec.related_model_id.model
+            domain = (rec.tab_filter_id and safe_eval(rec.tab_filter_id.domain)) or []
+            records_matching_constraint = self.env[model_name].search(domain)
+            permitted_records += records_matching_constraint
+            data = rec._format_tab_records(permitted_records)
+            headers = rec._get_tab_headers()
+            # TODO find a solution for this. Tab name maximum length
+            #  is 31 characters on excel
+            name = rec.related_model_id.name + " (" + rec.tab_filter_id.name + ")"
+            if len(name) > 31:
+                raise UserWarning(
+                    _(
+                        "Filter name %s is too long, "
+                        "maximum name length is 31 characters" % rec.tab_filter_id.name
+                    )
+                )
+            result.append((name, headers, data, itr))
+        return result
+
+    def _get_dict_parser_for_pattern(self):
+        parser = OrderedDict()
+        for rec in self:
+            names = rec.name.split("/")
+            update_dict(parser, names)
+            if rec.pattern_export_id:
+                last_item = parser
+                last_field = names[0]
+                for field in names[:-1]:
+                    last_item = last_item[field]
+                    last_field = field
+                last_item[
+                    last_field
+                ] = rec.pattern_export_id.export_fields._get_dict_parser_for_pattern()
+        return parser
+
+    def _get_json_parser_for_pattern(self):
+        return convert_dict(self._get_dict_parser_for_pattern())
