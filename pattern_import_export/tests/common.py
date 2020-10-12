@@ -79,6 +79,7 @@ class ExportPatternCommon(JobMixin):
                 "datas_fname": "a_file_name",
                 "name": "a_file_name",
                 "kind": "export",  # not always true but doesn't matter
+                "export_id": cls.env["ir.exports"].search([])[0].id,  # doesn't matter
             }
         )
 

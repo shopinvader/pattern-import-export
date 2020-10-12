@@ -15,4 +15,6 @@ class PatternedImportExport(models.Model):
         default="pending",
     )
     info = fields.Char()
+    info_detail = fields.Char()
     kind = fields.Selection([("import", "import"), ("export", "export")], required=True)
+    export_id = fields.Many2one("ir.exports", required=True, string="Export pattern")

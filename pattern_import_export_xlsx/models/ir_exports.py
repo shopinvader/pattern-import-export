@@ -185,13 +185,10 @@ class IrExports(models.Model):
         wb.save(output)
         attachment.datas = base64.b64encode(output.getvalue())
         ids = res["ids"] or []
-        info = _(
-            "Number of record imported {} Number of error/warning {}"
-            "\nrecord ids details: {}"
-            "\n{}"
-        ).format(
-            len(ids),
-            len(res.get("messages", [])),
+        info = _("Number of record imported {} Number of error/warning {}").format(
+            len(ids), len(res.get("messages", []))
+        )
+        info_detail = _("Record ids: {}" "\nDetails: {}").format(
             ids,
             "\n".join(
                 [
@@ -204,7 +201,7 @@ class IrExports(models.Model):
             status = "fail"
         else:
             status = "success"
-        return info, status
+        return info, info_detail, status
 
     def _process_load_result(self, attachment, res):
         if self.export_format == "xlsx":

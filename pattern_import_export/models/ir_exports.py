@@ -34,6 +34,50 @@ class IrExports(models.Model):
         default=True, help="Import data even if some line have failed"
     )
     flush_step = fields.Integer(default=500, help="Define the size of batch import")
+    count_pattimpex_fail = fields.Integer(compute="_compute_pattimpex_counts")
+    count_pattimpex_pending = fields.Integer(compute="_compute_pattimpex_counts")
+    count_pattimpex_success = fields.Integer(compute="_compute_pattimpex_counts")
+    pattimpex_ids = fields.One2many("patterned.import.export", "export_id")
+
+    def _compute_pattimpex_counts(self):
+        for rec in self:
+            for state in ("fail", "pending", "success"):
+                field_name = "count_pattimpex_" + state
+                count = len(rec.pattimpex_ids.filtered(lambda r: r.status == state).ids)
+                setattr(rec, field_name, count)
+
+    def button_open_pattimpex_fail(self):
+        ids = self.pattimpex_ids.filtered(lambda r: r.status == "fail").ids
+        return {
+            "name": _("Patterned imports/exports"),
+            "view_type": "form",
+            "view_mode": "tree,form",
+            "res_model": "patterned.import.export",
+            "type": "ir.actions.act_window",
+            "domain": [("id", "in", ids)],
+        }
+
+    def button_open_pattimpex_pending(self):
+        ids = self.pattimpex_ids.filtered(lambda r: r.status == "pending").ids
+        return {
+            "name": _("Patterned imports/exports"),
+            "view_type": "form",
+            "view_mode": "tree,form",
+            "res_model": "patterned.import.export",
+            "type": "ir.actions.act_window",
+            "domain": [("id", "in", ids)],
+        }
+
+    def button_open_pattimpex_success(self):
+        ids = self.pattimpex_ids.filtered(lambda r: r.status == "success").ids
+        return {
+            "name": _("Patterned imports/exports"),
+            "view_type": "form",
+            "view_mode": "tree,form",
+            "res_model": "patterned.import.export",
+            "type": "ir.actions.act_window",
+            "domain": [("id", "in", ids)],
+        }
 
     @property
     def row_start_records(self):
@@ -172,6 +216,7 @@ class IrExports(models.Model):
                 "datas_fname": name,
                 "kind": "export",
                 "status": "success",
+                "export_id": self.id,
             }
         )
 
@@ -222,14 +267,15 @@ class IrExports(models.Model):
 
     def _process_load_result(self, patterned_import, res):
         ids = res["ids"] or []
-        info = _("Number of record imported {}\ndetails {}").format(len(ids), ids)
+        info = _("Number of record imported {}").format(len(ids))
+        info_detail = _("Details: {}".format(ids))
         if res.get("messages"):
             info += self._process_load_message(res["messages"])
         if res.get("messages"):
             status = "fail"
         else:
             status = "success"
-        return info, status
+        return info, info_detail, status
 
     @job(default_channel="root.importwithpattern")
     def _generate_import_with_pattern_job(self, patterned_import):
@@ -238,7 +284,8 @@ class IrExports(models.Model):
             datas = self._read_import_data(attachment_data)
         except Exception as e:
             patterned_import.status = "fail"
-            patterned_import.info = e
+            patterned_import.info = _("Failed (check details)")
+            patterned_import.info_detail = e
         res = (
             self.with_context(
                 pattern_config={
@@ -250,9 +297,10 @@ class IrExports(models.Model):
             .env[self.model_id.model]
             .load([], datas)
         )
-        patterned_import.info, patterned_import.status = self._process_load_result(
-            patterned_import, res
-        )
+        load_result = self._process_load_result(patterned_import, res)
+        patterned_import.info = load_result[0]
+        patterned_import.info_detail = load_result[1]
+        patterned_import.status = load_result[2]
         return self._notify_user(patterned_import)
 
     def _notify_user(self, patterned_import_export):

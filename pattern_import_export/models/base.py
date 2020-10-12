@@ -37,7 +37,7 @@ class Base(models.AbstractModel):
         web = "/web#"
         args = [
             "action="
-            + str(self.env.ref("pattern_import_export.action_patterned_import").id),
+            + str(self.env.ref("pattern_import_export.action_patterned_imports").id),
             "id=" + str(export.id),
             "model=patterned.import.export",
             "view_type=form",
