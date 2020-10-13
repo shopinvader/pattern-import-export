@@ -293,28 +293,15 @@ class IrExports(models.Model):
                 .env[self.model_id.model]
                 .load([], datas)
             )
-            patterned_import.info, patterned_import.status = self._process_load_result(
-                patterned_import, res
-            )
+            (
+                patterned_import.info,
+                patterned_import.info_detail,
+                patterned_import.status,
+            ) = self._process_load_result(patterned_import, res)
         except Exception as e:
             patterned_import.status = "fail"
             patterned_import.info = _("Failed (check details)")
             patterned_import.info_detail = e
-        res = (
-            self.with_context(
-                pattern_config={
-                    "model": self.model_id.model,
-                    "flush_step": self.flush_step,
-                    "partial_commit": self.partial_commit,
-                }
-            )
-            .env[self.model_id.model]
-            .load([], datas)
-        )
-        load_result = self._process_load_result(patterned_import, res)
-        patterned_import.info = load_result[0]
-        patterned_import.info_detail = load_result[1]
-        patterned_import.status = load_result[2]
         return self._notify_user(patterned_import)
 
     def _notify_user(self, patterned_import_export):

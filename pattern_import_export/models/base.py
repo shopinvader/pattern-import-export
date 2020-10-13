@@ -226,7 +226,7 @@ class Base(models.AbstractModel):
                 }
                 if idx % pattern_config["flush_step"] == 0:
                     flush()
-                    _logger.info("Progress status: record imported {}".format(idx))
+                    _logger.info("Progress status: record imported {}".format(idx + 1))
                     if partial_commit:
                         # set the model_load savepoint so that in case of error,
                         # rollback to this point
@@ -234,7 +234,7 @@ class Base(models.AbstractModel):
             # we force to flush before ending the loop
             # so we can log correctly and commit if needed
             flush()
-            _logger.info("Progress status: Total record imported {}".format(idx))
+            _logger.info("Progress status: Total record imported {}".format(idx + 1))
             if partial_commit:
                 # so we can update the savepoint
                 self._cr.execute("SAVEPOINT model_load")
