@@ -82,7 +82,7 @@ class IrExportsLine(models.Model):
             else:
                 required = []
                 field, model, level = self._get_last_relation_field(
-                    record.export_id.resource, record.name
+                    record.export_id.model_id.model, record.name
                 )
                 ftype = self.env[model]._fields[field].type
                 if ftype in ["many2one", "many2many"]:

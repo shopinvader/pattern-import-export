@@ -9,6 +9,7 @@
             <xpath expr="//form/group[1]" position="before">
                 <header>
                     <button name="%(import_pattern_wizard_action)d" string="Import" class="oe_highlight" type="action" context="{'default_ir_exports_id': id, 'hide_ir_export_id': True}"/>
+                    <button name="generate_pattern" string="Generate Pattern" class="oe_highlight" type="object"/>
                 </header>
                 <div class="oe_button_box" name="button_box">
                     <button name="button_open_pattimpex_fail" type="object" class="oe_stat_button" icon="fa-link">
