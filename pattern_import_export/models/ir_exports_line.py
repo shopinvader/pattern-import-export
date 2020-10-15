@@ -235,7 +235,7 @@ class IrExportsLine(models.Model):
     def _get_tab_name(self):
         tab_filter = self.tab_filter_id
         if tab_filter:
-            name = "[{}] {}".format(str(tab_filter.id), tab_filter.name)
+            name = "({}) {}".format(str(tab_filter.id), tab_filter.name)
         else:
             name = self.field1_id.name
         if len(name) > 31:
@@ -263,7 +263,7 @@ class IrExportsLine(models.Model):
             permitted_records += records_matching_constraint
             data = rec._format_tab_records(permitted_records)
             headers = rec._get_tab_headers()
-            tab_name = self._get_tab_name()
+            tab_name = rec._get_tab_name()
             result.append((tab_name, headers, data, itr))
         return result
 
