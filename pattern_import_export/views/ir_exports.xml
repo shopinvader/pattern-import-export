@@ -46,6 +46,7 @@
                     <field name="id" invisible="1"/>
                     <field name="partial_commit"/>
                     <field name="flush_step"/>
+                    <field name="is_pattern" invisible="1"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='field2_id']" position="attributes">
