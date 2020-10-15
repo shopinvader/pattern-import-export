@@ -17,8 +17,18 @@ CELL_VALUE_EMPTY = None
 
 class TestPatternExport(ExportPatternCommon, SavepointCase):
     @classmethod
+    def _set_up_tab_names(cls):
+        for el in ("ignore_one", "countries_1", "countries_2"):
+            attr_name_tab = "tab_name_" + el
+            attr_name_filter = "filter_" + el
+            filter_id = getattr(cls, attr_name_filter)
+            attr_val_tab = "({}) {}".format(filter_id.id, filter_id.name)
+            setattr(cls, attr_name_tab, attr_val_tab)
+
+    @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls._set_up_tab_names()
         for el in cls.ir_exports, cls.ir_exports_m2m, cls.ir_exports_o2m:
             el.export_format = "xlsx"
 
@@ -84,26 +94,43 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
 
     def test_export_tabs(self):
         wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
-        sheet_tab_2 = wb["Country (US, FR, BE)"]
-        sheet_tab_3 = wb["Country (European countries)"]
+        sheet_tab_2 = wb[self.tab_name_countries_1]
+        sheet_tab_3 = wb[self.tab_name_countries_2]
         expected_values_tab_2 = [["BE"], ["FR"], ["US"], [CELL_VALUE_EMPTY]]
         expected_values_tab_3 = [["BE"], ["FR"], ["DE"], ["ES"], [CELL_VALUE_EMPTY]]
         self._helper_check_cell_values(sheet_tab_2, expected_values_tab_2)
         self._helper_check_cell_values(sheet_tab_3, expected_values_tab_3)
+
+    def test_export_tabs_name_no_filter(self):
+        self.ir_exports.export_fields[3].tab_filter_id = self.env["ir.filters"]
+        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        expected_tab_name = "Country"
+        self.assertTrue(wb[expected_tab_name])
+
+    def test_export_tabs_name_long_name(self):
+        # 32 - 4 = 28 characters, plus "(id) " = 32 characters, the limit
+        self.ir_exports.export_fields[
+            3
+        ].tab_filter_id.name = "CIOIOIOIOIOIOIOIOIOIOIOIOIOI"
+        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        expected_tab_name = "({}) " "CIOIOIOIOIOIOIOIOIOIOIOI...".format(
+            self.filter_countries_1.id
+        )
+        self.assertTrue(wb[expected_tab_name])
 
     def test_export_validators(self):
         wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
         sheet_base = wb["Partner list"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='Country (US, FR, BE)'!$A$2:$A$4",
+            "='{}'!$A$2:$A$4".format(self.tab_name_countries_1),
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[0].cells), "D2:D4"
         )
         self.assertEqual(
             sheet_base.data_validations.dataValidation[1].formula1,
-            "='Country (European countries)'!$A$2:$A$5",
+            "='{}'!$A$2:$A$5".format(self.tab_name_countries_2),
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[1].cells), "E2:E4"
@@ -114,7 +141,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         sheet_base = wb["Users list - M2M"]
         expected_headers_base = ["id", "name", "company_ids|1|name"]
         self._helper_check_headers(sheet_base, expected_headers_base)
-        sheet_tab_2 = wb["Companies (Ignore one)"]
+        sheet_tab_2 = wb[self.tab_name_ignore_one]
         expected_headers_tab_2 = ["name"]
         self._helper_check_headers(sheet_tab_2, expected_headers_tab_2)
 
@@ -131,7 +158,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
 
     def test_export_m2m_tabs(self):
         wb = self._helper_get_resulting_wb(self.ir_exports_m2m, self.users)
-        sheet_tab_2 = wb["Companies (Ignore one)"]
+        sheet_tab_2 = wb[self.tab_name_ignore_one]
         expected_values_tab_2 = [
             ["Awesome company"],
             ["Bad company"],
@@ -145,7 +172,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         sheet_base = wb["Users list - M2M"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='Companies (Ignore one)'!$A$2:$A$4",
+            "='{}'!$A$2:$A$4".format(self.tab_name_ignore_one),
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[0].cells), "C2:C4"
