@@ -41,7 +41,8 @@
             <xpath expr="//form/group[1]" position="after">
                 <group>
                     <field name="export_format" required="True"/>
-                    <field name="pattern_file"/>
+                    <field name="pattern_file" filename="pattern_file_name"/>
+                    <field name="pattern_file_name" invisible="1"/>
                     <field name="pattern_last_generation_date"/>
                     <field name="id" invisible="1"/>
                     <field name="partial_commit"/>
