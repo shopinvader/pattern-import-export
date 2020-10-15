@@ -397,3 +397,20 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             [("name", "=", "Steve Jobs"), ("parent_id", "=", company.id)]
         )
         self.assertTrue(child_of_company)
+
+    def test_update_m2m_with_a_lot_of_item(self):
+        unique_name = str(uuid4())
+        data = {"name": unique_name}
+        for idx in range(1, 15):
+            categ_name = "partner_categ_{}".format(idx)
+            self.env["res.partner.category"].create({"name": categ_name})
+            data["category_id|{}|name".format(idx)] = categ_name
+
+        target_model = self.ir_exports.model_id.model
+        existing_records = self.env[target_model].search([])
+        with self._mock_read_import_data([data]):
+            self.ir_exports._generate_import_with_pattern_job(
+                self.empty_patterned_import_export
+            )
+        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        self.assertEqual(len(partner.category_id), 14)

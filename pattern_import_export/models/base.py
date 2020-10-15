@@ -98,30 +98,34 @@ class Base(models.AbstractModel):
         return super()._load_records_create(copy.deepcopy(values))
 
     def _pattern_format2json(self, row):
+        def convert_header_key(key):
+            return [
+                int(k) if k.isdigit() else k
+                for k in key.split("|")
+                ]
+
         for key in ["id", ".id"]:
             if key in row and row[key] is None:
                 row.pop(key)
         res = {}
-        items = [(k, v) for k, v in row.items()]
+        items = [(convert_header_key(k), v) for k, v in row.items()]
         items.sort()
-        for header, vals in items:
+        for keys, vals in items:
             current = res
             previous_key = None
-            keys = header.split("|")
             for key in keys:
                 if not previous_key:
                     previous_key = key
-                elif key.isdigit():
+                elif isinstance(key, int):
                     if previous_key not in current:
                         current[previous_key] = []
-                    key_idx = int(key)
-                    if len(current[previous_key]) < int(key_idx):
+                    if len(current[previous_key]) < key:
                         current[previous_key].append({})
                     try:
-                        current = current[previous_key][key_idx - 1]
+                        current = current[previous_key][key - 1]
                     except IndexError:
                         raise
-                elif not previous_key.isdigit():
+                elif not isinstance(previous_key, int):
                     if previous_key not in current:
                         current[previous_key] = {}
                     current = current[previous_key]
