@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Exports-->
+    <menuitem id="import_export_menu_root"
+              name="Import/Export"
+              active="True"
+              sequence="100"
+              groups="base.group_user"/>
+
+    <record model="ir.actions.act_window" id="act_open_pattern_view">
+        <field name="name">Import/Export Patterns</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">ir.exports</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_pattern', '=', True)]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="pattern_menu"
+              name="Patterns"
+              parent="import_export_menu_root"
+              sequence="1"
+              groups="base.group_user"
+              action="act_open_pattern_view"/>
+
+    <!--Patterned Import/Export-->
+    <record id="action_patterned_imports" model="ir.actions.act_window">
+        <field name="name">Patterned imports</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">patterned.import.export</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('kind', '=', 'import')]</field>
+        <field name="view_type">form</field>
+    </record>
+
+    <record id="action_patterned_exports" model="ir.actions.act_window">
+        <field name="name">Patterned exports</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">patterned.import.export</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('kind', '=', 'export')]</field>
+        <field name="view_type">form</field>
+    </record>
+
+    <menuitem id="patterned_imports_menu"
+              name="Patterned imports"
+              parent="import_export_menu_root"
+              sequence="3"
+              groups="base.group_user"
+              action="action_patterned_imports"/>
+
+    <menuitem id="patterned_export_menu"
+              name="Patterned exports"
+              parent="import_export_menu_root"
+              sequence="4"
+              groups="base.group_user"
+              action="action_patterned_exports"/>
+</odoo>
