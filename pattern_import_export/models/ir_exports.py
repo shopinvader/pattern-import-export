@@ -225,8 +225,20 @@ class IrExports(models.Model):
     @api.multi
     def _read_import_data(self, datafile):
         """
+        This is a TODO and a justification for the following warning:
 
-        @param datafile:
+        Your reader MUST transform columns labeled "id" into ".id" !
+
+        Because of issues, in the current module functionality,
+        we only consider in-DB ids, not external IDs.
+        Here are the issues with extids:
+        - exporting them is hard (can not set field directly in ir.exports
+          window),
+        - importing them is hard (confusion between id/.id),
+        - native Odoo export widget that allows us to select fields
+          is broken and does not allow selection of DB ID (.id), it raises
+          because of a naive check that sees ".id" column doesn't actually exist
+        This is a temporary measure and should be fixed later on.
         @return: list of str
         """
         target_function = "_read_import_data_{format}".format(
@@ -300,7 +312,7 @@ class IrExports(models.Model):
             ) = self._process_load_result(patterned_import, res)
         except Exception as e:
             patterned_import.status = "fail"
-            patterned_import.info = _("Failed (check details)")
+            patterned_import.info = "Failed (check details)"
             patterned_import.info_detail = e
         return self._notify_user(patterned_import)
 

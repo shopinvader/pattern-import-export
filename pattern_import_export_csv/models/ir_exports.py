@@ -4,10 +4,24 @@
 import base64
 import csv
 import io
+from collections import OrderedDict
+from copy import deepcopy
 
 from odoo import _, api, fields, models
 
 from ..constants import CSV_LINE_DELIMITER
+
+
+def replace_key_in_ordered_dict(a_dict, a_key_to_delete, replacement_key):
+    result = OrderedDict(
+        [
+            (replacement_key, a_dict[a_key_to_delete])
+            if k == a_key_to_delete
+            else (k, v)
+            for k, v in a_dict.items()
+        ]
+    )
+    return result
 
 
 class IrExports(models.Model):
@@ -89,16 +103,24 @@ class IrExports(models.Model):
         contents_no_first_line = contents[idx_second_line:]
         return contents_no_first_line.encode("utf-8")
 
+    def _process_csv_preimport(self, line):
+        # TODO see _read_import_data() comment
+        # TODO optimizable
+        processed = deepcopy(line)
+        for k, v in line.items():
+            if v == "":
+                processed[k] = None
+            if k == "id":
+                processed = replace_key_in_ordered_dict(processed, "id", ".id")
+        return processed
+
     @api.multi
     def _read_import_data_csv(self, datafile):
         if self.use_description:
             datafile = self._csv_make_nondescriptive(datafile)
         reader = self._bytes_to_csv_reader(datafile)
         for line in reader:
-            for k, v in line.items():
-                if v == "":
-                    line[k] = None
-            yield line
+            yield self._process_csv_preimport(line)
 
     def _process_load_result_for_csv(self, attachment, res):
         ids = res["ids"] or []

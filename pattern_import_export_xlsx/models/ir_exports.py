@@ -164,6 +164,9 @@ class IrExports(models.Model):
             elm = {}
             for col in range(real_last_column):
                 elm[headers[col]] = worksheet.cell(row, col + 1).value
+                # TODO see _read_import_data() comment
+                if elm[headers[col]] == "id":
+                    elm[headers[col]] = ".id"
             yield elm
 
     def _process_load_result_for_xls(self, attachment, res):
