@@ -406,8 +406,6 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             self.env["res.partner.category"].create({"name": categ_name})
             data["category_id|{}|name".format(idx)] = categ_name
 
-        target_model = self.ir_exports.model_id.model
-        existing_records = self.env[target_model].search([])
         with self._mock_read_import_data([data]):
             self.ir_exports._generate_import_with_pattern_job(
                 self.empty_patterned_import_export

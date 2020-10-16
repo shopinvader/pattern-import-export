@@ -99,10 +99,7 @@ class Base(models.AbstractModel):
 
     def _pattern_format2json(self, row):
         def convert_header_key(key):
-            return [
-                int(k) if k.isdigit() else k
-                for k in key.split("|")
-                ]
+            return [int(k) if k.isdigit() else k for k in key.split("|")]
 
         for key in ["id", ".id"]:
             if key in row and row[key] is None:
