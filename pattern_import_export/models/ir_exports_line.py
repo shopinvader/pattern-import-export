@@ -237,7 +237,7 @@ class IrExportsLine(models.Model):
         if tab_filter:
             name = "({}) {}".format(str(tab_filter.id), tab_filter.name)
         else:
-            name = self.field1_id.name
+            name = self.field1_id.field_description
         if len(name) > 31:
             name = name[0:28] + "..."
         return name
