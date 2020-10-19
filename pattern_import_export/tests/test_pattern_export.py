@@ -13,7 +13,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         headers = self.ir_exports._get_header()
         expected_header = [
-            "id",
+            ".id",
             "name",
             "street",
             "country_id|code",
@@ -38,7 +38,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         @return:
         """
         headers = self.ir_exports_m2m._get_header()
-        expected_header = ["id", "name", "company_ids|1|name"]
+        expected_header = [".id", "name", "company_ids|1|name"]
         self.assertEquals(expected_header, headers)
 
     def test_get_header3(self):
@@ -50,7 +50,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         export_fields_m2m.write({"number_occurence": 5})
         headers = self.ir_exports_m2m._get_header()
         expected_header = [
-            "id",
+            ".id",
             "name",
             "company_ids|1|name",
             "company_ids|2|name",
@@ -68,15 +68,15 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         headers = self.ir_exports_o2m._get_header()
         expected_header = [
-            "id",
+            ".id",
             "name",
-            "user_ids|1|id",
+            "user_ids|1|.id",
             "user_ids|1|name",
             "user_ids|1|company_ids|1|name",
-            "user_ids|2|id",
+            "user_ids|2|.id",
             "user_ids|2|name",
             "user_ids|2|company_ids|1|name",
-            "user_ids|3|id",
+            "user_ids|3|.id",
             "user_ids|3|name",
             "user_ids|3|company_ids|1|name",
         ]
@@ -93,23 +93,23 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         export_fields_m2m.write({"number_occurence": 5})
         headers = self.ir_exports_o2m._get_header()
         expected_header = [
-            "id",
+            ".id",
             "name",
-            "user_ids|1|id",
+            "user_ids|1|.id",
             "user_ids|1|name",
             "user_ids|1|company_ids|1|name",
             "user_ids|1|company_ids|2|name",
             "user_ids|1|company_ids|3|name",
             "user_ids|1|company_ids|4|name",
             "user_ids|1|company_ids|5|name",
-            "user_ids|2|id",
+            "user_ids|2|.id",
             "user_ids|2|name",
             "user_ids|2|company_ids|1|name",
             "user_ids|2|company_ids|2|name",
             "user_ids|2|company_ids|3|name",
             "user_ids|2|company_ids|4|name",
             "user_ids|2|company_ids|5|name",
-            "user_ids|3|id",
+            "user_ids|3|.id",
             "user_ids|3|name",
             "user_ids|3|company_ids|1|name",
             "user_ids|3|company_ids|2|name",
@@ -126,21 +126,21 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         expected_results = [
             {
-                "id": self.partner_1.id,
+                ".id": self.partner_1.id,
                 "name": "Wood Corner",
                 "street": "1164 Cambridge Drive",
                 "country_id|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
-                "id": self.partner_2.id,
+                ".id": self.partner_2.id,
                 "name": "Deco Addict",
                 "street": "325 Elsie Drive",
                 "country_id|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
-                "id": self.partner_3.id,
+                ".id": self.partner_3.id,
                 "name": "Gemini Furniture",
                 "street": "1128 Lunetta Street",
                 "country_id|code": "US",
@@ -159,7 +159,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         expected_results = [
             {
-                "id": self.env.user.id,
+                ".id": self.env.user.id,
                 "name": "OdooBot",
                 "company_ids|1|name": "Awesome company",
             }
@@ -178,7 +178,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         export_fields_m2m.write({"number_occurence": 5})
         expected_results = [
             {
-                "id": self.env.user.id,
+                ".id": self.env.user.id,
                 "name": "OdooBot",
                 "company_ids|1|name": "Awesome company",
                 "company_ids|2|name": "Bad company",
@@ -199,41 +199,41 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         expected_results = [
             {
-                "id": self.partner_1.id,
+                ".id": self.partner_1.id,
                 "name": "Wood Corner",
-                "user_ids|1|id": self.user2.id,
+                "user_ids|1|.id": self.user2.id,
                 "user_ids|1|name": "Wood Corner",
                 "user_ids|1|company_ids|1|name": "Awesome company",
-                "user_ids|2|id": self.user1.id,
+                "user_ids|2|.id": self.user1.id,
                 "user_ids|2|name": "Wood Corner",
                 "user_ids|2|company_ids|1|name": "Awesome company",
-                "user_ids|3|id": None,
+                "user_ids|3|.id": None,
                 "user_ids|3|name": None,
                 "user_ids|3|company_ids|1|name": None,
             },
             {
-                "id": self.partner_2.id,
+                ".id": self.partner_2.id,
                 "name": "Deco Addict",
-                "user_ids|1|id": self.user3.id,
+                "user_ids|1|.id": self.user3.id,
                 "user_ids|1|name": "Deco Addict",
                 "user_ids|1|company_ids|1|name": "YourCompany",
-                "user_ids|2|id": None,
+                "user_ids|2|.id": None,
                 "user_ids|2|name": None,
                 "user_ids|2|company_ids|1|name": None,
-                "user_ids|3|id": None,
+                "user_ids|3|.id": None,
                 "user_ids|3|name": None,
                 "user_ids|3|company_ids|1|name": None,
             },
             {
-                "id": self.partner_3.id,
+                ".id": self.partner_3.id,
                 "name": "Gemini Furniture",
-                "user_ids|1|id": None,
+                "user_ids|1|.id": None,
                 "user_ids|1|name": None,
                 "user_ids|1|company_ids|1|name": None,
-                "user_ids|2|id": None,
+                "user_ids|2|.id": None,
                 "user_ids|2|name": None,
                 "user_ids|2|company_ids|1|name": None,
-                "user_ids|3|id": None,
+                "user_ids|3|.id": None,
                 "user_ids|3|name": None,
                 "user_ids|3|company_ids|1|name": None,
             },
@@ -254,42 +254,42 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         export_fields_o2m.write({"number_occurence": 2})
         expected_results = [
             {
-                "id": self.partner_1.id,
+                ".id": self.partner_1.id,
                 "name": "Wood Corner",
-                "user_ids|1|id": self.user2.id,
+                "user_ids|1|.id": self.user2.id,
                 "user_ids|1|name": "Wood Corner",
                 "user_ids|1|company_ids|1|name": "Awesome company",
                 "user_ids|1|company_ids|2|name": "YourCompany",
                 "user_ids|1|company_ids|3|name": None,
-                "user_ids|2|id": self.user1.id,
+                "user_ids|2|.id": self.user1.id,
                 "user_ids|2|name": "Wood Corner",
                 "user_ids|2|company_ids|1|name": "Awesome company",
                 "user_ids|2|company_ids|2|name": "Bad company",
                 "user_ids|2|company_ids|3|name": "YourCompany",
             },
             {
-                "id": self.partner_2.id,
+                ".id": self.partner_2.id,
                 "name": "Deco Addict",
-                "user_ids|1|id": self.user3.id,
+                "user_ids|1|.id": self.user3.id,
                 "user_ids|1|name": "Deco Addict",
                 "user_ids|1|company_ids|1|name": "YourCompany",
                 "user_ids|1|company_ids|2|name": None,
                 "user_ids|1|company_ids|3|name": None,
-                "user_ids|2|id": None,
+                "user_ids|2|.id": None,
                 "user_ids|2|name": None,
                 "user_ids|2|company_ids|1|name": None,
                 "user_ids|2|company_ids|2|name": None,
                 "user_ids|2|company_ids|3|name": None,
             },
             {
-                "id": self.partner_3.id,
+                ".id": self.partner_3.id,
                 "name": "Gemini Furniture",
-                "user_ids|1|id": None,
+                "user_ids|1|.id": None,
                 "user_ids|1|name": None,
                 "user_ids|1|company_ids|1|name": None,
                 "user_ids|1|company_ids|2|name": None,
                 "user_ids|1|company_ids|3|name": None,
-                "user_ids|2|id": None,
+                "user_ids|2|.id": None,
                 "user_ids|2|name": None,
                 "user_ids|2|company_ids|1|name": None,
                 "user_ids|2|company_ids|2|name": None,
@@ -308,21 +308,21 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         """
         expected_results = [
             {
-                "id": self.partner_1.id,
+                ".id": self.partner_1.id,
                 "name#key": "Wood Corner",
                 "street": "1164 Cambridge Drive",
                 "country_id#key|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
-                "id": self.partner_2.id,
+                ".id": self.partner_2.id,
                 "name#key": "Deco Addict",
                 "street": "325 Elsie Drive",
                 "country_id#key|code": "US",
                 "parent_id|country_id|code": None,
             },
             {
-                "id": self.partner_3.id,
+                ".id": self.partner_3.id,
                 "name#key": "Gemini Furniture",
                 "street": "1128 Lunetta Street",
                 "country_id#key|code": "US",

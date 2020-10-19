@@ -47,7 +47,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
         sheet = wb["Partner list"]
         expected_headers = [
-            "id",
+            ".id",
             "name",
             "street",
             "country_id|code",
@@ -112,7 +112,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
     def test_export_m2m_headers(self):
         wb = self._helper_get_resulting_wb(self.ir_exports_m2m, self.users)
         sheet_base = wb["Users list - M2M"]
-        expected_headers_base = ["id", "name", "company_ids|1|name"]
+        expected_headers_base = [".id", "name", "company_ids|1|name"]
         self._helper_check_headers(sheet_base, expected_headers_base)
         sheet_tab_2 = wb["Companies (Ignore one)"]
         expected_headers_tab_2 = ["name"]
@@ -155,15 +155,15 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
         wb = self._helper_get_resulting_wb(self.ir_exports_o2m, self.partners)
         main_sheet = wb["Partner - O2M"]
         expected_headers = [
-            "id",
+            ".id",
             "name",
-            "user_ids|1|id",
+            "user_ids|1|.id",
             "user_ids|1|name",
             "user_ids|1|company_ids|1|name",
-            "user_ids|2|id",
+            "user_ids|2|.id",
             "user_ids|2|name",
             "user_ids|2|company_ids|1|name",
-            "user_ids|3|id",
+            "user_ids|3|.id",
             "user_ids|3|name",
             "user_ids|3|company_ids|1|name",
         ]
