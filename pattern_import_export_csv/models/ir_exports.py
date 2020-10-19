@@ -1,7 +1,6 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 # pylint: disable=missing-manifest-dependency
-import base64
 import csv
 import io
 
@@ -16,37 +15,6 @@ class IrExports(models.Model):
     export_format = fields.Selection(selection_add=[("csv", "CSV")])
     csv_value_delimiter = fields.Char(default=",")
     csv_quote_character = fields.Char(default='"')
-
-    # CSV Helpers
-
-    def _bytes_to_csv_writer(self, bytes_content):
-        file_fmtd = io.StringIO(bytes_content.decode("utf-8"))
-        return (
-            csv.DictWriter(
-                file_fmtd,
-                delimiter=self.csv_value_delimiter,
-                quotechar=self.csv_quote_character,
-            ),
-            file_fmtd,
-        )
-
-    def _csv_stringio_to_bytes(self, stringio):
-        stringio.seek(0)
-        return stringio.getvalue().encode("utf_8")
-
-    def _attachment_to_csv_writer(self, attachment):
-        # Convention for editing CSV file is to slurp it into memory then
-        #   modify it, then save it into a new file
-        bytes_content = base64.b64decode(attachment.datas)
-        return self._bytes_to_csv_writer(bytes_content)
-
-    def _bytes_to_csv_reader(self, bytes_content):
-        file_fmtd = io.StringIO(bytes_content.decode("utf-8"))
-        return csv.DictReader(
-            file_fmtd,
-            delimiter=self.csv_value_delimiter,
-            quotechar=self.csv_quote_character,
-        )
 
     # Export part
 
@@ -69,16 +37,17 @@ class IrExports(models.Model):
     @api.multi
     def _export_with_record_csv(self, records):
         self.ensure_one()
-        virtual_file = io.StringIO()
+        output = io.StringIO()
         writer = csv.DictWriter(
-            virtual_file,
+            output,
             delimiter=self.csv_value_delimiter,
             quotechar=self.csv_quote_character,
             fieldnames=self._get_header(),
         )
         self._csv_write_headers(writer)
         self._csv_write_rows(writer, records)
-        return self._csv_stringio_to_bytes(virtual_file)
+        output.seek(0)
+        return output.getvalue().encode("utf_8")
 
     # Import part
 
@@ -93,7 +62,11 @@ class IrExports(models.Model):
     def _read_import_data_csv(self, datafile):
         if self.use_description:
             datafile = self._csv_make_nondescriptive(datafile)
-        reader = self._bytes_to_csv_reader(datafile)
+        reader = csv.DictReader(
+            io.StringIO(datafile.decode("utf-8")),
+            delimiter=self.csv_value_delimiter,
+            quotechar=self.csv_quote_character,
+        )
         for line in reader:
             for k, v in line.items():
                 if v == "":
