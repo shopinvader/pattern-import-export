@@ -1,6 +1,8 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import base64
+import traceback
+from io import StringIO
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -291,22 +293,29 @@ class IrExports(models.Model):
             patterned_import.status = "fail"
             patterned_import.info = _("Failed (check details)")
             patterned_import.info_detail = e
-        res = (
-            self.with_context(
-                pattern_config={
-                    "model": self.model_id.model,
-                    "flush_step": self.flush_step,
-                    "partial_commit": self.partial_commit,
-                }
+        try:
+            res = (
+                self.with_context(
+                    pattern_config={
+                        "model": self.model_id.model,
+                        "flush_step": self.flush_step,
+                        "partial_commit": self.partial_commit,
+                    }
+                )
+                .env[self.model_id.model]
+                .load([], datas)
             )
-            .env[self.model_id.model]
-            .load([], datas)
-        )
-        (
-            patterned_import.info,
-            patterned_import.info_detail,
-            patterned_import.status,
-        ) = self._process_load_result(patterned_import, res)
+            (
+                patterned_import.info,
+                patterned_import.info_detail,
+                patterned_import.status,
+            ) = self._process_load_result(patterned_import, res)
+        except Exception:
+            buff = StringIO()
+            traceback.print_exc(file=buff)
+            patterned_import.status = "fail"
+            patterned_import.info = "Failed To load (check details)"
+            patterned_import.info_detail = buff.getvalue()
         return self._notify_user(patterned_import)
 
     def _notify_user(self, patterned_import_export):
