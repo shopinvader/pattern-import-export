@@ -99,14 +99,14 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             "='Country (US, FR, BE)'!$A$2:$A$4",
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[0].cells), "D2:D4"
+            str(sheet_base.data_validations.dataValidation[0].cells), "D2:D1000"
         )
         self.assertEqual(
             sheet_base.data_validations.dataValidation[1].formula1,
             "='Country (European countries)'!$A$2:$A$5",
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[1].cells), "E2:E4"
+            str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1000"
         )
 
     def test_export_m2m_headers(self):
@@ -148,7 +148,7 @@ class TestPatternExport(ExportPatternCommon, SavepointCase):
             "='Companies (Ignore one)'!$A$2:$A$4",
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[0].cells), "C2:C4"
+            str(sheet_base.data_validations.dataValidation[0].cells), "C2:C1000"
         )
 
     def test_export_o2m_headers(self):
