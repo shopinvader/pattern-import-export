@@ -113,11 +113,12 @@ class IrExports(models.Model):
             data = export._generate_with_records(records)
             if data:
                 data = data[0]
+            filename = self.name + "." + self.export_format
             export.write(
                 {
                     "pattern_file": data,
                     "pattern_last_generation_date": fields.Datetime.now(),
-                    "pattern_file_name": self.name,
+                    "pattern_file_name": filename,
                 }
             )
         return True
