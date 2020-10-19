@@ -28,6 +28,7 @@ class IrExports(models.Model):
     )
     is_pattern = fields.Boolean()
     pattern_file = fields.Binary(string="Pattern file", readonly=True)
+    pattern_file_name = fields.Char(readonly=True)
     pattern_last_generation_date = fields.Datetime(
         string="Pattern last generation date", readonly=True
     )
@@ -114,10 +115,12 @@ class IrExports(models.Model):
             data = export._generate_with_records(records)
             if data:
                 data = data[0]
+            filename = self.name + "." + self.export_format
             export.write(
                 {
                     "pattern_file": data,
                     "pattern_last_generation_date": fields.Datetime.now(),
+                    "pattern_file_name": filename,
                 }
             )
         return True
