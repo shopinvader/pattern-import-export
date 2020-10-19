@@ -96,7 +96,7 @@ class IrExports(models.Model):
                 col_letter_dst,
                 str(self.row_start_records),
                 col_letter_dst,
-                str(main_sheet_length),
+                str(max(main_sheet_length, 2)),
             )
             validation.add(range_dst)
             main_sheet.add_data_validation(validation)

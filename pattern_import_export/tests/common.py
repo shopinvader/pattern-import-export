@@ -82,6 +82,15 @@ class ExportPatternCommon(JobMixin):
                 "export_id": cls.env["ir.exports"].search([])[0].id,  # doesn't matter
             }
         )
+        cls.filter_ignore_one = cls.env.ref(
+            "pattern_import_export.demo_filter_companies"
+        )
+        cls.filter_countries_1 = cls.env.ref(
+            "pattern_import_export.demo_filter_countries_1"
+        )
+        cls.filter_countries_2 = cls.env.ref(
+            "pattern_import_export.demo_filter_countries_2"
+        )
 
     def _get_attachment(self, record):
         """
