@@ -232,6 +232,16 @@ class IrExportsLine(models.Model):
             [getattr(record, self.last_field_id.name)] for record in permitted_records
         ]
 
+    def _get_tab_name(self):
+        tab_filter = self.tab_filter_id
+        if tab_filter:
+            name = "({}) {}".format(str(tab_filter.id), tab_filter.name)
+        else:
+            name = self.field1_id.field_description
+        if len(name) > 31:
+            name = name[0:28] + "..."
+        return name
+
     def _get_tab_data(self):
         """
         :return: iterable of 4-tuples of format:
@@ -253,17 +263,8 @@ class IrExportsLine(models.Model):
             permitted_records += records_matching_constraint
             data = rec._format_tab_records(permitted_records)
             headers = rec._get_tab_headers()
-            # TODO find a solution for this. Tab name maximum length
-            #  is 31 characters on excel
-            name = rec.related_model_id.name + " (" + rec.tab_filter_id.name + ")"
-            if len(name) > 31:
-                raise UserWarning(
-                    _(
-                        "Filter name %s is too long, "
-                        "maximum name length is 31 characters" % rec.tab_filter_id.name
-                    )
-                )
-            result.append((name, headers, data, itr))
+            tab_name = rec._get_tab_name()
+            result.append((tab_name, headers, data, itr))
         return result
 
     def _get_dict_parser_for_pattern(self):
