@@ -1,6 +1,8 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import base64
+import traceback
+from io import StringIO
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -282,6 +284,11 @@ class IrExports(models.Model):
         try:
             attachment_data = base64.b64decode(patterned_import.datas.decode("utf-8"))
             datas = self._read_import_data(attachment_data)
+        except Exception as e:
+            patterned_import.status = "fail"
+            patterned_import.info = _("Failed (check details)")
+            patterned_import.info_detail = e
+        try:
             res = (
                 self.with_context(
                     pattern_config={
@@ -298,10 +305,12 @@ class IrExports(models.Model):
                 patterned_import.info_detail,
                 patterned_import.status,
             ) = self._process_load_result(patterned_import, res)
-        except Exception as e:
+        except Exception:
+            buff = StringIO()
+            traceback.print_exc(file=buff)
             patterned_import.status = "fail"
-            patterned_import.info = _("Failed (check details)")
-            patterned_import.info_detail = e
+            patterned_import.info = "Failed To load (check details)"
+            patterned_import.info_detail = buff.getvalue()
         return self._notify_user(patterned_import)
 
     def _notify_user(self, patterned_import_export):
