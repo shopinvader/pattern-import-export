@@ -167,6 +167,8 @@ class IrExportsLine(models.Model):
                 base_header.append(field.field_description)
             else:
                 field_name = field.name
+                if field_name == "id":
+                    field_name = ".id"
                 if idx == 1 and self.is_key:
                     field_name += IDENTIFIER_SUFFIX
                 base_header.append(field_name)
@@ -184,6 +186,8 @@ class IrExportsLine(models.Model):
                     header = record.field1_id.field_description
                 else:
                     header = record.field1_id.name
+                    if header == "id":
+                        header = ".id"
                 if record.is_key:
                     header += IDENTIFIER_SUFFIX
                 headers.append(header)
