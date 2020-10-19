@@ -19,67 +19,92 @@ Pattern Import Export
 
 |badge1| |badge2| |badge3| 
 
-This module allows to create some patterns to export records.
-A pattern is defined by a list of fields to export.
-This module only create a common data structure used to do the real export into the expected format.
+Overview
+~~~~~~~~
 
-The import is also implemented to create or update records.
-Fields to update (or create) shouldn't be necessarily into the pattern (but the base model should match).
-That means if your pattern only contains the name field, you can also update others fields without updating your pattern.
+This module extends the import/export capabilities of Odoo.
+
+Patterns are simply a type of ir.exports model, so you can define them with the native Odoo widget to define export lists.
+
+This module only create a common data structure. Other modules will be used to add specific file type support like excel and csv.
+
+
+Features
+--------
+
+* Key matching: instead of always using IDs, match keys to unique-constrained fields, for example update a product by
+  specifying its product_code instead of its database ID or external ID
+
+* One2many and Many2many support: create or update for example invoice lines with a syntax that is very readable and easy to update
+
+* As long as you respect the appropriate format and field names, you are free to add/remove/rename columns, even if they
+  are not in the initial Pattern used for the export
 
 **Table of contents**
 
 .. contents::
    :local:
 
+Configuration
+=============
+
+* Install another module that supports a specific file type
+* Use the Patterns menu to configure your import/export formats
+
 Usage
 =====
 
-Functionally
-~~~~~~~~~~~~
-To use this module, you only have to install it (please check python dependencies).
-
+Configuring a pattern
+~~~~~~~~~~~~~~~~~~~~~
 First you have to define a pattern:
 
-1. Go on the Import/Export->Patterns menu;
-2. Create your pattern with fields to export.
+1. Go on the Import/Export->Patterns menu
+2. Create your pattern with fields to export
+
+You can refer to the examples in demo data.
 
 
-Do export
+Exporting
 ---------
-On a Tree view, select records to export (or into the Form view) and on the
-"action" options, pick the "Export with pattern".
-On the new wizard, fill the Export pattern to use and click on the "Export button".
+* Open the tree view of any model and tick some record selection boxes.
+* In the sidebar, click on the "Export with Pattern" button
+* Select the pattern that you wish to use, click export and download the generated file.
+* A "Patterned Import/Export" is created, and its job along with it. Depending on the success or failure of the job,
+  you will receive a red/green notification on your window.
 
-A job is now created and your export will be executed as soon as possible (depending on system charge).
 
-Do import
+Importing
 ---------
-Once your file is edited, you can upload it to create or update related records.
+You have two options:
 
-On a Tree view, select at least one record (not necessarily ones to update) and on the "action" button, select "Import with pattern".
-A new wizard is open and select a pattern to do the import.
+* Open the tree view of any model and tick some record selection boxes (for this step, these don't matter, we only just want to show the sidebar).
+* In the sidebar, click on the "Import with Pattern" button
+* Select the pattern that you used to generate the export, upload your file and click import.
+* A "Patterned Import/Export" is created, and its job along with it. Depending on the success or failure of the job, you
+  will receive a red/green notification on your window. You can check the details in the appropriate Import/Export menu.
 
-Into your file, you can add/remove/rename column as you want (with specific format and with existing field's name).
+Or:
 
-You can also add some fields wo aren't into the pattern and these fields' will be updated.
+* Access the Import wizard through the Import/Export menu
+* Select the Pattern that you want to use
+* Click on the "Import" button
 
-To be more user-friendly, it's not mandatory to work with ID or XML ID to update existing record.
-You can just add "/key" at the end of the column name (without spaces) and the column will become the key (please ensure the field used as key as necessary constraints).
+Example
+-------
 
-Example of simple update on ``product.product``:
+Here is an example of a simple update on ``product.product``:
 Existing record:
 
-- xml id: "__export__.product1"
+- id: 10
 - name: "Product 1"
 - default_code: "PRD1"
 
-The generated export should be like
+The generated export will look like:
 
 +---------------------+-----------+--------------+
 | id                  | name      | default_code |
 +=====================+===========+==============+
-| __export__.product1 | Product 1 | PRD1         |
+| 10                  | Product 1 | PRD1         |
 +---------------------+-----------+--------------+
 
 Updated file
@@ -87,53 +112,50 @@ Updated file
 +---------------------+---------------+--------------+
 | id                  | name          | default_code |
 +=====================+===============+==============+
-| __export__.product1 | Product 1-bis | PRD1B        |
+| 10                  | Product 1-bis | PRD1B        |
 +---------------------+---------------+--------------+
 
-Then your record will be updated:
+After import, our record will have been updated:
 
 - xml id: "__export__.product1"
 - name: "Product 1-bis"
 - default_code: "PRD1B"
 
-On the same example, you can also edit more complex fields like relational fields:
+Now, let's update some relational fields. Here is some more of our starting data:
 
 - seller_ids:
 
- - xml id (of the seller/partner): "__export__.partner1"
+ - id (of the seller_id which is a res.partner): 22
  - name (seller): Partner 1
  - price: 10
 
 The generated export should be like
 
 +---------------------+-----------+--------------+----------------------+--------------------+
-| id                  | name      | default_code | seller_ids|1|name|id | seller_ids|1|price |
+| id                  | name      | default_code | seller_ids|1|id      | seller_ids|1|price |
 +=====================+===========+==============+======================+====================+
-| __export__.product1 | Product 1 | PRD1         | __export__.partner1  | 10                 |
+| 10                  | Product 1 | PRD1         | 22                   | 10                 |
 +---------------------+-----------+--------------+----------------------+--------------------+
 
-The name (seller) is into this format because seller_ids is a reference to many sellers (so specify the ``|1|``) and the name (seller) is itself a reference to a partner. So we have to specify his ID.
-
-You can also specify a partner reference (who is considered as unique) like this:
+Let's say "ref" is a unique-constrained Char field. For the seller, instead of using its id, let's use its ref.
 
 +---------------------+-----------+--------------+---------------------------+--------------------+
-| id                  | name      | default_code | seller_ids|1|name|ref/key | seller_ids|1|price |
+| id                  | name      | default_code | seller_ids|1|ref#key      | seller_ids|1|price |
 +=====================+===========+==============+===========================+====================+
-| __export__.product1 | Product 1 | PRD1         | partner1-ref              | 10                 |
+| 10                  | Product 1 | PRD1         | partner1-ref              | 10                 |
 +---------------------+-----------+--------------+---------------------------+--------------------+
 
-So this ``/key`` say that Odoo should search for a ``res.partner`` where the ref is the cell's value.
+So this ``#key`` means that Odoo should search for a ``res.partner`` where the ref matches the cell value.
 
-
-It's also possible to update a product (for this example) based on the default_code instead of the ID.
+Lets take another example, instead of using the id, we want to use the product's default_code as key.
 
 +---------------------+-----------+------------------+---------------------------+--------------------+
-| id                  | name      | default_code/key | seller_ids|1|name|ref/key | seller_ids|1|price |
+| id                  | name      | default_code#key | seller_ids|1|ref#key      | seller_ids|1|price |
 +=====================+===========+==================+===========================+====================+
 |                     | Product 1 | PRD1             | partner1-ref              | 10                 |
 +---------------------+-----------+------------------+---------------------------+--------------------+
 
-So Odoo will search the product with the ``default_code`` and update it.
+Odoo will search the product with the matching ``default_code`` and update it.
 
 
 Technically
@@ -149,11 +171,6 @@ Please take care of iterators (``yield``) to avoid loading full file into the sy
 Known issues / Roadmap
 ======================
 
-Problems are related to UI. They are also present in base_export_manager dependency. If entering correct data the first time, the problems can be ignored.
-
-The following issues are closely related and stem from the first one:
-
-* Currently, base_export_manager does not support modifying a line's relational fields (a crash occurs if you try it)
 * Unticking the "Use tab" boolean should clear the previously selected tab_filter_id
 * Changing a line's field should clear the previously selected tab_filter_id
 
@@ -181,6 +198,7 @@ Contributors
 * Chafique Delli <chafique.delli@akretion.com>
 * Sébastien Beau <sebastien.beau@akretion.com>
 * François Honoré (ACSONE SA/NV) <francois.honore@acsone.eu>
+* Kevin Khao <kevin.khao@akretion.com>
 
 Maintainers
 ~~~~~~~~~~~
