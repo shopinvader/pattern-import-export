@@ -103,7 +103,10 @@ class IrExportsLine(models.Model):
 
     def _inverse_name(self):
         super()._inverse_name()
-        self._check_required_fields()
+        if not self.id:
+            self.with_context(skip_check=True)._check_required_fields()
+        else:
+            self._check_required_fields()
 
     @api.constrains(
         "export_id.is_pattern", "name", "number_occurence", "pattern_export_id"
