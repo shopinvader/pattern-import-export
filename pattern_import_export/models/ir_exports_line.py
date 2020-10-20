@@ -64,7 +64,7 @@ class IrExportsLine(models.Model):
                 return self._get_last_relation_field(next_model, path, level=level + 1)
         return field, model, level
 
-    @api.depends("name")
+    @api.depends("name", "add_select_tab")
     def _compute_required_fields(self):
         for record in self:
             hidden_fields = [
