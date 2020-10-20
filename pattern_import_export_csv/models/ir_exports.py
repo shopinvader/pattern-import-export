@@ -6,7 +6,7 @@ import io
 
 from odoo import _, api, fields, models
 
-from ..constants import CSV_LINE_DELIMITER
+CSV_LINE_DELIMITER = "\n"
 
 
 class IrExports(models.Model):

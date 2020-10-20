@@ -40,7 +40,7 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
     def test_export_headers(self):
         csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
         expected_content = [
-            "id",
+            ".id",
             "name",
             "street",
             "country_id|code",
@@ -53,7 +53,7 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.ir_exports.csv_quote_character = "%"
         csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
         expected_content = [
-            "id",
+            ".id",
             "name",
             "street",
             "country_id|code",
@@ -87,7 +87,7 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
 
     def test_export_m2m_headers(self):
         csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_m2m, self.users)
-        expected_headers = ["id", "name", "company_ids|1|name"]
+        expected_headers = [".id", "name", "company_ids|1|name"]
         self.assertEqual(csv_file_lines[0], expected_headers)
 
     def test_export_m2m_values(self):
@@ -104,15 +104,15 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
             self.ir_exports_o2m, self.partners
         )
         expected_headers = [
-            "id",
+            ".id",
             "name",
-            "user_ids|1|id",
+            "user_ids|1|.id",
             "user_ids|1|name",
             "user_ids|1|company_ids|1|name",
-            "user_ids|2|id",
+            "user_ids|2|.id",
             "user_ids|2|name",
             "user_ids|2|company_ids|1|name",
-            "user_ids|3|id",
+            "user_ids|3|.id",
             "user_ids|3|name",
             "user_ids|3|company_ids|1|name",
         ]
