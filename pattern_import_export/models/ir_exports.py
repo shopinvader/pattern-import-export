@@ -144,6 +144,8 @@ class IrExports(models.Model):
                         key = int(key) - 1
                     elif IDENTIFIER_SUFFIX in key:
                         key = key.replace(IDENTIFIER_SUFFIX, "")
+                    if key == ".id":
+                        key = "id"
                     val = val[key]
                     if val is None:
                         break
