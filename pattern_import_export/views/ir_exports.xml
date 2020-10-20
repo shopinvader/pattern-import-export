@@ -38,7 +38,7 @@
 
             </xpath>
             <xpath expr="//form/group[1]" position="after">
-                <group>
+                <group name="general_info">
                     <field name="export_format" required="True"/>
                     <field name="pattern_file" filename="pattern_file_name"/>
                     <field name="pattern_file_name" invisible="1"/>

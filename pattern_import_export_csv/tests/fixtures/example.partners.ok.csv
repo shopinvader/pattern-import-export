@@ -1,0 +1,4 @@
+name,email#key,phone,country_id|code,child_ids|1|name,child_ids|1|email,child_ids|1|function#key,child_ids|2|name,child_ids|2|email,child_ids|2|function#key
+Wood Corner Updated,wood.corner26@example.com,111111111,FR,Willie Burke Updated,willie.burke80.updated@example.com,Service Manager,Ron Gibson Updated,ron.gibson76.updated@example.com,Store Manager
+Deco Addict Updated,deco.addict82@example.com,222222222,DE,Douglas Fletcher Updated,douglas.fletcher51.updated@example.com,Functional Consultant,Floyd Steward Updated,floyd.steward34.updated@example.com,Analyst
+Akretion,akretion-pattern@example.com,333333333,FR,Sebastien,seb-pattern@example.com,Service Manager,Raph,raph-pattern@example.com,Store Manager

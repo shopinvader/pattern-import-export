@@ -15,7 +15,7 @@ from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
 CELL_VALUE_EMPTY = None
 
 
-class TestPatternExport(ExportPatternCommon, SavepointCase):
+class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
     @classmethod
     def _set_up_tab_names(cls):
         for el in ("ignore_one", "countries_1", "countries_2"):

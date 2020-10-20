@@ -2,25 +2,18 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import base64
-from io import BytesIO
 from os import path
 
-# TODO FIXME somehow Travis complains that openpyxl isn't there,
-# the warning shows only here and not in any other import of openpyxl?
-# pylint: disable=missing-manifest-dependency
-import openpyxl
-
-from odoo.tests import SavepointCase
 from odoo.tools import mute_logger
+
+from .common import ExportPatternCsvCommon
 
 # helper to dump the result of the import into an excel file
 DUMP_OUTPUT = False
-
-
 PATH = path.dirname(__file__) + "/fixtures/"
 
 
-class TestPatternImportExcel(SavepointCase):
+class TestPatternImportCsv(ExportPatternCsvCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -34,7 +27,7 @@ class TestPatternImportExcel(SavepointCase):
                 "name": "Partner",
                 "resource": "res.partner",
                 "is_pattern": True,
-                "export_format": "xlsx",
+                "export_format": "csv",
             }
         )
         cls.ir_export_users = cls.env["ir.exports"].create(
@@ -42,21 +35,23 @@ class TestPatternImportExcel(SavepointCase):
                 "name": "User",
                 "resource": "res.users",
                 "is_pattern": True,
-                "export_format": "xlsx",
+                "export_format": "csv",
             }
         )
         cls.user_admin = cls.env.ref("base.user_admin")
         cls.user_demo = cls.env.ref("base.user_demo")
 
+    def setUp(self):
+        super().setUp()
+        # Parent class setUpClass overwrites email addresses; we restore them
+        self.env.ref("base.res_partner_1").email = "wood.corner26@example.com"
+        self.env.ref("base.res_partner_2").email = "deco.addict82@example.com"
+
     @classmethod
     def _load_file(cls, filename, export_id):
         data = base64.b64encode(open(PATH + filename, "rb").read())
         wizard = cls.env["import.pattern.wizard"].create(
-            {
-                "ir_exports_id": export_id.id,
-                "import_file": data,
-                "filename": "example.xlsx",
-            }
+            {"ir_exports_id": export_id.id, "import_file": data, "filename": filename}
         )
         wizard.action_launch_import()
 
@@ -64,7 +59,7 @@ class TestPatternImportExcel(SavepointCase):
             attachment = cls.env["patterned.import.export"].search(
                 [], limit=1, order="id desc"
             )
-            output_name = filename.replace(".xlsx", ".result.xlsx")
+            output_name = filename.replace(".csv", ".result.csv")
             with open(output_name, "wb") as output:
                 output.write(base64.b64decode(attachment.datas))
 
@@ -73,7 +68,7 @@ class TestPatternImportExcel(SavepointCase):
         * Lookup by email
         * Update some o2m fields
         """
-        self._load_file("example.partners.ok.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.ok.csv", self.ir_export_partner)
         # check first line
         partner = self.env.ref("base.res_partner_1")
 
@@ -138,46 +133,50 @@ class TestPatternImportExcel(SavepointCase):
         * Report error in excel file through wrong email
         """
         self.ir_export_partner.partial_commit = False
-        self._load_file("example.partners.fail.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.fail.csv", self.ir_export_partner)
         self.env.clear()
 
-        # check that nothong have been done
+        # check that nothing has been done
         partner = self.env.ref("base.res_partner_1")
-
         self.assertEqual(partner.name, "Wood Corner")
-
         partner = self.env.ref("base.res_partner_2")
-
         self.assertEqual(partner.name, "Deco Addict")
-
         partner = self.env["res.partner"].search(
             [("email", "=", "akretion-pattern@example.com")]
         )
         self.assertEqual(len(partner), 0)
-        attachment = self.env["patterned.import.export"].search(
-            [], order="id desc", limit=1
-        )
-        infile = BytesIO(base64.b64decode(attachment.datas))
-        wb = openpyxl.load_workbook(filename=infile)
-        ws = wb.worksheets[0]
-        self.assertEqual(ws["A1"].value, "#Error")
-        self.assertIsNone(ws["A2"].value)
-        self.assertIsNone(ws["A3"].value)
-        self.assertIsNone(ws["A4"].value)
-        self.assertIn(
-            'new row for relation "res_partner" '
-            'violates check constraint "res_partner_check_name"',
-            ws["A5"].value,
-        )
 
     def test_import_users_ok(self):
         """
         * Lookup by DB ID
         * Simple update
         """
-        self._load_file("example.users.ok.xlsx", self.ir_export_users)
+        self._load_file("example.users.ok.csv", self.ir_export_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+
+    def test_import_users_ok_fmt2(self):
+        """
+        Change CSV format parameters
+        """
+        self.ir_export_users.csv_value_delimiter = "²"
+        self.ir_export_users.csv_quote_character = "%"
+        self._load_file("example.users.ok.fmt2.csv", self.ir_export_users)
+        self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
+        self.assertEqual(self.user_demo.name, "Marc Demo Updated")
+
+    def test_import_users_fail_bad_fmt(self):
+        """
+        Use working file for default config; change config to mismatch
+        """
+        pattimpex_start = self.env["patterned.import.export"].search([])
+        self.ir_export_users.csv_value_delimiter = "²"
+        self.ir_export_users.csv_quote_character = "%"
+        self._load_file("example.users.ok.csv", self.ir_export_users)
+        pattimpex_new = self.env["patterned.import.export"].search(
+            [("id", "not in", pattimpex_start.ids)]
+        )
+        self.assertEqual(pattimpex_new.status, "fail")
 
     def test_import_users_descriptive_ok(self):
         """
@@ -186,28 +185,20 @@ class TestPatternImportExcel(SavepointCase):
         * Simple update
         """
         self.ir_export_users.use_description = True
-        self._load_file("example.users.descriptive.ok.xlsx", self.ir_export_users)
+        self._load_file("example.users.descriptive.ok.csv", self.ir_export_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
-    # TODO FIXME
-    @mute_logger("odoo.sql_db")
-    def disable_test_import_users_fail(self):
-        """
-        * Lookup by external ID
-        * Report error in excel file through external id not found
-        """
-        self._load_file("example.users.fail.xlsx", self.ir_export_users)
-        attachment = self.env["ir.attachment"].search([], order="id desc", limit=1)
-        infile = BytesIO(base64.b64decode(attachment.datas))
-        wb = openpyxl.load_workbook(filename=infile)
-        ws = wb.worksheets[0]
-        self.assertEqual(ws["A1"].value, "#Error")
-        self.assertTrue(ws["A2"].value)
-        self.assertTrue(ws["A3"].value)
+    def test_import_users_fail_bad_id(self):
+        pattimpex_start = self.env["patterned.import.export"].search([])
+        self._load_file("example.users.fail.csv", self.ir_export_users)
+        pattimpex_new = self.env["patterned.import.export"].search(
+            [("id", "not in", pattimpex_start.ids)]
+        )
+        self.assertEqual(pattimpex_new.status, "fail")
 
     def test_import_partners_with_parents(self):
-        self._load_file("example.partners.parent.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.parent.csv", self.ir_export_partner)
         partner_parent = self.env["res.partner"].search([("name", "=", "Apple")])
         self.assertTrue(partner_parent)
         partner_child = self.env["res.partner"].search([("name", "=", "Steve Jobs")])
