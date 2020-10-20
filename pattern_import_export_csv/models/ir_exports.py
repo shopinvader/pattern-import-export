@@ -6,8 +6,6 @@ import io
 
 from odoo import _, api, fields, models
 
-CSV_LINE_DELIMITER = "\n"
-
 
 class IrExports(models.Model):
     _inherit = "ir.exports"
@@ -21,14 +19,15 @@ class IrExports(models.Model):
     def _csv_write_headers(self, writer):
         if self.use_description:
             # note DictWriter needs a dict; uses keys to determine order
-            headers_zipped = zip(
-                self._get_header(use_description=False),
-                self._get_header(use_description=True),
+            writer.writerow(
+                dict(
+                    zip(
+                        self._get_header(use_description=False),
+                        self._get_header(use_description=True),
+                    )
+                )
             )
-            headers = {k: v for k, v in headers_zipped}
-            writer.writerow(headers)
-        headers = {k: k for k in self._get_header(use_description=False)}
-        writer.writerow(headers)
+        writer.writerow({k: k for k in self._get_header(use_description=False)})
 
     def _csv_write_rows(self, writer, records):
         for row in self._get_data_to_export(records):
@@ -51,19 +50,13 @@ class IrExports(models.Model):
 
     # Import part
 
-    def _csv_make_nondescriptive(self, datafile):
-        contents = datafile.decode("utf-8")
-        # manually delete first line
-        idx_second_line = contents.find(CSV_LINE_DELIMITER) + 1
-        contents_no_first_line = contents[idx_second_line:]
-        return contents_no_first_line.encode("utf-8")
-
-    @api.multi
     def _read_import_data_csv(self, datafile):
+        in_file = io.StringIO(datafile.decode("utf-8"))
         if self.use_description:
-            datafile = self._csv_make_nondescriptive(datafile)
+            # read the first line to skip it
+            in_file.readline()
         reader = csv.DictReader(
-            io.StringIO(datafile.decode("utf-8")),
+            in_file,
             delimiter=self.csv_value_delimiter,
             quotechar=self.csv_quote_character,
         )
