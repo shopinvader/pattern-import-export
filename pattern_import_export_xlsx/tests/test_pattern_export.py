@@ -57,7 +57,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
         sheet = wb["Partner list"]
         expected_headers = [
-            "id",
+            ".id",
             "name",
             "street",
             "country_id|code",
@@ -126,20 +126,20 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
             "='{}'!$A$2:$A$4".format(self.tab_name_countries_1),
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[0].cells), "D2:D4"
+            str(sheet_base.data_validations.dataValidation[0].cells), "D2:D1000"
         )
         self.assertEqual(
             sheet_base.data_validations.dataValidation[1].formula1,
             "='{}'!$A$2:$A$5".format(self.tab_name_countries_2),
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[1].cells), "E2:E4"
+            str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1000"
         )
 
     def test_export_m2m_headers(self):
         wb = self._helper_get_resulting_wb(self.ir_exports_m2m, self.users)
         sheet_base = wb["Users list - M2M"]
-        expected_headers_base = ["id", "name", "company_ids|1|name"]
+        expected_headers_base = [".id", "name", "company_ids|1|name"]
         self._helper_check_headers(sheet_base, expected_headers_base)
         sheet_tab_2 = wb[self.tab_name_ignore_one]
         expected_headers_tab_2 = ["name"]
@@ -175,22 +175,22 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
             "='{}'!$A$2:$A$4".format(self.tab_name_ignore_one),
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[0].cells), "C2:C4"
+            str(sheet_base.data_validations.dataValidation[0].cells), "C2:C1000"
         )
 
     def test_export_o2m_headers(self):
         wb = self._helper_get_resulting_wb(self.ir_exports_o2m, self.partners)
         main_sheet = wb["Partner - O2M"]
         expected_headers = [
-            "id",
+            ".id",
             "name",
-            "user_ids|1|id",
+            "user_ids|1|.id",
             "user_ids|1|name",
             "user_ids|1|company_ids|1|name",
-            "user_ids|2|id",
+            "user_ids|2|.id",
             "user_ids|2|name",
             "user_ids|2|company_ids|1|name",
-            "user_ids|3|id",
+            "user_ids|3|.id",
             "user_ids|3|name",
             "user_ids|3|company_ids|1|name",
         ]

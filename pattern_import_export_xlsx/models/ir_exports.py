@@ -28,7 +28,10 @@ class IrExports(models.Model):
         self._populate_main_sheet_rows(main_sheet, records)
         tab_data = self.export_fields._get_tab_data()
         self._create_tabs(book, tab_data)
-        main_sheet_length = len(records.ids) + 1
+        if len(records.ids) < 1000:
+            main_sheet_length = 1000
+        else:
+            main_sheet_length = len(records.ids) + 2
         self._create_validators(main_sheet, main_sheet_length, tab_data)
         book.close()
         xlsx_file = BytesIO()
