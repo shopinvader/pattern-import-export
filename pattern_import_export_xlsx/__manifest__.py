@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export XLSX",
     "summary": "Pattern for import or export from to XLSX files",
-    "version": "12.0.2.1.0",
+    "version": "12.0.2.2.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "http://www.akretion.com",
