@@ -2,18 +2,24 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 
-from .common import SyncCommon
+from odoo.tests import SavepointCase
 
 
-class TestSyncPattimpexImport(SyncCommon):
-    def setUp(self):
-        super().setUp()
+class TestImport(SavepointCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
         # Running the attachment_queue is done in a new cursor
-        self.registry.enter_test_mode(self.env.cr)
+        cls.registry.enter_test_mode(cls.env.cr)
+        cls.task_import = cls.env.ref(
+            "pattern_import_export_synchronize.import_from_filestore_pattimpex"
+        )
+        cls.pattern_config = cls.env.ref("pattern_import_export.demo_export_m2m")
 
-    def tearDown(self):
-        self.registry.leave_test_mode()
-        super().tearDown()
+    @classmethod
+    def tearDownClass(cls):
+        cls.registry.leave_test_mode()
+        super().tearDownClass()
 
     def test_run_attachment_queue(self):
         # note we only test that running an attachment queue create a correct
@@ -22,7 +28,7 @@ class TestSyncPattimpexImport(SyncCommon):
             "name": "whatever",
             "datas": b"Y292aWQxOQ==",
             "datas_fname": "whatever.csv",
-            "export_id": self.export.id,
+            "export_id": self.pattern_config.id,
             "file_type": "import_pattern",
             "task_id": self.task_import.id,
         }
