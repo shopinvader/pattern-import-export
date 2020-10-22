@@ -4,3 +4,4 @@ from . import ir_actions
 from . import base
 from . import ir_fields
 from . import patterned_import_export
+from . import ir_attachment

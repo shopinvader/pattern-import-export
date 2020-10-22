@@ -13,16 +13,6 @@ _logger = logging.getLogger(__name__)
 class AttachmentSynchronizeTask(models.Model):
     _inherit = "attachment.synchronize.task"
 
-    method_type = fields.Selection(
-        selection_add=[
-            ("import_pattern", "Import Task using patterns"),
-            ("export_pattern", "Export task using patterns"),
-        ],
-        required=True,
-    )
-    domain_pattimpex_export = fields.Char(
-        string="Domain for filtering records to export", default="[]"
-    )
     export_id = fields.Many2one("ir.exports", string="Import/Export pattern")
 
     # Export part

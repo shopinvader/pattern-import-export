@@ -3,12 +3,12 @@
 
 import logging
 
-from .common import SyncPattimpexCommon
+from .common import SyncCommon
 
 _logger = logging.getLogger(__name__)
 
 
-class TestSyncPattimpexExport(SyncPattimpexCommon):
+class TestSyncPattimpexExport(SyncCommon):
     def setUp(self):
         super().setUp()
         self.registry.enter_test_mode(self.env.cr)
