@@ -11,8 +11,10 @@
     "category": "Generic Modules",
     "depends": ["attachment_synchronize", "pattern_import_export"],
     "data": [
-        #        "views/attachment_queue_views.xml",
-        #        "views/attachment_synchronize_task_views.xml",
+        "views/ir_exports_view.xml",
+        "security/ir.model.access.csv",
+        "views/pattern_export_task_view.xml",
+        "views/patterned_import_export_view.xml",
     ],
     "demo": ["demo/demo.xml"],
 }

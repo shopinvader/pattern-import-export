@@ -9,5 +9,15 @@ class IrExports(models.Model):
     _inherit = "ir.exports"
 
     import_task_ids = fields.One2many(
-        "attachment.synchronize.task", "export_id", "Import Task"
+        "attachment.synchronize.task",
+        "export_id",
+        "Import Task",
+        context={"active_test": False},
+    )
+
+    export_task_ids = fields.One2many(
+        "pattern.export.task",
+        "export_id",
+        "Export Task",
+        context={"active_test": False},
     )

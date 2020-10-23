@@ -12,7 +12,7 @@ class TestImport(SavepointCase):
         # Running the attachment_queue is done in a new cursor
         cls.registry.enter_test_mode(cls.env.cr)
         cls.task_import = cls.env.ref(
-            "pattern_import_export_synchronize.import_from_filestore_pattimpex"
+            "pattern_import_export_synchronize.import_from_filestore"
         )
         cls.pattern_config = cls.env.ref("pattern_import_export.demo_export_m2m")
 
