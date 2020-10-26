@@ -6,6 +6,7 @@ from io import StringIO
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.osv import expression
 
 from odoo.addons.queue_job.job import job
 
@@ -49,38 +50,27 @@ class IrExports(models.Model):
                 count = len(rec.pattimpex_ids.filtered(lambda r: r.status == state).ids)
                 setattr(rec, field_name, count)
 
-    def button_open_pattimpex_fail(self):
-        ids = self.pattimpex_ids.filtered(lambda r: r.status == "fail").ids
+    def _open_pattern_file(self, domain=None):
+        if domain is None:
+            domain = []
+        domain = expression.AND([[("export_id", "=", self.id)], domain])
         return {
             "name": _("Patterned imports/exports"),
             "view_type": "form",
             "view_mode": "tree,form",
             "res_model": "patterned.import.export",
             "type": "ir.actions.act_window",
-            "domain": [("id", "in", ids)],
+            "domain": domain,
         }
+
+    def button_open_pattimpex_fail(self):
+        return self._open_pattern_file([("status", "=", "fail")])
 
     def button_open_pattimpex_pending(self):
-        ids = self.pattimpex_ids.filtered(lambda r: r.status == "pending").ids
-        return {
-            "name": _("Patterned imports/exports"),
-            "view_type": "form",
-            "view_mode": "tree,form",
-            "res_model": "patterned.import.export",
-            "type": "ir.actions.act_window",
-            "domain": [("id", "in", ids)],
-        }
+        return self._open_pattern_file([("status", "=", "pending")])
 
     def button_open_pattimpex_success(self):
-        ids = self.pattimpex_ids.filtered(lambda r: r.status == "success").ids
-        return {
-            "name": _("Patterned imports/exports"),
-            "view_type": "form",
-            "view_mode": "tree,form",
-            "res_model": "patterned.import.export",
-            "type": "ir.actions.act_window",
-            "domain": [("id", "in", ids)],
-        }
+        return self._open_pattern_file([("status", "=", "success")])
 
     @property
     def row_start_records(self):

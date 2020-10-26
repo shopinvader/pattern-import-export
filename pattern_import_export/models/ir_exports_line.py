@@ -1,8 +1,9 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import ast
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools import safe_eval
 
 from odoo.addons.base_jsonify.models.ir_export import convert_dict, update_dict
 
@@ -262,7 +263,9 @@ class IrExportsLine(models.Model):
                 continue
             permitted_records = []
             model_name = rec.related_model_id.model
-            domain = (rec.tab_filter_id and safe_eval(rec.tab_filter_id.domain)) or []
+            domain = (
+                rec.tab_filter_id and ast.literal_eval(rec.tab_filter_id.domain)
+            ) or []
             records_matching_constraint = self.env[model_name].search(domain)
             permitted_records += records_matching_constraint
             data = rec._format_tab_records(permitted_records)

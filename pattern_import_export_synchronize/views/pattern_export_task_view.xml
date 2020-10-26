@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+<record id="pattern_export_task_view_form" model="ir.ui.view">
+    <field name="model">pattern.export.task</field>
+    <field name="arch" type="xml">
+        <tree string="Pattern Export Task" editable="bottom" decoration-muted="active == False">
+            <field name="name"/>
+            <field name="filter_id"/>
+            <field name="export_id"/>
+            <field name="sync_task_id"/>
+            <button name="run" icon="fa-play-circle" string="Run" type="object"/>
+            <field name="count_failed_job" string=" "/>
+            <button name="open_failed_job" type="object" icon="fa-thumbs-o-down" context="{'search_default_failed': 1}"/>
+            <field name="count_pending_job" string=" "/>
+            <button name="open_pending_job" type="object" icon="fa-spinner" context="{'search_default_pending': 1}"/>
+            <field name="count_generated_file" string=" "/>
+            <button name="open_generated_file" type="object" icon="fa-thumbs-o-up" context="{'search_default_done': 1}"/>
+            <button name="button_duplicate_record" type="object" string="Copy" icon="fa-clone"/>
+            <field name="active" invisible="1"/>
+            <button name="toggle_active" type="object" string="Active/Inactive" icon="fa-archive"/>
+        </tree>
+    </field>
+</record>
+
+</odoo>

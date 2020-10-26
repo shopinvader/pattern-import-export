@@ -30,14 +30,6 @@ class ImportPatternWizard(models.TransientModel):
         @return: dict/action
         """
         self.ensure_one()
-        description = _(
-            "Generate import '{model}' with pattern '{export_name}' using "
-            "format {format}"
-        ).format(
-            model=self.ir_exports_id.model_id.model,
-            export_name=self.ir_exports_id.name,
-            format=self.ir_exports_id.export_format,
-        )
         patterned_import = self.env["patterned.import.export"].create(
             {
                 "name": self.filename,
@@ -47,6 +39,16 @@ class ImportPatternWizard(models.TransientModel):
                 "export_id": self.ir_exports_id.id,
             }
         )
+
+        description = _(
+            "Generate import '{model}' with pattern '{export_name}' using "
+            "format {format}"
+        ).format(
+            model=self.ir_exports_id.model_id.model,
+            export_name=self.ir_exports_id.name,
+            format=self.ir_exports_id.export_format,
+        )
+
         self.ir_exports_id.with_delay(
             description=description
         )._generate_import_with_pattern_job(patterned_import)

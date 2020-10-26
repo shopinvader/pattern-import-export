@@ -84,7 +84,7 @@ class Base(models.AbstractModel):
                 ),
                 sticky=True,
             )
-        return True
+        return export
 
     # There is a native bug in odoo
     # when load records if it fail odoo will rollback and try to load them one by one

@@ -22,7 +22,7 @@
         <field name="arch" type="xml">
             <form string="patterned_import_export_form" create="false">
                 <sheet>
-                    <group>
+                    <group name="main">
                         <field name="datas" filename="datas_fname" readonly="1"/>
                         <field name="datas_fname" invisible="1"/>
                         <field name="create_date" readonly="1"/>
