@@ -10,6 +10,7 @@ setuptools.setup(
     install_requires=[
         'odoo12-addon-pattern_import_export',
         'odoo12-addon-pattern_import_export_csv',
+        'odoo12-addon-pattern_import_export_synchronize',
         'odoo12-addon-pattern_import_export_xlsx',
     ],
     classifiers=[
