@@ -95,3 +95,16 @@ class PatternFile(models.Model):
         url = base + web + "&".join(args)
         link += "<a href=" + url + ">" + _("Download") + "</a>"
         return link
+
+    def enqueue(self):
+        description = _(
+            "Generate import '{model}' with pattern '{export_name}' using "
+            "format {format}"
+        ).format(
+            model=self.export_id.model_id.model,
+            export_name=self.export_id.name,
+            format=self.export_id.export_format,
+        )
+        self.export_id.with_delay(
+            description=description
+        )._generate_import_with_pattern_job(self)

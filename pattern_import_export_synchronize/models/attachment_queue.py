@@ -1,7 +1,7 @@
 # Copyright 2020 Akretion (http://www.akretion.com).
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import _, fields, models
+from odoo import fields, models
 
 
 class AttachmentQueue(models.Model):
@@ -20,17 +20,7 @@ class AttachmentQueue(models.Model):
                 "export_id": self.task_id.export_id.id,
             }
         )
-        description = _(
-            "Generate import '{model}' with pattern '{export_name}' using "
-            "format {format}"
-        ).format(
-            model=pattern_file_import.export_id.model_id.model,
-            export_name=pattern_file_import.export_id.name,
-            format=pattern_file_import.export_id.export_format,
-        )
-        pattern_file_import.export_id.with_delay(
-            description=description
-        )._generate_import_with_pattern_job(pattern_file_import)
+        pattern_file_import.enqueue()
         self.state = "done"
         self.state_message = "Pattern file and its job has been created"
 
