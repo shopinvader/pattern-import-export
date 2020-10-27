@@ -8,6 +8,4 @@ from odoo import fields, models
 class IrAttachment(models.Model):
     _inherit = "ir.attachment"
 
-    pattern_file_ids = fields.One2many(
-        "patterned.import.export", "attachment_id", "Pattern File"
-    )
+    pattern_file_ids = fields.One2many("pattern.file", "attachment_id", "Pattern File")

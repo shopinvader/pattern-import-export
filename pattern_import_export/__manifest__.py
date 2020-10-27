@@ -20,7 +20,7 @@
         "wizard/export_with_pattern.xml",
         "wizard/import_pattern_wizard.xml",
         "views/ir_exports.xml",
-        "views/patterned_import_export.xml",
+        "views/pattern_file.xml",
         "views/menuitems.xml",
     ],
     "demo": ["demo/demo.xml"],

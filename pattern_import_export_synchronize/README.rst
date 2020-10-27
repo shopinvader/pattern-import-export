@@ -30,9 +30,9 @@ Imports
 
 2. attachment.queue of the appropriate type is generated, file is imported
 
-3. attachment.queue is executed -> patterned.import.export is generated
+3. attachment.queue is executed -> pattern.file is generated
 
-4. A job is generated that actually imports the synced file into Odoo, using the appropriate patterned export
+4. A job is generated that actually imports the synced file into Odoo, using the appropriate pattern file
 
 Exports
 =======

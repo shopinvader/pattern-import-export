@@ -12,7 +12,7 @@ class AttachmentQueue(models.Model):
     )
 
     def _run_import_pattern(self):
-        patterned_import = self.env["patterned.import.export"].create(
+        pattern_file_import = self.env["pattern.file"].create(
             {
                 "name": self.datas_fname,
                 "attachment_id": self.attachment_id.id,
@@ -24,15 +24,15 @@ class AttachmentQueue(models.Model):
             "Generate import '{model}' with pattern '{export_name}' using "
             "format {format}"
         ).format(
-            model=patterned_import.export_id.model_id.model,
-            export_name=patterned_import.export_id.name,
-            format=patterned_import.export_id.export_format,
+            model=pattern_file_import.export_id.model_id.model,
+            export_name=pattern_file_import.export_id.name,
+            format=pattern_file_import.export_id.export_format,
         )
-        patterned_import.export_id.with_delay(
+        pattern_file_import.export_id.with_delay(
             description=description
-        )._generate_import_with_pattern_job(patterned_import)
+        )._generate_import_with_pattern_job(pattern_file_import)
         self.state = "done"
-        self.state_message = "Patterned Import Export and its job has been created"
+        self.state_message = "Pattern file and its job has been created"
 
     def _run(self):
         super()._run()

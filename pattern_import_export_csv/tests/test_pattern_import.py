@@ -56,9 +56,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         wizard.action_launch_import()
 
         if DUMP_OUTPUT:
-            attachment = cls.env["patterned.import.export"].search(
-                [], limit=1, order="id desc"
-            )
+            attachment = cls.env["pattern.file"].search([], limit=1, order="id desc")
             output_name = filename.replace(".csv", ".result.csv")
             with open(output_name, "wb") as output:
                 output.write(base64.b64decode(attachment.datas))
@@ -169,11 +167,11 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         """
         Use working file for default config; change config to mismatch
         """
-        pattimpex_start = self.env["patterned.import.export"].search([])
+        pattimpex_start = self.env["pattern.file"].search([])
         self.ir_export_users.csv_value_delimiter = "²"
         self.ir_export_users.csv_quote_character = "%"
         self._load_file("example.users.ok.csv", self.ir_export_users)
-        pattimpex_new = self.env["patterned.import.export"].search(
+        pattimpex_new = self.env["pattern.file"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
         self.assertEqual(pattimpex_new.state, "fail")
@@ -190,9 +188,9 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
     def test_import_users_fail_bad_id(self):
-        pattimpex_start = self.env["patterned.import.export"].search([])
+        pattimpex_start = self.env["pattern.file"].search([])
         self._load_file("example.users.fail.csv", self.ir_export_users)
-        pattimpex_new = self.env["patterned.import.export"].search(
+        pattimpex_new = self.env["pattern.file"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
         self.assertEqual(pattimpex_new.state, "fail")

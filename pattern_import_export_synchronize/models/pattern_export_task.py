@@ -26,9 +26,7 @@ class PatternExportTask(models.Model):
     count_failed_job = fields.Integer(compute="_compute_count_job")
     count_pending_job = fields.Integer(compute="_compute_count_job")
     count_generated_file = fields.Integer(compute="_compute_count_generated_file")
-    pattern_file_ids = fields.One2many(
-        "patterned.import.export", "export_task_id", "Pattern File"
-    )
+    pattern_file_ids = fields.One2many("pattern.file", "export_task_id", "Pattern File")
     active = fields.Boolean(default=True)
 
     def _get_job_domain(self):

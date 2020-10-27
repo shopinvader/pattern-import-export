@@ -24,36 +24,36 @@
               groups="base.group_user"
               action="act_open_pattern_view"/>
 
-    <!--Patterned Import/Export-->
-    <record id="action_patterned_imports" model="ir.actions.act_window">
-        <field name="name">Patterned imports</field>
+    <!--Pattern files-->
+    <record id="action_pattern_file_imports" model="ir.actions.act_window">
+        <field name="name">Pattern files (imports)</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">patterned.import.export</field>
+        <field name="res_model">pattern.file</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('kind', '=', 'import')]</field>
         <field name="view_type">form</field>
     </record>
 
-    <record id="action_patterned_exports" model="ir.actions.act_window">
-        <field name="name">Patterned exports</field>
+    <record id="action_pattern_file_exports" model="ir.actions.act_window">
+        <field name="name">Pattern files (exports)</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">patterned.import.export</field>
+        <field name="res_model">pattern.file</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('kind', '=', 'export')]</field>
         <field name="view_type">form</field>
     </record>
 
-    <menuitem id="patterned_imports_menu"
-              name="Patterned imports"
+    <menuitem id="pattern_file_imports_menu"
+              name="Pattern files (imports)"
               parent="import_export_menu_root"
               sequence="3"
               groups="base.group_user"
-              action="action_patterned_imports"/>
+              action="action_pattern_file_imports"/>
 
-    <menuitem id="patterned_export_menu"
-              name="Patterned exports"
+    <menuitem id="pattern_file_export_menu"
+              name="Pattern files (exports)"
               parent="import_export_menu_root"
               sequence="4"
               groups="base.group_user"
-              action="action_patterned_exports"/>
+              action="action_pattern_file_exports"/>
 </odoo>

@@ -30,7 +30,7 @@ class ImportPatternWizard(models.TransientModel):
         @return: dict/action
         """
         self.ensure_one()
-        patterned_import = self.env["patterned.import.export"].create(
+        pattern_file_import = self.env["pattern.file"].create(
             {
                 "name": self.filename,
                 "datas": self.import_file,
@@ -51,5 +51,5 @@ class ImportPatternWizard(models.TransientModel):
 
         self.ir_exports_id.with_delay(
             description=description
-        )._generate_import_with_pattern_job(patterned_import)
+        )._generate_import_with_pattern_job(pattern_file_import)
         return {}

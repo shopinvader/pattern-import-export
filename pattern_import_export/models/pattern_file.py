@@ -4,10 +4,10 @@
 from odoo import fields, models
 
 
-class PatternedImportExport(models.Model):
-    _name = "patterned.import.export"
+class PatternFile(models.Model):
+    _name = "pattern.file"
     _inherits = {"ir.attachment": "attachment_id"}
-    _description = "Attachment with patterned import/export metadata"
+    _description = "Attachment with pattern file metadata"
 
     attachment_id = fields.Many2one("ir.attachment", required=True, ondelete="cascade")
     state = fields.Selection(

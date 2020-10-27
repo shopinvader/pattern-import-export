@@ -40,9 +40,9 @@ class Base(models.AbstractModel):
         web = "/web#"
         args = [
             "action="
-            + str(self.env.ref("pattern_import_export.action_patterned_imports").id),
+            + str(self.env.ref("pattern_import_export.action_pattern_file_imports").id),
             "id=" + str(export.id),
-            "model=patterned.import.export",
+            "model=pattern.file",
             "view_type=form",
             "menu_id="
             + str(self.env.ref("pattern_import_export.import_export_menu_root").id),
@@ -54,7 +54,7 @@ class Base(models.AbstractModel):
         base = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
         web = "/web/content/"
         args = [
-            "?model=" + "patterned.import.export",
+            "?model=" + "pattern.file",
             "id=" + str(export.id),
             "filename_field=datas_fname",
             "field=datas",
