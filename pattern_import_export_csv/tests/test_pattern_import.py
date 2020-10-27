@@ -176,7 +176,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         pattimpex_new = self.env["patterned.import.export"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
-        self.assertEqual(pattimpex_new.status, "fail")
+        self.assertEqual(pattimpex_new.state, "fail")
 
     def test_import_users_descriptive_ok(self):
         """
@@ -195,7 +195,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         pattimpex_new = self.env["patterned.import.export"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
-        self.assertEqual(pattimpex_new.status, "fail")
+        self.assertEqual(pattimpex_new.state, "fail")
 
     def test_import_partners_with_parents(self):
         self._load_file("example.partners.parent.csv", self.ir_export_partner)

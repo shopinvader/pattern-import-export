@@ -47,7 +47,7 @@ class IrExports(models.Model):
         for rec in self:
             for state in ("fail", "pending", "success"):
                 field_name = "count_pattimpex_" + state
-                count = len(rec.pattimpex_ids.filtered(lambda r: r.status == state).ids)
+                count = len(rec.pattimpex_ids.filtered(lambda r: r.state == state).ids)
                 setattr(rec, field_name, count)
 
     def _open_pattern_file(self, domain=None):
@@ -64,13 +64,13 @@ class IrExports(models.Model):
         }
 
     def button_open_pattimpex_fail(self):
-        return self._open_pattern_file([("status", "=", "fail")])
+        return self._open_pattern_file([("state", "=", "fail")])
 
     def button_open_pattimpex_pending(self):
-        return self._open_pattern_file([("status", "=", "pending")])
+        return self._open_pattern_file([("state", "=", "pending")])
 
     def button_open_pattimpex_success(self):
-        return self._open_pattern_file([("status", "=", "success")])
+        return self._open_pattern_file([("state", "=", "success")])
 
     @property
     def row_start_records(self):
@@ -212,7 +212,7 @@ class IrExports(models.Model):
                 "datas": attachment_datas,
                 "datas_fname": name,
                 "kind": "export",
-                "status": "success",
+                "state": "success",
                 "export_id": self.id,
             }
         )
@@ -269,10 +269,10 @@ class IrExports(models.Model):
         if res.get("messages"):
             info += self._process_load_message(res["messages"])
         if res.get("messages"):
-            status = "fail"
+            state = "fail"
         else:
-            status = "success"
-        return info, info_detail, status
+            state = "success"
+        return info, info_detail, state
 
     @job(default_channel="root.importwithpattern")
     def _generate_import_with_pattern_job(self, patterned_import):
@@ -280,7 +280,7 @@ class IrExports(models.Model):
             attachment_data = base64.b64decode(patterned_import.datas.decode("utf-8"))
             datas = self._read_import_data(attachment_data)
         except Exception as e:
-            patterned_import.status = "fail"
+            patterned_import.state = "fail"
             patterned_import.info = _("Failed (check details)")
             patterned_import.info_detail = e
         try:
@@ -298,18 +298,18 @@ class IrExports(models.Model):
             (
                 patterned_import.info,
                 patterned_import.info_detail,
-                patterned_import.status,
+                patterned_import.state,
             ) = self._process_load_result(patterned_import, res)
         except Exception:
             buff = StringIO()
             traceback.print_exc(file=buff)
-            patterned_import.status = "fail"
+            patterned_import.state = "fail"
             patterned_import.info = "Failed To load (check details)"
             patterned_import.info_detail = buff.getvalue()
         return self._notify_user(patterned_import)
 
     def _notify_user(self, patterned_import_export):
-        if patterned_import_export.status == "fail":
+        if patterned_import_export.state == "fail":
             self.env.user.notify_danger(
                 message=_(
                     "Import job has failed. \nFor more details: %s"

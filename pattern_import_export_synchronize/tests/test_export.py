@@ -20,7 +20,7 @@ class TestExport(SavepointCase):
             {
                 "name": "foo",
                 "datas_fname": "foo.csv",
-                "status": "success",
+                "state": "success",
                 "export_id": self.task_export.export_id.id,
                 "kind": "export",
             }

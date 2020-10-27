@@ -88,7 +88,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             self.ir_exports_m2m._generate_import_with_pattern_job(
                 self.empty_patterned_import_export
             )
-        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        self.assertEqual(self.empty_patterned_import_export.state, "success")
         partner = self.env["res.users"].search([("name", "=", unique_name)])
         self.assertEqual(len(partner), 1)
 
@@ -100,7 +100,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             self.ir_exports_m2m._generate_import_with_pattern_job(
                 self.empty_patterned_import_export
             )
-        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        self.assertEqual(self.empty_patterned_import_export.state, "success")
         partner = self.env["res.users"].search([("name", "=", unique_name)])
         self.assertEqual(len(partner), 1)
 
@@ -260,7 +260,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             self.ir_exports_m2m._generate_import_with_pattern_job(
                 self.empty_patterned_import_export
             )
-            self.assertEqual(self.empty_patterned_import_export.status, "fail")
+            self.assertEqual(self.empty_patterned_import_export.state, "fail")
             self.assertIn(
                 "Several error have been found number of errors: 1,"
                 " number of warnings: 0",
@@ -282,7 +282,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 self.empty_patterned_import_export
             )
         partner = self.env["res.partner"].search([("name", "=", unique_name)])
-        self.assertEqual(self.empty_patterned_import_export.status, "success")
+        self.assertEqual(self.empty_patterned_import_export.state, "success")
         self.assertEqual(len(partner), 1)
         self.assertEquals(self.partner_cat1, partner.category_id)
 
@@ -307,7 +307,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 self.empty_patterned_import_export
             )
         self.assertEqual(
-            self.empty_patterned_import_export.status,
+            self.empty_patterned_import_export.state,
             "success",
             self.empty_patterned_import_export.info,
         )
@@ -333,7 +333,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 self.empty_patterned_import_export
             )
         self.assertEqual(
-            self.empty_patterned_import_export.status,
+            self.empty_patterned_import_export.state,
             "success",
             self.empty_patterned_import_export.info,
         )
@@ -350,7 +350,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             self.ir_exports._generate_import_with_pattern_job(
                 self.empty_patterned_import_export
             )
-        self.assertEqual(self.empty_patterned_import_export.status, "fail")
+        self.assertEqual(self.empty_patterned_import_export.state, "fail")
         self.assertIn(
             (
                 "Fail to process field 'Country'.\n"
@@ -369,7 +369,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 self.empty_patterned_import_export
             )
         self.assertEqual(
-            self.empty_patterned_import_export.status,
+            self.empty_patterned_import_export.state,
             "success",
             self.empty_patterned_import_export.info,
         )

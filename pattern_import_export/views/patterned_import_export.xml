@@ -8,7 +8,7 @@
             <tree create="false">
                 <field name="attachment_id"/>
                 <field name="create_date"/>
-                <field name="status"/>
+                <field name="state"/>
                 <field name="kind"/>
                 <field name="info"/>
                 <field name="export_id"/>
@@ -26,7 +26,7 @@
                         <field name="datas" filename="datas_fname" readonly="1"/>
                         <field name="datas_fname" invisible="1"/>
                         <field name="create_date" readonly="1"/>
-                        <field name="status" readonly="1"/>
+                        <field name="state" readonly="1"/>
                         <field name="kind" readonly="1"/>
                         <field name="info" readonly="1"/>
                         <field name="info_detail" readonly="1"/>

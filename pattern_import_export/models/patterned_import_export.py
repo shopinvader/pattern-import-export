@@ -10,7 +10,7 @@ class PatternedImportExport(models.Model):
     _description = "Attachment with patterned import/export metadata"
 
     attachment_id = fields.Many2one("ir.attachment", required=True, ondelete="cascade")
-    status = fields.Selection(
+    state = fields.Selection(
         [("pending", "Pending"), ("fail", "Fail"), ("success", "Success")],
         default="pending",
     )

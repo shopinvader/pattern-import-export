@@ -68,7 +68,7 @@ class Base(models.AbstractModel):
     @job(default_channel="root.exportwithpattern")
     def _generate_export_with_pattern_job(self, export_pattern):
         export = export_pattern._export_with_record(self)
-        if export.status == "success":
+        if export.state == "success":
             self.env.user.notify_success(
                 message=_(
                     "Export job has finished. You can access it here: %s"
@@ -76,7 +76,7 @@ class Base(models.AbstractModel):
                 ),
                 sticky=True,
             )
-        elif export.status == "fail":
+        elif export.state == "fail":
             self.env.user.notify_danger(
                 message=_(
                     "Export job has failed. You can access it here: %s"
@@ -230,7 +230,7 @@ class Base(models.AbstractModel):
                 }
                 if idx % pattern_config["flush_step"] == 0:
                     flush()
-                    _logger.info("Progress status: record imported {}".format(idx + 1))
+                    _logger.info("Progress state: record imported {}".format(idx + 1))
                     if partial_commit:
                         # set the model_load savepoint so that in case of error,
                         # rollback to this point
@@ -238,7 +238,7 @@ class Base(models.AbstractModel):
             # we force to flush before ending the loop
             # so we can log correctly and commit if needed
             flush()
-            _logger.info("Progress status: Total record imported {}".format(idx + 1))
+            _logger.info("Progress state: Total record imported {}".format(idx + 1))
             if partial_commit:
                 # so we can update the savepoint
                 self._cr.execute("SAVEPOINT model_load")
