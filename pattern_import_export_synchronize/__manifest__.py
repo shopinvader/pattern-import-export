@@ -15,7 +15,6 @@
         "security/ir.model.access.csv",
         "views/pattern_export_task_view.xml",
         "views/pattern_file_view.xml",
-        "views/queue_job_view.xml",
     ],
     "demo": ["demo/demo.xml"],
 }
