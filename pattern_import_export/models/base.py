@@ -251,7 +251,7 @@ class Base(models.AbstractModel):
     # https://github.com/odoo/odoo/pull/60260
     @api.model
     def _convert_records(self, records, log=lambda a: None):
-        """ Converts records from the source iterable (recursive dicts of
+        """Converts records from the source iterable (recursive dicts of
         strings) into forms which can be written to the database (via
         self.create or (ir.model.data)._update)
 
@@ -265,13 +265,13 @@ class Base(models.AbstractModel):
         convert = self.env["ir.fields.converter"].for_model(self)
 
         def _log(base, record, field, exception):
-            type = "warning" if isinstance(exception, Warning) else "error"
+            kind = "warning" if isinstance(exception, Warning) else "error"
             # logs the logical (not human-readable) field name for automated
             # processing of response, but injects human readable in message
             exc_vals = dict(base, record=record, field=field_names[field])
             record = dict(
                 base,
-                type=type,
+                type=kind,
                 record=record,
                 field=field,
                 message=pycompat.text_type(exception.args[0]) % exc_vals,

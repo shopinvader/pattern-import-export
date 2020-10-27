@@ -297,7 +297,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         with self._mock_read_import_data(main_data):
             self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
         self.assertEqual(
-            self.empty_pattern_file.state, "success", self.empty_pattern_file.info,
+            self.empty_pattern_file.state, "success", self.empty_pattern_file.info
         )
         partner = self.env["res.partner"].search([("name", "=", unique_name)])
         self.assertEqual(len(partner), 1)
@@ -319,7 +319,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         with self._mock_read_import_data(main_data):
             self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
         self.assertEqual(
-            self.empty_pattern_file.state, "success", self.empty_pattern_file.info,
+            self.empty_pattern_file.state, "success", self.empty_pattern_file.info
         )
         partner = self.env["res.partner"].search([("name", "=", unique_name)])
         self.assertEqual(len(partner), 1)
@@ -349,7 +349,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         with self._mock_read_import_data(main_data):
             self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
         self.assertEqual(
-            self.empty_pattern_file.state, "success", self.empty_pattern_file.info,
+            self.empty_pattern_file.state, "success", self.empty_pattern_file.info
         )
         partner = self.env["res.partner"].search([("name", "=", name)])
         self.assertEqual(len(partner), 1)

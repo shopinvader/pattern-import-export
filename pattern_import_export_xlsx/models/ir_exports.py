@@ -68,8 +68,8 @@ class IrExports(models.Model):
                 main_sheet.cell(row=row, column=col, value=values.get(header, ""))
 
     def _create_tabs(self, book, tab_data):
-        """ Create additional sheets for export lines with create tab option
-        and write all valid choices """
+        """Create additional sheets for export lines with create tab option
+        and write all valid choices"""
         for name, headers, data, __ in tab_data:
             new_sheet = book.create_sheet(name)
             for col_number, header in enumerate(headers, start=1):
@@ -79,8 +79,8 @@ class IrExports(models.Model):
                     new_sheet.cell(row=row_number, column=col_number, value=cell_data)
 
     def _create_validators(self, main_sheet, main_sheet_length, tab_data):
-        """ Add validators: source permitted records from tab sheets,
-        apply validation to main sheet """
+        """Add validators: source permitted records from tab sheets,
+        apply validation to main sheet"""
         for el in tab_data:
             tab_name, _, data, col_dst = el
             col_letter_dst = get_column_letter(col_dst)

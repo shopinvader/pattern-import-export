@@ -41,8 +41,8 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         return openpyxl.load_workbook(decoded_obj)
 
     def _helper_check_cell_values(self, sheet, expected_values):
-        """ To allow for csv-like syntax in tests, just give a list
-        of lists, with 1 list <=> 1 row """
+        """To allow for csv-like syntax in tests, just give a list
+        of lists, with 1 list <=> 1 row"""
         for itr_row, row in enumerate(expected_values, start=2):
             for itr_col, expected_cell_value in enumerate(row, start=1):
                 cell_value = sheet.cell(row=itr_row, column=itr_col).value
