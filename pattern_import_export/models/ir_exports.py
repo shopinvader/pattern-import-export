@@ -312,22 +312,4 @@ class IrExports(models.Model):
             pattern_file_import.state = "fail"
             pattern_file_import.info = "Failed To load (check details)"
             pattern_file_import.info_detail = buff.getvalue()
-        return self._notify_user(pattern_file_import)
-
-    def _notify_user(self, pattern_file):
-        if pattern_file.state == "fail":
-            self.env.user.notify_danger(
-                message=_(
-                    "Import job has failed. \nFor more details: %s"
-                    % self._helper_build_export_url(pattern_file)
-                ),
-                sticky=True,
-            )
-        else:
-            self.env.user.notify_success(
-                message=_(
-                    "Import job has finished. \nFor more details: %s"
-                    % self._helper_build_export_url(pattern_file)
-                ),
-                sticky=True,
-            )
+        return
