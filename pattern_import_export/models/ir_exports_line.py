@@ -64,7 +64,7 @@ class IrExportsLine(models.Model):
                 return self._get_last_relation_field(next_model, path, level=level + 1)
         return field, model, level
 
-    @api.depends("name")
+    @api.depends("name", "add_select_tab")
     def _compute_required_fields(self):
         for record in self:
             hidden_fields = [
@@ -103,7 +103,10 @@ class IrExportsLine(models.Model):
 
     def _inverse_name(self):
         super()._inverse_name()
-        self._check_required_fields()
+        if not self.id:
+            self.with_context(skip_check=True)._check_required_fields()
+        else:
+            self._check_required_fields()
 
     @api.constrains(
         "export_id.is_pattern", "name", "number_occurence", "pattern_export_id"
@@ -138,9 +141,9 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_related_level_field(self):
         for export_line in self:
-            if export_line.export_id.resource and export_line.name:
+            if export_line.export_id.model_id.model and export_line.name:
                 field, model, level = export_line._get_last_relation_field(
-                    export_line.export_id.resource, export_line.name
+                    export_line.export_id.model_id.model, export_line.name
                 )
                 related_comodel = self.env[model]._fields[field]._related_comodel_name
                 if related_comodel:

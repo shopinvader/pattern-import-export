@@ -46,25 +46,26 @@
                     <field name="id" invisible="1"/>
                     <field name="partial_commit"/>
                     <field name="flush_step"/>
+                    <field name="use_description"/>
                     <field name="is_pattern" invisible="1"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='field2_id']" position="attributes">
                 <attribute name="attrs">{
-                    'readonly': [('model2_id', '=', False)],
-                    'required': [('model2_id', '!=', False)]
+                    'readonly': [('hidden_fields', 'ilike', 'field2_id')],
+                    'required': [('required_fields', 'ilike', 'field2_id')]
                 }</attribute>
             </xpath>
             <xpath expr="//field[@name='field3_id']" position="attributes">
                 <attribute name="attrs">{
-                    'readonly': [('model3_id', '=', False)],
-                    'required': [('model3_id', '!=', False)]
+                    'readonly': [('hidden_fields', 'ilike', 'field3_id')],
+                    'required': [('required_fields', 'ilike', 'field3_id')]
                 }</attribute>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="attributes">
                 <attribute name="attrs">{
-                    'readonly': [('model4_id', '=', False)],
-                    'required': [('model4_id', '!=', False)]
+                    'readonly': [('hidden_fields', 'ilike', 'field4_id')],
+                    'required': [('required_fields', 'ilike', 'field4_id')]
                 }</attribute>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
