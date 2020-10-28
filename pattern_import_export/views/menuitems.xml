@@ -7,22 +7,21 @@
               sequence="100"
               groups="base.group_user"/>
 
-    <record model="ir.actions.act_window" id="act_open_pattern_view">
+    <record model="ir.actions.act_window" id="act_open_pattern_config_view">
         <field name="name">Import/Export Patterns</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">ir.exports</field>
+        <field name="res_model">pattern.config</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('is_pattern', '=', True)]</field>
-        <field name="context">{'default_is_pattern': True}</field>
+        <field name="view_id" ref="pattern_import_export.pattern_config_form_view"/>
     </record>
 
-    <menuitem id="pattern_menu"
+    <menuitem id="patterns_menu"
               name="Patterns"
               parent="import_export_menu_root"
               sequence="1"
               groups="base.group_user"
-              action="act_open_pattern_view"/>
+              action="act_open_pattern_config_view"/>
 
     <!--Pattern files-->
     <record id="action_pattern_file_imports" model="ir.actions.act_window">

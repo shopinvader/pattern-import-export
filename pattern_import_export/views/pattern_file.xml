@@ -11,7 +11,7 @@
                 <field name="state"/>
                 <field name="kind"/>
                 <field name="info"/>
-                <field name="export_id"/>
+                <field name="pattern_config_id"/>
             </tree>
         </field>
     </record>
@@ -30,7 +30,7 @@
                         <field name="kind" readonly="1"/>
                         <field name="info" readonly="1"/>
                         <field name="info_detail" readonly="1"/>
-                        <field name="export_id" readonly="1"/>
+                        <field name="pattern_config_id" readonly="1"/>
                     </group>
                 </sheet>
             </form>

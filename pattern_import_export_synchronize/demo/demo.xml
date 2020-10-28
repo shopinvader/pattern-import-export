@@ -6,7 +6,7 @@
         <field name="method_type">import</field>
         <field name="filepath">test_import_pattimpex</field>
         <field name="pattern">*.xlsx</field>
-        <field name="export_id" ref="pattern_import_export.demo_export_m2m"/>
+        <field name="pattern_config_id" ref="pattern_import_export.demo_pattern_config_m2m"/>
     </record>
 
     <record id="export_to_filestore" model="attachment.synchronize.task">
@@ -19,7 +19,7 @@
     <record id="pattern_export_task" model="pattern.export.task">
         <field name="name">Extract Record</field>
         <field name="sync_task_id" ref="export_to_filestore"/>
-        <field name="export_id" ref="pattern_import_export.demo_export_m2m"/>
+        <field name="pattern_config_id" ref="pattern_import_export.demo_pattern_config_m2m"/>
     </record>
 
     <record model="ir.cron" id="cronjob_run_attachment_synchronize_task_import_pattimpex">

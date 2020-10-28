@@ -7,7 +7,7 @@
         <tree string="Pattern Export Task" editable="bottom" decoration-muted="active == False">
             <field name="name"/>
             <field name="filter_id"/>
-            <field name="export_id"/>
+            <field name="pattern_config_id"/>
             <field name="sync_task_id"/>
             <button name="run" icon="fa-play-circle" string="Run" type="object"/>
             <field name="count_failed_job" string=" "/>

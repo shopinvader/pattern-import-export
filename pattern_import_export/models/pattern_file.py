@@ -19,7 +19,9 @@ class PatternFile(models.Model):
     info = fields.Char()
     info_detail = fields.Char()
     kind = fields.Selection([("import", "import"), ("export", "export")], required=True)
-    export_id = fields.Many2one("ir.exports", required=True, string="Export pattern")
+    pattern_config_id = fields.Many2one(
+        "pattern.config", required=True, string="Export pattern"
+    )
 
     @api.model
     def create(self, vals):
@@ -101,10 +103,10 @@ class PatternFile(models.Model):
             "Generate import '{model}' with pattern '{export_name}' using "
             "format {format}"
         ).format(
-            model=self.export_id.model_id.model,
-            export_name=self.export_id.name,
-            format=self.export_id.export_format,
+            model=self.pattern_config_id.model_id.model,
+            export_name=self.pattern_config_id.name,
+            format=self.pattern_config_id.export_format,
         )
-        self.export_id.with_delay(
+        self.pattern_config_id.with_delay(
             description=description
         )._generate_import_with_pattern_job(self)

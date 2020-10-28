@@ -11,7 +11,7 @@ class ExportPatternWizard(models.Model):
         string="Model to export",
         default=lambda s: s.env.context.get("active_model", False),
     )
-    ir_exports_id = fields.Many2one("ir.exports", string="Export Pattern")
+    pattern_config_id = fields.Many2one("pattern.config", string="Export Pattern")
     no_export_pattern = fields.Boolean(
         string="No Export Pattern", compute="_compute_no_export_pattern"
     )
@@ -20,10 +20,10 @@ class ExportPatternWizard(models.Model):
     @api.multi
     def _compute_no_export_pattern(self):
         for wiz in self:
-            ir_exports = wiz.env["ir.exports"].search_count(
+            pattern_config = wiz.env["pattern.config"].search_count(
                 [("resource", "=", wiz.model)]
             )
-            if not ir_exports:
+            if not pattern_config:
                 wiz.no_export_pattern = True
 
     @api.multi
@@ -38,13 +38,13 @@ class ExportPatternWizard(models.Model):
                 "'{export_name}' using format {format}"
             ).format(
                 model=wiz.model,
-                export_name=wiz.ir_exports_id.name,
-                format=wiz.ir_exports_id.export_format,
+                export_name=wiz.pattern_config_id.name,
+                format=wiz.pattern_config_id.export_format,
             )
             records = self.env[wiz.model].browse(
                 self.env.context.get("active_ids", False)
             )
             records.with_delay(
                 description=description
-            )._generate_export_with_pattern_job(wiz.ir_exports_id)
+            )._generate_export_with_pattern_job(wiz.pattern_config_id)
         return {}

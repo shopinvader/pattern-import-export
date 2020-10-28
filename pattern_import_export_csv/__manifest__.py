@@ -10,6 +10,6 @@
     "license": "AGPL-3",
     "depends": ["pattern_import_export"],
     "demo": ["demo/demo.xml"],
-    "data": ["views/ir_exports.xml"],
+    "data": ["views/pattern_config.xml"],
     "installable": True,
 }

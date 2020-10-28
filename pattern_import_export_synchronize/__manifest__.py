@@ -11,7 +11,7 @@
     "category": "Generic Modules",
     "depends": ["attachment_synchronize", "pattern_import_export"],
     "data": [
-        "views/ir_exports_view.xml",
+        "views/pattern_config_view.xml",
         "security/ir.model.access.csv",
         "views/pattern_export_task_view.xml",
         "views/pattern_file_view.xml",

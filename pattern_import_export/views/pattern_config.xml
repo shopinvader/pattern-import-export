@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="ir_exports_form_view" model="ir.ui.view">
-        <field name="model">ir.exports</field>
+    <record id="pattern_config_form_view" model="ir.ui.view">
+        <field name="model">pattern.config</field>
+        <field name="mode">primary</field>
         <field name="inherit_id" ref="base_export_manager.ir_exports_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//form/group[1]" position="before">
                 <header>
-                    <button name="%(import_pattern_wizard_action)d" string="Import" class="oe_highlight" type="action" context="{'default_ir_exports_id': id, 'hide_ir_export_id': True}"/>
+                    <button name="%(import_pattern_wizard_action)d" string="Import" class="oe_highlight" type="action" context="{'default_pattern_config_id': id, 'hide_pattern_config_id': True}"/>
                     <button name="generate_pattern" string="Generate Pattern" class="oe_highlight" type="object"/>
                 </header>
                 <div class="oe_button_box" name="button_box">
@@ -47,7 +48,6 @@
                     <field name="partial_commit"/>
                     <field name="flush_step"/>
                     <field name="use_description"/>
-                    <field name="is_pattern" invisible="1"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='field2_id']" position="attributes">
@@ -76,10 +76,10 @@
                     'required': [('required_fields', 'ilike', 'number_occurence')],
                     'readonly': [('hidden_fields', 'ilike', 'number_occurence')],
                     'invisible': [('hidden_fields', 'ilike', 'number_occurence')]}"/>
-                <field name="pattern_export_id" attrs="{
-                    'required': [('required_fields', 'ilike', 'pattern_export_id')],
-                    'readonly': [('hidden_fields', 'ilike', 'pattern_export_id')],
-                    'invisible': [('hidden_fields', 'ilike', 'pattern_export_id')]}"/>
+                <field name="sub_pattern_config_id" attrs="{
+                    'required': [('required_fields', 'ilike', 'sub_pattern_config_id')],
+                    'readonly': [('hidden_fields', 'ilike', 'sub_pattern_config_id')],
+                    'invisible': [('hidden_fields', 'ilike', 'sub_pattern_config_id')]}"/>
                 <field name="related_model_id" invisible="1"/>
                 <field name="last_field_id" invisible="1"/>
                 <field name="add_select_tab"

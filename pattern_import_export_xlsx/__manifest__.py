@@ -11,6 +11,6 @@
     "depends": ["pattern_import_export"],
     "external_dependencies": {"python": ["openpyxl"]},
     "demo": ["demo/demo.xml"],
-    "data": ["views/ir_exports.xml"],
+    "data": ["views/pattern_config.xml"],
     "installable": True,
 }

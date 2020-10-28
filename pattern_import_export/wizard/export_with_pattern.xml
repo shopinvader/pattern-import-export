@@ -8,7 +8,7 @@
                 <group>
                     <field name="model" invisible="1"/>
                     <field name="no_export_pattern" invisible="1"/>
-                    <field name="ir_exports_id"
+                    <field name="pattern_config_id"
                            domain="[('resource', '=', model)]"
                            options="{'no_create': True, 'no_edit': True}"/>
                     <span attrs="{'invisible': [('no_export_pattern', '=', False)]}" colspan="2">

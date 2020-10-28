@@ -29,31 +29,21 @@ class TestPatternImportExcel(SavepointCase):
                 cls.env.context, test_queue_job_no_delay=True  # no jobs thanks
             )
         )
-        cls.ir_export_partner = cls.env["ir.exports"].create(
-            {
-                "name": "Partner",
-                "resource": "res.partner",
-                "is_pattern": True,
-                "export_format": "xlsx",
-            }
+        cls.pattern_config_partner = cls.env["pattern.config"].create(
+            {"name": "Partner", "resource": "res.partner", "export_format": "xlsx"}
         )
-        cls.ir_export_users = cls.env["ir.exports"].create(
-            {
-                "name": "User",
-                "resource": "res.users",
-                "is_pattern": True,
-                "export_format": "xlsx",
-            }
+        cls.pattern_config_users = cls.env["pattern.config"].create(
+            {"name": "User", "resource": "res.users", "export_format": "xlsx"}
         )
         cls.user_admin = cls.env.ref("base.user_admin")
         cls.user_demo = cls.env.ref("base.user_demo")
 
     @classmethod
-    def _load_file(cls, filename, export_id):
+    def _load_file(cls, filename, pattern_config_id):
         data = base64.b64encode(open(PATH + filename, "rb").read())
         wizard = cls.env["import.pattern.wizard"].create(
             {
-                "ir_exports_id": export_id.id,
+                "pattern_config_id": pattern_config_id.id,
                 "import_file": data,
                 "filename": "example.xlsx",
             }
@@ -71,7 +61,7 @@ class TestPatternImportExcel(SavepointCase):
         * Lookup by email
         * Update some o2m fields
         """
-        self._load_file("example.partners.ok.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.ok.xlsx", self.pattern_config_partner)
         # check first line
         partner = self.env.ref("base.res_partner_1")
 
@@ -135,8 +125,8 @@ class TestPatternImportExcel(SavepointCase):
         * Lookup by email
         * Report error in excel file through wrong email
         """
-        self.ir_export_partner.partial_commit = False
-        self._load_file("example.partners.fail.xlsx", self.ir_export_partner)
+        self.pattern_config_partner.partial_commit = False
+        self._load_file("example.partners.fail.xlsx", self.pattern_config_partner)
         self.env.clear()
 
         # check that nothong have been done
@@ -171,7 +161,7 @@ class TestPatternImportExcel(SavepointCase):
         * Lookup by DB ID
         * Simple update
         """
-        self._load_file("example.users.ok.xlsx", self.ir_export_users)
+        self._load_file("example.users.ok.xlsx", self.pattern_config_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
@@ -181,8 +171,8 @@ class TestPatternImportExcel(SavepointCase):
         * Lookup by DB ID
         * Simple update
         """
-        self.ir_export_users.use_description = True
-        self._load_file("example.users.descriptive.ok.xlsx", self.ir_export_users)
+        self.pattern_config_users.use_description = True
+        self._load_file("example.users.descriptive.ok.xlsx", self.pattern_config_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
@@ -193,7 +183,7 @@ class TestPatternImportExcel(SavepointCase):
         * Lookup by external ID
         * Report error in excel file through external id not found
         """
-        self._load_file("example.users.fail.xlsx", self.ir_export_users)
+        self._load_file("example.users.fail.xlsx", self.pattern_config_users)
         attachment = self.env["ir.attachment"].search([], order="id desc", limit=1)
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
@@ -203,7 +193,7 @@ class TestPatternImportExcel(SavepointCase):
         self.assertTrue(ws["A3"].value)
 
     def test_import_partners_with_parents(self):
-        self._load_file("example.partners.parent.xlsx", self.ir_export_partner)
+        self._load_file("example.partners.parent.xlsx", self.pattern_config_partner)
         partner_parent = self.env["res.partner"].search([("name", "=", "Apple")])
         self.assertTrue(partner_parent)
         partner_child = self.env["res.partner"].search([("name", "=", "Steve Jobs")])

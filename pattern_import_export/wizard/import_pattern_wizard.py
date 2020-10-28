@@ -14,8 +14,8 @@ class ImportPatternWizard(models.TransientModel):
     _name = "import.pattern.wizard"
     _description = "Import pattern wizard"
 
-    ir_exports_id = fields.Many2one(
-        comodel_name="ir.exports",
+    pattern_config_id = fields.Many2one(
+        comodel_name="pattern.config",
         string="Import pattern",
         required=True,
         help="Pattern used to import this file (it should be the same "
@@ -36,7 +36,7 @@ class ImportPatternWizard(models.TransientModel):
                 "datas": self.import_file,
                 "datas_fname": self.filename,
                 "kind": "import",
-                "export_id": self.ir_exports_id.id,
+                "pattern_config_id": self.pattern_config_id.id,
             }
         )
         pattern_file_import.enqueue()

@@ -16,7 +16,9 @@ class PatternExportTask(models.Model):
 
     name = fields.Char(required=True)
     filter_id = fields.Many2one("ir.filters")
-    export_id = fields.Many2one("ir.exports", string="Pattern Config", required=True)
+    pattern_config_id = fields.Many2one(
+        "pattern.config", string="Pattern Config", required=True
+    )
     sync_task_id = fields.Many2one(
         "attachment.synchronize.task",
         "Synchronize Task",
@@ -74,7 +76,7 @@ class PatternExportTask(models.Model):
         }
 
     def open_generated_file(self):
-        return self.export_id._open_pattern_file(
+        return self.pattern_config_id._open_pattern_file(
             [("state", "=", "success"), ("export_task_id", "=", self.id)]
         )
 
@@ -83,13 +85,13 @@ class PatternExportTask(models.Model):
             domain = ast.literal_eval(self.filter_id.domain)
         else:
             domain = []
-        return self.env[self.export_id.resource].search(domain)
+        return self.env[self.pattern_config_id.resource].search(domain)
 
     @job(default_channel="root.exportwithpattern")
     def _run(self):
         self.ensure_one()
         records = self._get_records_to_export()
-        pattern_file = records._generate_export_with_pattern_job(self.export_id)
+        pattern_file = records._generate_export_with_pattern_job(self.pattern_config_id)
         pattern_file.export_task_id = self
         self.env["attachment.queue"].create(
             {

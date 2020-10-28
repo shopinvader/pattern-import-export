@@ -17,7 +17,7 @@ class AttachmentQueue(models.Model):
                 "name": self.datas_fname,
                 "attachment_id": self.attachment_id.id,
                 "kind": "import",
-                "export_id": self.task_id.export_id.id,
+                "pattern_config_id": self.task_id.pattern_config_id.id,
             }
         )
         pattern_file_import.enqueue()

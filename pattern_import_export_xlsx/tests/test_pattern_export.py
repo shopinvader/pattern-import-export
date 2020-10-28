@@ -29,7 +29,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
     def setUpClass(cls):
         super().setUpClass()
         cls._set_up_tab_names()
-        for el in cls.ir_exports, cls.ir_exports_m2m, cls.ir_exports_o2m:
+        for el in cls.pattern_config, cls.pattern_config_m2m, cls.pattern_config_o2m:
             el.export_format = "xlsx"
 
     def _helper_get_resulting_wb(self, export, records):
@@ -54,7 +54,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
             self.assertEqual(cell_value, expected_cell_value)
 
     def test_export_headers(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheet = wb["Partner list"]
         expected_headers = [
             ".id",
@@ -66,8 +66,8 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_headers(sheet, expected_headers)
 
     def test_export_headers_descriptive(self):
-        self.ir_exports.use_description = True
-        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        self.pattern_config.use_description = True
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheet = wb["Partner list"]
         expected_headers = [
             "ID",
@@ -79,7 +79,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_headers(sheet, expected_headers)
 
     def test_export_vals(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheet = wb["Partner list"]
         # TODO REWRITE WITH EXTID/ID CHOICE
         id1 = self.env.ref("base.res_partner_1").id
@@ -93,7 +93,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_cell_values(sheet, expected_values)
 
     def test_export_tabs(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheet_tab_2 = wb[self.tab_name_countries_1]
         sheet_tab_3 = wb[self.tab_name_countries_2]
         expected_values_tab_2 = [["BE"], ["FR"], ["US"], [CELL_VALUE_EMPTY]]
@@ -102,24 +102,24 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_cell_values(sheet_tab_3, expected_values_tab_3)
 
     def test_export_tabs_name_no_filter(self):
-        self.ir_exports.export_fields[3].tab_filter_id = self.env["ir.filters"]
-        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        self.pattern_config.export_fields[3].tab_filter_id = self.env["ir.filters"]
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         expected_tab_name = "Country"
         self.assertTrue(wb[expected_tab_name])
 
     def test_export_tabs_name_long_name(self):
         # 32 - 4 = 28 characters, plus "(id) " = 32 characters, the limit
-        self.ir_exports.export_fields[
+        self.pattern_config.export_fields[
             3
         ].tab_filter_id.name = "CIOIOIOIOIOIOIOIOIOIOIOIOIOI"
-        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         expected_tab_name = "({}) " "CIOIOIOIOIOIOIOIOIOIOIOI...".format(
             self.filter_countries_1.id
         )
         self.assertTrue(wb[expected_tab_name])
 
     def test_export_validators(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports, self.partners)
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheet_base = wb["Partner list"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
@@ -137,7 +137,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         )
 
     def test_export_m2m_headers(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports_m2m, self.users)
+        wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
         sheet_base = wb["Users list - M2M"]
         expected_headers_base = [".id", "name", "company_ids|1|name"]
         self._helper_check_headers(sheet_base, expected_headers_base)
@@ -146,7 +146,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_headers(sheet_tab_2, expected_headers_tab_2)
 
     def test_export_m2m_values(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports_m2m, self.users)
+        wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
         sheet_base = wb["Users list - M2M"]
         # TODO REWRITE WITH EXTID/ID CHOICE
         expected_values_base = [
@@ -157,7 +157,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_cell_values(sheet_base, expected_values_base)
 
     def test_export_m2m_tabs(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports_m2m, self.users)
+        wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
         sheet_tab_2 = wb[self.tab_name_ignore_one]
         expected_values_tab_2 = [
             ["Awesome company"],
@@ -168,7 +168,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_cell_values(sheet_tab_2, expected_values_tab_2)
 
     def test_export_m2m_validators(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports_m2m, self.users)
+        wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
         sheet_base = wb["Users list - M2M"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
@@ -179,7 +179,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         )
 
     def test_export_o2m_headers(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports_o2m, self.partners)
+        wb = self._helper_get_resulting_wb(self.pattern_config_o2m, self.partners)
         main_sheet = wb["Partner - O2M"]
         expected_headers = [
             ".id",
@@ -197,7 +197,7 @@ class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
         self._helper_check_headers(main_sheet, expected_headers)
 
     def test_export_o2m_values(self):
-        wb = self._helper_get_resulting_wb(self.ir_exports_o2m, self.partners)
+        wb = self._helper_get_resulting_wb(self.pattern_config_o2m, self.partners)
         main_sheet = wb["Partner - O2M"]
         # TODO REWRITE WITH EXTID/ID CHOICE
         id1 = self.env.ref("base.res_partner_1").id

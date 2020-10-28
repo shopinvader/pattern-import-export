@@ -19,10 +19,10 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         main_data = [
             {"id": self.user3.get_xml_id().get(self.user3.id), "name": unique_name}
         ]
-        target_model = self.ir_exports_m2m.model_id.model
+        target_model = self.pattern_config_m2m.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
         new_records = self.env[target_model].search(
@@ -41,7 +41,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         main_data = [{"id": 2, "name": unique_name}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
 
@@ -55,7 +55,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         main_data = [{".id": "bad data", "name": unique_name}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
 
@@ -67,10 +67,10 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         unique_login = str(uuid4())
         main_data = [{"name": unique_name, "login": unique_login}]
-        target_model = self.ir_exports_m2m.model_id.model
+        target_model = self.pattern_config_m2m.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
         new_records = self.env[target_model].search(
@@ -85,7 +85,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_login = str(uuid4())
         main_data = [{"name": unique_name, "login": unique_login, "id": None}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
         self.assertEqual(self.empty_pattern_file.state, "success")
@@ -97,7 +97,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_login = str(uuid4())
         main_data = [{"name": unique_name, "login": unique_login, ".id": None}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
         self.assertEqual(self.empty_pattern_file.state, "success")
@@ -123,10 +123,12 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 "child_ids|2|name": partner3_name,
             }
         ]
-        target_model = self.ir_exports.model_id.model
+        target_model = self.pattern_config.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         new_records = self.env[target_model].search(
             [("id", "not in", existing_records.ids)]
         )
@@ -187,10 +189,12 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 ),
             }
         ]
-        target_model = self.ir_exports.model_id.model
+        target_model = self.pattern_config.model_id.model
         existing_records = self.env[target_model].search([])
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         new_records = self.env[target_model].search(
             [("id", "not in", existing_records.ids)]
         )
@@ -217,7 +221,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         main_data = [{"login#key": self.user3.login, "name": unique_name}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
         self.assertEquals(unique_name, self.user3.name)
@@ -242,7 +246,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             }
         ]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         self.assertEquals(unique_name, self.partner_1.name)
         self.assertEquals(contact_1_name, contact_1.name)
         self.assertEquals(contact_2_name, contact_2.name)
@@ -251,7 +257,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
     def test_wrong_import(self):
         main_data = [{"login#key": self.user3.login, "name": ""}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports_m2m._generate_import_with_pattern_job(
+            self.pattern_config_m2m._generate_import_with_pattern_job(
                 self.empty_pattern_file
             )
             self.assertEqual(self.empty_pattern_file.state, "fail")
@@ -272,7 +278,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             }
         ]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         partner = self.env["res.partner"].search([("name", "=", unique_name)])
         self.assertEqual(self.empty_pattern_file.state, "success")
         self.assertEqual(len(partner), 1)
@@ -295,7 +303,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             }
         ]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         self.assertEqual(
             self.empty_pattern_file.state, "success", self.empty_pattern_file.info
         )
@@ -317,7 +327,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             }
         ]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         self.assertEqual(
             self.empty_pattern_file.state, "success", self.empty_pattern_file.info
         )
@@ -331,7 +343,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
     def test_missing_record(self):
         main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         self.assertEqual(self.empty_pattern_file.state, "fail")
         self.assertIn(
             (
@@ -347,7 +361,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         ref = str(uuid4())
         main_data = [{"name": name, "country_id#key|code": "FR", "ref#key": ref}]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         self.assertEqual(
             self.empty_pattern_file.state, "success", self.empty_pattern_file.info
         )
@@ -367,7 +383,9 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             {"name#key": "Steve Jobs", "parent_id|name": "Apple"},
         ]
         with self._mock_read_import_data(main_data):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         company = self.env["res.partner"].search([("name", "=", "Apple")])
         child_of_company = self.env["res.partner"].search(
             [("name", "=", "Steve Jobs"), ("parent_id", "=", company.id)]
@@ -383,6 +401,8 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             data["category_id|{}|name".format(idx)] = categ_name
 
         with self._mock_read_import_data([data]):
-            self.ir_exports._generate_import_with_pattern_job(self.empty_pattern_file)
+            self.pattern_config._generate_import_with_pattern_job(
+                self.empty_pattern_file
+            )
         partner = self.env["res.partner"].search([("name", "=", unique_name)])
         self.assertEqual(len(partner.category_id), 14)

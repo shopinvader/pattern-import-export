@@ -7,7 +7,7 @@ from odoo.tests import new_test_user
 
 from odoo.addons.queue_job.tests.common import JobMixin
 
-from ..models.ir_exports import COLUMN_X2M_SEPARATOR
+from ..models.pattern_config import COLUMN_X2M_SEPARATOR
 
 
 class ExportPatternCommon(JobMixin):
@@ -70,16 +70,22 @@ class ExportPatternCommon(JobMixin):
         cls.company4 = cls.env["res.company"].create({"name": "Ignored company"})
         cls.companies = cls.company1 | cls.company2 | cls.company3
         cls.separator = COLUMN_X2M_SEPARATOR
-        cls.ir_exports = cls.env.ref("pattern_import_export.demo_export")
-        cls.ir_exports_m2m = cls.env.ref("pattern_import_export.demo_export_m2m")
-        cls.ir_exports_o2m = cls.env.ref("pattern_import_export.demo_export_o2m")
+        cls.pattern_config = cls.env.ref("pattern_import_export.demo_pattern_config")
+        cls.pattern_config_m2m = cls.env.ref(
+            "pattern_import_export.demo_pattern_config_m2m"
+        )
+        cls.pattern_config_o2m = cls.env.ref(
+            "pattern_import_export.demo_pattern_config_o2m"
+        )
         cls.empty_pattern_file = cls.env["pattern.file"].create(
             {
                 "datas": b64encode(b"a"),
                 "datas_fname": "a_file_name",
                 "name": "a_file_name",
                 "kind": "export",  # not always true but doesn't matter
-                "export_id": cls.env["ir.exports"].search([])[0].id,  # doesn't matter
+                "pattern_config_id": cls.env["pattern.config"]
+                .search([])[0]
+                .id,  # doesn't matter
             }
         )
         cls.filter_ignore_one = cls.env.ref(
@@ -113,6 +119,6 @@ class ExportPatternCommon(JobMixin):
         def _read_import_data(self, datafile):
             return main_data
 
-        self.env["ir.exports"]._patch_method("_read_import_data", _read_import_data)
+        self.env["pattern.config"]._patch_method("_read_import_data", _read_import_data)
         yield
-        self.env["ir.exports"]._revert_method("_read_import_data")
+        self.env["pattern.config"]._revert_method("_read_import_data")

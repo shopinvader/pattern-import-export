@@ -23,8 +23,9 @@ class IrExportsLine(models.Model):
         "existing record.\n"
         "Please note that the field should have a unique constraint.",
     )
-    pattern_export_id = fields.Many2one(
-        comodel_name="ir.exports",
+    pattern_config_id = fields.Many2one(related="export_id.pattern_config_id")
+    sub_pattern_config_id = fields.Many2one(
+        comodel_name="pattern.config",
         ondelete="restrict",
         help="Sub-pattern used to export O2M fields",
     )
@@ -73,7 +74,7 @@ class IrExportsLine(models.Model):
                 "field3_id",
                 "field4_id",
                 "number_occurence",
-                "pattern_export_id",
+                "sub_pattern_config_id",
                 "tab_filter_id",
                 "add_select_tab",
             ]
@@ -83,7 +84,7 @@ class IrExportsLine(models.Model):
             else:
                 required = []
                 field, model, level = self._get_last_relation_field(
-                    record.export_id.model_id.model, record.name
+                    record.pattern_config_id.model_id.model, record.name
                 )
                 ftype = self.env[model]._fields[field].type
                 if ftype in ["many2one", "many2many"]:
@@ -94,7 +95,7 @@ class IrExportsLine(models.Model):
                 if ftype in ["one2many", "many2many"]:
                     required.append("number_occurence")
                 if ftype in "one2many":
-                    required.append("pattern_export_id")
+                    required.append("sub_pattern_config_id")
                 if record.add_select_tab:
                     required.append("tab_filter_id")
                 record.required_fields = ",".join(required)
@@ -108,14 +109,12 @@ class IrExportsLine(models.Model):
         else:
             self._check_required_fields()
 
-    @api.constrains(
-        "export_id.is_pattern", "name", "number_occurence", "pattern_export_id"
-    )
+    @api.constrains("name", "number_occurence", "sub_pattern_config_id")
     def _check_required_fields(self):
         for record in self:
             if record._context.get("skip_check") or not record.field1_id:
                 return True
-            if record.export_id.is_pattern and record.required_fields:
+            if record.pattern_config_id and record.required_fields:
                 required_fields = record.required_fields.split(",")
                 if (
                     "number_occurence" in required_fields
@@ -141,9 +140,9 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_related_level_field(self):
         for export_line in self:
-            if export_line.export_id.model_id.model and export_line.name:
+            if export_line.pattern_config_id.model_id.model and export_line.name:
                 field, model, level = export_line._get_last_relation_field(
-                    export_line.export_id.model_id.model, export_line.name
+                    export_line.pattern_config_id.model_id.model, export_line.name
                 )
                 related_comodel = self.env[model]._fields[field]._related_comodel_name
                 if related_comodel:
@@ -203,7 +202,7 @@ class IrExportsLine(models.Model):
                     )
                 else:
                     base_header = record._build_header(record.level, use_description)
-                    sub_pattern = record.pattern_export_id
+                    sub_pattern = record.sub_pattern_config_id
                     if sub_pattern:
                         sub_headers = sub_pattern.export_fields._get_header(
                             use_description
@@ -282,15 +281,16 @@ class IrExportsLine(models.Model):
         for rec in self:
             names = rec.name.split("/")
             update_dict(parser, names)
-            if rec.pattern_export_id:
+            if rec.sub_pattern_config_id:
                 last_item = parser
                 last_field = names[0]
                 for field in names[:-1]:
                     last_item = last_item[field]
                     last_field = field
+                sub_pattern_fields = rec.sub_pattern_config_id.export_fields
                 last_item[
                     last_field
-                ] = rec.pattern_export_id.export_fields._get_dict_parser_for_pattern()
+                ] = sub_pattern_fields._get_dict_parser_for_pattern()
         return parser
 
     def _get_json_parser_for_pattern(self):

@@ -22,21 +22,11 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
                 cls.env.context, test_queue_job_no_delay=True  # no jobs thanks
             )
         )
-        cls.ir_export_partner = cls.env["ir.exports"].create(
-            {
-                "name": "Partner",
-                "resource": "res.partner",
-                "is_pattern": True,
-                "export_format": "csv",
-            }
+        cls.pattern_config_partner = cls.env["pattern.config"].create(
+            {"name": "Partner", "resource": "res.partner", "export_format": "csv"}
         )
-        cls.ir_export_users = cls.env["ir.exports"].create(
-            {
-                "name": "User",
-                "resource": "res.users",
-                "is_pattern": True,
-                "export_format": "csv",
-            }
+        cls.pattern_config_users = cls.env["pattern.config"].create(
+            {"name": "User", "resource": "res.users", "export_format": "csv"}
         )
         cls.user_admin = cls.env.ref("base.user_admin")
         cls.user_demo = cls.env.ref("base.user_demo")
@@ -48,10 +38,14 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.env.ref("base.res_partner_2").email = "deco.addict82@example.com"
 
     @classmethod
-    def _load_file(cls, filename, export_id):
+    def _load_file(cls, filename, pattern_config_id):
         data = base64.b64encode(open(PATH + filename, "rb").read())
         wizard = cls.env["import.pattern.wizard"].create(
-            {"ir_exports_id": export_id.id, "import_file": data, "filename": filename}
+            {
+                "pattern_config_id": pattern_config_id.id,
+                "import_file": data,
+                "filename": filename,
+            }
         )
         wizard.action_launch_import()
 
@@ -66,7 +60,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         * Lookup by email
         * Update some o2m fields
         """
-        self._load_file("example.partners.ok.csv", self.ir_export_partner)
+        self._load_file("example.partners.ok.csv", self.pattern_config_partner)
         # check first line
         partner = self.env.ref("base.res_partner_1")
 
@@ -130,8 +124,8 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         * Lookup by email
         * Report error in excel file through wrong email
         """
-        self.ir_export_partner.partial_commit = False
-        self._load_file("example.partners.fail.csv", self.ir_export_partner)
+        self.pattern_config_partner.partial_commit = False
+        self._load_file("example.partners.fail.csv", self.pattern_config_partner)
         self.env.clear()
 
         # check that nothing has been done
@@ -149,7 +143,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         * Lookup by DB ID
         * Simple update
         """
-        self._load_file("example.users.ok.csv", self.ir_export_users)
+        self._load_file("example.users.ok.csv", self.pattern_config_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
@@ -157,9 +151,9 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         """
         Change CSV format parameters
         """
-        self.ir_export_users.csv_value_delimiter = "²"
-        self.ir_export_users.csv_quote_character = "%"
-        self._load_file("example.users.ok.fmt2.csv", self.ir_export_users)
+        self.pattern_config_users.csv_value_delimiter = "²"
+        self.pattern_config_users.csv_quote_character = "%"
+        self._load_file("example.users.ok.fmt2.csv", self.pattern_config_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
@@ -168,9 +162,9 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         Use working file for default config; change config to mismatch
         """
         pattimpex_start = self.env["pattern.file"].search([])
-        self.ir_export_users.csv_value_delimiter = "²"
-        self.ir_export_users.csv_quote_character = "%"
-        self._load_file("example.users.ok.csv", self.ir_export_users)
+        self.pattern_config_users.csv_value_delimiter = "²"
+        self.pattern_config_users.csv_quote_character = "%"
+        self._load_file("example.users.ok.csv", self.pattern_config_users)
         pattimpex_new = self.env["pattern.file"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
@@ -182,21 +176,21 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         * Lookup by DB ID
         * Simple update
         """
-        self.ir_export_users.use_description = True
-        self._load_file("example.users.descriptive.ok.csv", self.ir_export_users)
+        self.pattern_config_users.use_description = True
+        self._load_file("example.users.descriptive.ok.csv", self.pattern_config_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
     def test_import_users_fail_bad_id(self):
         pattimpex_start = self.env["pattern.file"].search([])
-        self._load_file("example.users.fail.csv", self.ir_export_users)
+        self._load_file("example.users.fail.csv", self.pattern_config_users)
         pattimpex_new = self.env["pattern.file"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
         self.assertEqual(pattimpex_new.state, "fail")
 
     def test_import_partners_with_parents(self):
-        self._load_file("example.partners.parent.csv", self.ir_export_partner)
+        self._load_file("example.partners.parent.csv", self.pattern_config_partner)
         partner_parent = self.env["res.partner"].search([("name", "=", "Apple")])
         self.assertTrue(partner_parent)
         partner_child = self.env["res.partner"].search([("name", "=", "Steve Jobs")])

@@ -9,7 +9,7 @@
             <form>
                 <group>
                     <group>
-                        <field name="ir_exports_id" options="{'no_create_edit': True}" invisible="context.get('hide_ir_export_id')"/>
+                        <field name="pattern_config_id" options="{'no_create_edit': True}" invisible="context.get('hide_pattern_config_id')"/>
                         <field name="filename" invisible="1"/>
                         <field name="import_file" filename="filename" placeholder="Choose a file to import..."/>
                     </group>

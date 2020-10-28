@@ -19,7 +19,7 @@
         "security/ir.model.access.csv",
         "wizard/export_with_pattern.xml",
         "wizard/import_pattern_wizard.xml",
-        "views/ir_exports.xml",
+        "views/pattern_config.xml",
         "views/pattern_file.xml",
         "views/menuitems.xml",
     ],

@@ -14,7 +14,9 @@ class TestImport(SavepointCase):
         cls.task_import = cls.env.ref(
             "pattern_import_export_synchronize.import_from_filestore"
         )
-        cls.pattern_config = cls.env.ref("pattern_import_export.demo_export_m2m")
+        cls.pattern_config = cls.env.ref(
+            "pattern_import_export.demo_pattern_config_m2m"
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -28,7 +30,7 @@ class TestImport(SavepointCase):
             "name": "whatever",
             "datas": b"Y292aWQxOQ==",
             "datas_fname": "whatever.csv",
-            "export_id": self.pattern_config.id,
+            "pattern_config_id": self.pattern_config.id,
             "file_type": "import_pattern",
             "task_id": self.task_import.id,
         }

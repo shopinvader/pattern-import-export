@@ -21,12 +21,12 @@ class TestExport(SavepointCase):
                 "name": "foo",
                 "datas_fname": "foo.csv",
                 "state": "success",
-                "export_id": self.task_export.export_id.id,
+                "pattern_config_id": self.task_export.pattern_config_id.id,
                 "kind": "export",
             }
         )
         with mock.patch.object(
-            type(self.task_export.export_id),
+            type(self.task_export.pattern_config_id),
             "_export_with_record",
             return_value=pattern_file,
         ):

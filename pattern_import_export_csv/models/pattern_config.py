@@ -7,8 +7,8 @@ import io
 from odoo import _, api, fields, models
 
 
-class IrExports(models.Model):
-    _inherit = "ir.exports"
+class PatternConfig(models.Model):
+    _inherit = "pattern.config"
 
     export_format = fields.Selection(selection_add=[("csv", "CSV")])
     csv_value_delimiter = fields.Char(default=",")

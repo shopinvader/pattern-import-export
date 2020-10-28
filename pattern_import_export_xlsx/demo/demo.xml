@@ -2,13 +2,13 @@
 <odoo>
     <data noupdate="1">
         <!--Exports-->
-        <record id="pattern_import_export.demo_export" model="ir.exports">
+        <record id="pattern_import_export.demo_pattern_config" model="pattern.config">
             <field name="export_format">xlsx</field>
         </record>
-        <record id="pattern_import_export.demo_export_m2m" model="ir.exports">
+        <record id="pattern_import_export.demo_pattern_config_m2m" model="pattern.config">
             <field name="export_format">xlsx</field>
         </record>
-        <record id="pattern_import_export.demo_export_o2m" model="ir.exports">
+        <record id="pattern_import_export.demo_pattern_config_o2m" model="pattern.config">
             <field name="export_format">xlsx</field>
         </record>
     </data>

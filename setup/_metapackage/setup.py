@@ -13,8 +13,5 @@ setuptools.setup(
         'odoo12-addon-pattern_import_export_synchronize',
         'odoo12-addon-pattern_import_export_xlsx',
     ],
-    classifiers=[
-        'Programming Language :: Python',
-        'Framework :: Odoo',
-    ]
+    classifiers=["Programming Language :: Python", "Framework :: Odoo"],
 )
