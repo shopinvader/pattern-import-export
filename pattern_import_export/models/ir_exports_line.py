@@ -78,13 +78,10 @@ class IrExportsLine(models.Model):
                 "tab_filter_id",
                 "add_select_tab",
             ]
-            if not record.name:
-                record.required_fields = ""
-                record.hidden_fields = ""
-            else:
+            if record.name:
                 required = []
                 field, model, level = self._get_last_relation_field(
-                    record.pattern_config_id.model_id.model, record.name
+                    record.export_id.model_id.model, record.name
                 )
                 ftype = self.env[model]._fields[field].type
                 if ftype in ["many2one", "many2many"]:
@@ -101,6 +98,9 @@ class IrExportsLine(models.Model):
                 record.required_fields = ",".join(required)
                 hidden_fields = list(set(hidden_fields) - set(required))
                 record.hidden_fields = ",".join(hidden_fields)
+            else:
+                record.required_fields = ""
+                record.hidden_fields = ""
 
     def _inverse_name(self):
         super()._inverse_name()

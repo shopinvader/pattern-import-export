@@ -13,7 +13,7 @@
         <field name="res_model">pattern.config</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="pattern_import_export.pattern_config_form_view"/>
+        <field name="view_id" ref="pattern_import_export.pattern_config_tree_view"/>
     </record>
 
     <menuitem id="patterns_menu"

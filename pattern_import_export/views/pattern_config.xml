@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="pattern_config_tree_view" model="ir.ui.view">
+        <field name="model">pattern.config</field>
+        <field name="inherit_id" ref="base_export_manager.ir_exports_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="string">Pattern config</attribute>
+            </xpath>
+            <xpath expr="//field[@name='resource']" position="after">
+                <field name="export_format"/>
+                <field name="count_pattern_file_fail"/>
+                <field name="count_pattern_file_pending"/>
+                <field name="count_pattern_file_success"/>
+            </xpath>
+        </field>
+    </record>
     <record id="pattern_config_form_view" model="ir.ui.view">
         <field name="model">pattern.config</field>
         <field name="mode">primary</field>
