@@ -69,7 +69,7 @@ Exporting
 * Open the tree view of any model and tick some record selection boxes.
 * In the sidebar, click on the "Export with Pattern" button
 * Select the pattern that you wish to use, click export and download the generated file.
-* A "PPattern file" is created, and its job along with it. Depending on the success or failure of the job,
+* A "Pattern file" is created, and its job along with it. Depending on the success or failure of the job,
   you will receive a red/green notification on your window.
 
 
