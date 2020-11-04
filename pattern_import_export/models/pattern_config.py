@@ -44,6 +44,23 @@ class PatternConfig(models.Model):
     count_pattern_file_success = fields.Integer(compute="_compute_pattern_file_counts")
     pattern_file_ids = fields.One2many("pattern.file", "pattern_config_id")
 
+    # we redefine previous onchanges since delegation inheritance breaks
+    # onchanges on ir.exports
+
+    @api.multi
+    @api.onchange("model_id")
+    def _inverse_model_id(self):
+        """Get the resource from the model."""
+        for s in self:
+            s.resource = s.model_id.model
+
+    @api.multi
+    @api.onchange("resource")
+    def _onchange_resource(self):
+        """Void fields if model is changed in a view."""
+        for s in self:
+            s.export_fields = False
+
     def _compute_pattern_file_counts(self):
         for rec in self:
             for state in ("fail", "pending", "success"):
