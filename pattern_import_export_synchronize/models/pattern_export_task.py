@@ -26,9 +26,7 @@ class PatternExportTask(models.Model):
     count_failed_job = fields.Integer(compute="_compute_count_job")
     count_pending_job = fields.Integer(compute="_compute_count_job")
     count_generated_file = fields.Integer(compute="_compute_count_generated_file")
-    pattern_file_ids = fields.One2many(
-        "patterned.import.export", "export_task_id", "Pattern File"
-    )
+    pattern_file_ids = fields.One2many("pattern.file", "export_task_id", "Pattern File")
     active = fields.Boolean(default=True)
 
     def _get_job_domain(self):
@@ -77,7 +75,7 @@ class PatternExportTask(models.Model):
 
     def open_generated_file(self):
         return self.export_id._open_pattern_file(
-            [("status", "=", "success"), ("export_task_id", "=", self.id)]
+            [("state", "=", "success"), ("export_task_id", "=", self.id)]
         )
 
     def _get_records_to_export(self):

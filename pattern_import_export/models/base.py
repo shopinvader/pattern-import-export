@@ -40,9 +40,9 @@ class Base(models.AbstractModel):
         web = "/web#"
         args = [
             "action="
-            + str(self.env.ref("pattern_import_export.action_patterned_imports").id),
+            + str(self.env.ref("pattern_import_export.action_pattern_file_imports").id),
             "id=" + str(export.id),
-            "model=patterned.import.export",
+            "model=pattern.file",
             "view_type=form",
             "menu_id="
             + str(self.env.ref("pattern_import_export.import_export_menu_root").id),
@@ -54,7 +54,7 @@ class Base(models.AbstractModel):
         base = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
         web = "/web/content/"
         args = [
-            "?model=" + "patterned.import.export",
+            "?model=" + "pattern.file",
             "id=" + str(export.id),
             "filename_field=datas_fname",
             "field=datas",
@@ -68,7 +68,7 @@ class Base(models.AbstractModel):
     @job(default_channel="root.exportwithpattern")
     def _generate_export_with_pattern_job(self, export_pattern):
         export = export_pattern._export_with_record(self)
-        if export.status == "success":
+        if export.state == "success":
             self.env.user.notify_success(
                 message=_(
                     "Export job has finished. You can access it here: %s"
@@ -76,7 +76,7 @@ class Base(models.AbstractModel):
                 ),
                 sticky=True,
             )
-        elif export.status == "fail":
+        elif export.state == "fail":
             self.env.user.notify_danger(
                 message=_(
                     "Export job has failed. You can access it here: %s"
@@ -230,7 +230,7 @@ class Base(models.AbstractModel):
                 }
                 if idx % pattern_config["flush_step"] == 0:
                     flush()
-                    _logger.info("Progress status: record imported {}".format(idx + 1))
+                    _logger.info("Progress state: record imported {}".format(idx + 1))
                     if partial_commit:
                         # set the model_load savepoint so that in case of error,
                         # rollback to this point
@@ -238,7 +238,7 @@ class Base(models.AbstractModel):
             # we force to flush before ending the loop
             # so we can log correctly and commit if needed
             flush()
-            _logger.info("Progress status: Total record imported {}".format(idx + 1))
+            _logger.info("Progress state: Total record imported {}".format(idx + 1))
             if partial_commit:
                 # so we can update the savepoint
                 self._cr.execute("SAVEPOINT model_load")
@@ -251,7 +251,7 @@ class Base(models.AbstractModel):
     # https://github.com/odoo/odoo/pull/60260
     @api.model
     def _convert_records(self, records, log=lambda a: None):
-        """ Converts records from the source iterable (recursive dicts of
+        """Converts records from the source iterable (recursive dicts of
         strings) into forms which can be written to the database (via
         self.create or (ir.model.data)._update)
 
@@ -265,13 +265,13 @@ class Base(models.AbstractModel):
         convert = self.env["ir.fields.converter"].for_model(self)
 
         def _log(base, record, field, exception):
-            type = "warning" if isinstance(exception, Warning) else "error"
+            kind = "warning" if isinstance(exception, Warning) else "error"
             # logs the logical (not human-readable) field name for automated
             # processing of response, but injects human readable in message
             exc_vals = dict(base, record=record, field=field_names[field])
             record = dict(
                 base,
-                type=type,
+                type=kind,
                 record=record,
                 field=field,
                 message=pycompat.text_type(exception.args[0]) % exc_vals,

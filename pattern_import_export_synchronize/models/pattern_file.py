@@ -6,8 +6,8 @@
 from odoo import fields, models
 
 
-class PatternedImportExport(models.Model):
-    _inherit = "patterned.import.export"
+class PatternFile(models.Model):
+    _inherit = "pattern.file"
 
     export_task_id = fields.Many2one("pattern.export.task", "Export Task")
     attachment_queue_ids = fields.Many2many(

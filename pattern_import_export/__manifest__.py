@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export",
     "summary": "Pattern for import or export",
-    "version": "12.0.2.4.0",
+    "version": "12.0.3.0.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "http://www.akretion.com",
@@ -20,10 +20,10 @@
         "wizard/export_with_pattern.xml",
         "wizard/import_pattern_wizard.xml",
         "views/ir_exports.xml",
-        "views/patterned_import_export.xml",
+        "views/pattern_file.xml",
         "views/menuitems.xml",
     ],
     "demo": ["demo/demo.xml"],
-    "external_dependencies": {"python": ["numpy"]},
+    "external_dependencies": {"python": ["numpy", "openupgradelib"]},
     "installable": True,
 }

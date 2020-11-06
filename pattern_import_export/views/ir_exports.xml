@@ -10,26 +10,26 @@
                     <button name="generate_pattern" string="Generate Pattern" class="oe_highlight" type="object"/>
                 </header>
                 <div class="oe_button_box" name="button_box">
-                    <button name="button_open_pattimpex_fail" type="object" class="oe_stat_button" icon="fa-thumbs-o-down">
+                    <button name="button_open_pattern_file_fail" type="object" class="oe_stat_button" icon="fa-thumbs-o-down">
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
-                                <field name="count_pattimpex_fail" widget="statinfo" nolabel="1"/>
+                                <field name="count_pattern_file_fail" widget="statinfo" nolabel="1"/>
                             </span>
                             <span class="o_stat_text">Fail</span>
                         </div>
                     </button>
-                    <button name="button_open_pattimpex_pending" type="object" class="oe_stat_button" icon="fa-spinner">
+                    <button name="button_open_pattern_file_pending" type="object" class="oe_stat_button" icon="fa-spinner">
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
-                                <field name="count_pattimpex_pending" widget="statinfo" nolabel="1"/>
+                                <field name="count_pattern_file_pending" widget="statinfo" nolabel="1"/>
                             </span>
                             <span class="o_stat_text">Pending</span>
                         </div>
                     </button>
-                    <button name="button_open_pattimpex_success" type="object" class="oe_stat_button" icon="fa-thumbs-o-up">
+                    <button name="button_open_pattern_file_success" type="object" class="oe_stat_button" icon="fa-thumbs-o-up">
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
-                                <field name="count_pattimpex_success" widget="statinfo" nolabel="1"/>
+                                <field name="count_pattern_file_success" widget="statinfo" nolabel="1"/>
                             </span>
                             <span class="o_stat_text">Success</span>
                         </div>

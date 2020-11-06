@@ -38,4 +38,4 @@ class TestImport(SavepointCase):
         self.assertEqual(attachment_queue.state, "done", attachment_queue.state_message)
         pattern_file = attachment_queue.pattern_file_ids
         self.assertEqual(len(pattern_file), 1)
-        self.assertEqual(pattern_file.status, "pending")
+        self.assertEqual(pattern_file.state, "pending")

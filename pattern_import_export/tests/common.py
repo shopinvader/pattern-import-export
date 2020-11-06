@@ -73,7 +73,7 @@ class ExportPatternCommon(JobMixin):
         cls.ir_exports = cls.env.ref("pattern_import_export.demo_export")
         cls.ir_exports_m2m = cls.env.ref("pattern_import_export.demo_export_m2m")
         cls.ir_exports_o2m = cls.env.ref("pattern_import_export.demo_export_o2m")
-        cls.empty_patterned_import_export = cls.env["patterned.import.export"].create(
+        cls.empty_pattern_file = cls.env["pattern.file"].create(
             {
                 "datas": b64encode(b"a"),
                 "datas_fname": "a_file_name",

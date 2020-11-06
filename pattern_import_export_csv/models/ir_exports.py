@@ -79,10 +79,10 @@ class IrExports(models.Model):
         )
         info_detail = _("Details: ids: {}, messages: {}".format(ids, concatenated_msgs))
         if res.get("messages"):
-            status = "fail"
+            state = "fail"
         else:
-            status = "success"
-        return info, info_detail, status
+            state = "success"
+        return info, info_detail, state
 
     def _process_load_result(self, attachment, res):
         if self.export_format == "csv":
