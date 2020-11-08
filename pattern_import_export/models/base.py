@@ -16,6 +16,8 @@ from .common import IDENTIFIER_SUFFIX
 
 _logger = logging.getLogger(__name__)
 
+FLOAT_INF = float("inf")
+
 
 def is_not_empty(item):
     if not item:
@@ -35,7 +37,6 @@ def is_not_empty(item):
 class Base(models.AbstractModel):
     _inherit = "base"
 
-    @api.multi
     @job(default_channel="root.exportwithpattern")
     def _generate_export_with_pattern_job(self, export_pattern):
         export = export_pattern._export_with_record(self)
@@ -171,7 +172,7 @@ class Base(models.AbstractModel):
                 row.pop(key)
 
     @api.model
-    def _extract_records(self, fields_, data, log=lambda a: None):
+    def _extract_records(self, fields_, data, log=lambda a: None, limit=FLOAT_INF):
         pattern_config = self._context.get("pattern_config")
         if pattern_config:
             partial_commit = pattern_config["partial_commit"]
@@ -198,7 +199,7 @@ class Base(models.AbstractModel):
                 # so we can update the savepoint
                 self._cr.execute("SAVEPOINT model_load")
         else:
-            yield from super()._extract_records(fields_, data, log=log)
+            yield from super()._extract_records(fields_, data, log=log, limit=limit)
 
     # PATCH
     # be careful we redifine the broken native code

@@ -3,18 +3,12 @@
 {
     "name": "Pattern Import Export",
     "summary": "Pattern for import or export",
-    "version": "12.0.4.0.0",
+    "version": "14.0.1.0.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/pattern-import-export",
     "license": "AGPL-3",
-    "depends": [
-        "base_jsonify",
-        "queue_job",
-        "document",
-        "base_export_manager",
-        "web_notify",
-    ],
+    "depends": ["base_jsonify", "queue_job", "base_export_manager", "web_notify"],
     "data": [
         "security/ir.model.access.csv",
         "wizard/export_with_pattern.xml",
@@ -24,6 +18,5 @@
         "views/menuitems.xml",
     ],
     "demo": ["demo/demo.xml"],
-    "external_dependencies": {"python": ["numpy", "openupgradelib"]},
-    "installable": False,
+    "installable": True,
 }

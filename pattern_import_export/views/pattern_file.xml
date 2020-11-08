@@ -24,7 +24,7 @@
                 <sheet>
                     <group name="main">
                         <field name="datas" filename="datas_fname" readonly="1" />
-                        <field name="datas_fname" invisible="1" />
+                        <field name="store_fname" invisible="1" />
                         <field name="create_date" readonly="1" />
                         <field name="state" readonly="1" />
                         <field name="kind" readonly="1" />

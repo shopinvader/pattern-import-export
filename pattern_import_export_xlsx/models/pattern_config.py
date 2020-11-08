@@ -8,7 +8,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from odoo import _, api, fields, models
+from odoo import _, fields, models
 from odoo.exceptions import UserError
 
 
@@ -20,7 +20,6 @@ class PatternConfig(models.Model):
         [("first", "First"), ("match_name", "Match Name")], default="first"
     )
 
-    @api.multi
     def _create_xlsx_file(self, records):
         self.ensure_one()
         book = openpyxl.Workbook()
@@ -101,7 +100,6 @@ class PatternConfig(models.Model):
             validation.add(range_dst)
             main_sheet.add_data_validation(validation)
 
-    @api.multi
     def _export_with_record_xlsx(self, records):
         """
         Export given recordset
@@ -153,7 +151,6 @@ class PatternConfig(models.Model):
                 break
         return row + 1
 
-    @api.multi
     def _read_import_data_xlsx(self, datafile):
         # note that columns and rows are 1-based
         workbook = openpyxl.load_workbook(BytesIO(datafile), data_only=True)

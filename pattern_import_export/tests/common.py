@@ -80,7 +80,7 @@ class ExportPatternCommon(JobMixin):
         cls.empty_pattern_file = cls.env["pattern.file"].create(
             {
                 "datas": b64encode(b"a"),
-                "datas_fname": "a_file_name",
+                "store_fname": "a_file_name",
                 "name": "a_file_name",
                 "kind": "export",  # not always true but doesn't matter
                 "pattern_config_id": cls.env["pattern.config"]

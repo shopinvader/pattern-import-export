@@ -63,7 +63,7 @@ class PatternFile(models.Model):
     def _helper_build_details(self):
         details = self._helper_build_link()
         if self.kind == "export":
-            details += (self.datas_fname and self._helper_build_content_link()) or ""
+            details += (self.store_fname and self._helper_build_content_link()) or ""
         return details
 
     def _helper_build_link(self):
@@ -73,7 +73,6 @@ class PatternFile(models.Model):
             "action=pattern_import_export.action_pattern_file_imports",
             "id=" + str(self.id),
             "model=pattern.file",
-            "view_type=form",
             "menu_id="
             + str(self.env.ref("pattern_import_export.import_export_menu_root").id),
         ]
@@ -88,10 +87,10 @@ class PatternFile(models.Model):
         args = [
             "?model=" + "pattern.file",
             "id=" + str(self.id),
-            "filename_field=datas_fname",
+            "filename_field=store_fname",
             "field=datas",
             "download=true",
-            "filename=" + urllib.parse.quote(self.datas_fname),
+            "filename=" + urllib.parse.quote(self.store_fname),
         ]
         link = "<br>"
         url = base + web + "&".join(args)

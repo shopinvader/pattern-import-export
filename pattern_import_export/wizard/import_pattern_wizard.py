@@ -34,7 +34,7 @@ class ImportPatternWizard(models.TransientModel):
             {
                 "name": self.filename,
                 "datas": self.import_file,
-                "datas_fname": self.filename,
+                "store_fname": self.filename,
                 "kind": "import",
                 "pattern_config_id": self.pattern_config_id.id,
             }

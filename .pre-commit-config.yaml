@@ -1,7 +1,6 @@
 exclude: |
   (?x)
   # NOT INSTALLABLE ADDONS
-  ^pattern_import_export/|
   ^pattern_import_export_csv/|
   ^pattern_import_export_synchronize/|
   ^pattern_import_export_xlsx/|
