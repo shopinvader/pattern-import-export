@@ -8,7 +8,7 @@ def migrate(env, version):
     def migrate_ir_exports_misc_fields():
         env.cr.execute(
             """
-            UPDATE pattern_config 
+            UPDATE pattern_config
             SET
                 export_format = ir_exports.export_format,
                 tab_to_import = ir_exports.tab_to_import

@@ -23,22 +23,23 @@ class PatternFile(models.Model):
         "pattern.config", required=True, string="Export pattern"
     )
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
         result = super().create(vals)
-        if "state" in vals.keys():
-            result._notify_user()
+        for record in result:
+            if record.state != "pending":
+                record._notify_user()
         return result
 
     def write(self, vals):
         result = super().write(vals)
-        if "state" in vals.keys():
+        if "state" in vals.keys() and vals["state"] != "pending":
             for rec in self:
                 rec._notify_user()
         return result
 
     def _notify_user(self):
-        import_or_export = "Import" if self.kind == "import" else "Export"
+        import_or_export = _("Import") if self.kind == "import" else _("Export")
         details = self._helper_build_details()
         if self.state == "fail":
             self.env.user.notify_danger(
@@ -49,7 +50,7 @@ class PatternFile(models.Model):
                 ),
                 sticky=True,
             )
-        else:
+        elif self.state == "done":
             self.env.user.notify_success(
                 message=_(
                     "{} job has finished. \nFor more details: {}".format(
@@ -69,8 +70,7 @@ class PatternFile(models.Model):
         base = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
         web = "/web#"
         args = [
-            "action="
-            + str(self.env.ref("pattern_import_export.action_pattern_file_imports").id),
+            "action=pattern_import_export.action_pattern_file_imports",
             "id=" + str(self.id),
             "model=pattern.file",
             "view_type=form",

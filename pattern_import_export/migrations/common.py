@@ -6,7 +6,7 @@ OBSOLETE_VIEWS = [
     "pattern_import_export_csv.ir_exports_form_view",
     "pattern_import_export_xlsx.ir_exports_form_view",
     "pattern_import_export.ir_exports_form_view",
-    "pattern_import_export.act_open_pattern_view"
+    "pattern_import_export.act_open_pattern_view",
 ]
 
 

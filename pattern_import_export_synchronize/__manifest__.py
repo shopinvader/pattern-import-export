@@ -16,5 +16,6 @@
         "views/pattern_export_task_view.xml",
         "views/pattern_file_view.xml",
     ],
+    "external_dependencies": {"python": ["mock"]},
     "demo": ["demo/demo.xml"],
 }
