@@ -1,51 +1,89 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <record id="pattern_config_tree_view" model="ir.ui.view">
         <field name="model">pattern.config</field>
-        <field name="inherit_id" ref="base_export_manager.ir_exports_tree_view"/>
+        <field name="inherit_id" ref="base_export_manager.ir_exports_tree_view" />
         <field name="arch" type="xml">
             <xpath expr="//tree" position="attributes">
                 <attribute name="string">Pattern config</attribute>
             </xpath>
             <xpath expr="//field[@name='resource']" position="after">
-                <field name="export_format"/>
-                <field name="count_pattern_file_fail"/>
-                <field name="count_pattern_file_pending"/>
-                <field name="count_pattern_file_success"/>
+                <field name="export_format" />
+                <field name="count_pattern_file_fail" />
+                <field name="count_pattern_file_pending" />
+                <field name="count_pattern_file_success" />
             </xpath>
         </field>
     </record>
     <record id="pattern_config_form_view" model="ir.ui.view">
         <field name="model">pattern.config</field>
         <field name="mode">primary</field>
-        <field name="inherit_id" ref="base_export_manager.ir_exports_form_view"/>
+        <field name="inherit_id" ref="base_export_manager.ir_exports_form_view" />
         <field name="arch" type="xml">
             <xpath expr="//form/group[1]" position="before">
                 <header>
-                    <button name="%(import_pattern_wizard_action)d" string="Import" class="oe_highlight" type="action" context="{'default_pattern_config_id': id, 'hide_pattern_config_id': True}"/>
-                    <button name="generate_pattern" string="Generate Pattern" class="oe_highlight" type="object"/>
+                    <button
+                        name="%(import_pattern_wizard_action)d"
+                        string="Import"
+                        class="oe_highlight"
+                        type="action"
+                        context="{'default_pattern_config_id': id, 'hide_pattern_config_id': True}"
+                    />
+                    <button
+                        name="generate_pattern"
+                        string="Generate Pattern"
+                        class="oe_highlight"
+                        type="object"
+                    />
                 </header>
                 <div class="oe_button_box" name="button_box">
-                    <button name="button_open_pattern_file_fail" type="object" class="oe_stat_button" icon="fa-thumbs-o-down">
+                    <button
+                        name="button_open_pattern_file_fail"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-thumbs-o-down"
+                    >
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
-                                <field name="count_pattern_file_fail" widget="statinfo" nolabel="1"/>
+                                <field
+                                    name="count_pattern_file_fail"
+                                    widget="statinfo"
+                                    nolabel="1"
+                                />
                             </span>
                             <span class="o_stat_text">Fail</span>
                         </div>
                     </button>
-                    <button name="button_open_pattern_file_pending" type="object" class="oe_stat_button" icon="fa-spinner">
+                    <button
+                        name="button_open_pattern_file_pending"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-spinner"
+                    >
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
-                                <field name="count_pattern_file_pending" widget="statinfo" nolabel="1"/>
+                                <field
+                                    name="count_pattern_file_pending"
+                                    widget="statinfo"
+                                    nolabel="1"
+                                />
                             </span>
                             <span class="o_stat_text">Pending</span>
                         </div>
                     </button>
-                    <button name="button_open_pattern_file_success" type="object" class="oe_stat_button" icon="fa-thumbs-o-up">
+                    <button
+                        name="button_open_pattern_file_success"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-thumbs-o-up"
+                    >
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
-                                <field name="count_pattern_file_success" widget="statinfo" nolabel="1"/>
+                                <field
+                                    name="count_pattern_file_success"
+                                    widget="statinfo"
+                                    nolabel="1"
+                                />
                             </span>
                             <span class="o_stat_text">Success</span>
                         </div>
@@ -55,14 +93,14 @@
             </xpath>
             <xpath expr="//form/group[1]" position="after">
                 <group name="general_info">
-                    <field name="export_format" required="True"/>
-                    <field name="pattern_file" filename="pattern_file_name"/>
-                    <field name="pattern_file_name" invisible="1"/>
-                    <field name="pattern_last_generation_date"/>
-                    <field name="id" invisible="1"/>
-                    <field name="partial_commit"/>
-                    <field name="flush_step"/>
-                    <field name="use_description"/>
+                    <field name="export_format" required="True" />
+                    <field name="pattern_file" filename="pattern_file_name" />
+                    <field name="pattern_file_name" invisible="1" />
+                    <field name="pattern_last_generation_date" />
+                    <field name="id" invisible="1" />
+                    <field name="partial_commit" />
+                    <field name="flush_step" />
+                    <field name="use_description" />
                 </group>
             </xpath>
             <xpath expr="//field[@name='field2_id']" position="attributes">
@@ -84,32 +122,41 @@
                 }</attribute>
             </xpath>
             <xpath expr="//field[@name='field4_id']" position="after">
-                <field name="is_key"/>
-                <field name="required_fields" invisible="1"/>
-                <field name="hidden_fields" invisible="1"/>
-                <field name="number_occurence" attrs="{
+                <field name="is_key" />
+                <field name="required_fields" invisible="1" />
+                <field name="hidden_fields" invisible="1" />
+                <field
+                    name="number_occurence"
+                    attrs="{
                     'required': [('required_fields', 'ilike', 'number_occurence')],
                     'readonly': [('hidden_fields', 'ilike', 'number_occurence')],
-                    'invisible': [('hidden_fields', 'ilike', 'number_occurence')]}"/>
-                <field name="sub_pattern_config_id" attrs="{
+                    'invisible': [('hidden_fields', 'ilike', 'number_occurence')]}"
+                />
+                <field
+                    name="sub_pattern_config_id"
+                    attrs="{
                     'required': [('required_fields', 'ilike', 'sub_pattern_config_id')],
                     'readonly': [('hidden_fields', 'ilike', 'sub_pattern_config_id')],
-                    'invisible': [('hidden_fields', 'ilike', 'sub_pattern_config_id')]}"/>
-                <field name="related_model_id" invisible="1"/>
-                <field name="last_field_id" invisible="1"/>
-                <field name="add_select_tab"
-                       attrs="{
+                    'invisible': [('hidden_fields', 'ilike', 'sub_pattern_config_id')]}"
+                />
+                <field name="related_model_id" invisible="1" />
+                <field name="last_field_id" invisible="1" />
+                <field
+                    name="add_select_tab"
+                    attrs="{
                        'invisible': [('hidden_fields', 'ilike', 'add_select_tab')],
                        'readonly': [('hidden_fields', 'ilike', 'add_select_tab')]
                        }"
                 />
-                <field name="related_model_name" invisible="1"/>
-                <field name="tab_filter_id"
-                       domain="[('model_id', '=', related_model_name)]"
-                       attrs="{
+                <field name="related_model_name" invisible="1" />
+                <field
+                    name="tab_filter_id"
+                    domain="[('model_id', '=', related_model_name)]"
+                    attrs="{
                        'invisible': [('hidden_fields', 'ilike', 'tab_filter_id')],
                        'readonly': [('hidden_fields', 'ilike', 'tab_filter_id')]
-                       }"/>
+                       }"
+                />
             </xpath>
         </field>
     </record>

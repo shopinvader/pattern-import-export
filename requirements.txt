@@ -1,2 +1,5 @@
-openpyxl
+# generated from manifests external_dependencies
 mock
+numpy
+openpyxl
+openupgradelib

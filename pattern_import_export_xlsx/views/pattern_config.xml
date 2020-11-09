@@ -1,11 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <record id="pattern_config_form_view" model="ir.ui.view">
         <field name="model">pattern.config</field>
-        <field name="inherit_id" ref="pattern_import_export.pattern_config_form_view"/>
+        <field name="inherit_id" ref="pattern_import_export.pattern_config_form_view" />
         <field name="arch" type="xml">
             <field name="export_format" position="after">
-                <field name="tab_to_import" attrs="{'invisible': [('export_format', '!=', 'xlsx')], 'required': [('export_format', '=', 'xlsx')]}"/>
+                <field
+                    name="tab_to_import"
+                    attrs="{'invisible': [('export_format', '!=', 'xlsx')], 'required': [('export_format', '=', 'xlsx')]}"
+                />
             </field>
         </field>
     </record>

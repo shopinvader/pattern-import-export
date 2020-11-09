@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
 
     <record id="pattern_file_view_tree" model="ir.ui.view">
@@ -6,12 +6,12 @@
         <field name="model">pattern.file</field>
         <field name="arch" type="xml">
             <tree create="false">
-                <field name="attachment_id"/>
-                <field name="create_date"/>
-                <field name="state"/>
-                <field name="kind"/>
-                <field name="info"/>
-                <field name="pattern_config_id"/>
+                <field name="attachment_id" />
+                <field name="create_date" />
+                <field name="state" />
+                <field name="kind" />
+                <field name="info" />
+                <field name="pattern_config_id" />
             </tree>
         </field>
     </record>
@@ -23,14 +23,14 @@
             <form string="pattern_file_form" create="false">
                 <sheet>
                     <group name="main">
-                        <field name="datas" filename="datas_fname" readonly="1"/>
-                        <field name="datas_fname" invisible="1"/>
-                        <field name="create_date" readonly="1"/>
-                        <field name="state" readonly="1"/>
-                        <field name="kind" readonly="1"/>
-                        <field name="info" readonly="1"/>
-                        <field name="info_detail" readonly="1"/>
-                        <field name="pattern_config_id" readonly="1"/>
+                        <field name="datas" filename="datas_fname" readonly="1" />
+                        <field name="datas_fname" invisible="1" />
+                        <field name="create_date" readonly="1" />
+                        <field name="state" readonly="1" />
+                        <field name="kind" readonly="1" />
+                        <field name="info" readonly="1" />
+                        <field name="info_detail" readonly="1" />
+                        <field name="pattern_config_id" readonly="1" />
                     </group>
                 </sheet>
             </form>

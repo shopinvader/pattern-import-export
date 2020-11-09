@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <record id="view_export_with_pattern_wizard" model="ir.ui.view">
         <field name="name">Export With Pattern</field>
@@ -6,19 +6,30 @@
         <field name="arch" type="xml">
             <form>
                 <group>
-                    <field name="model" invisible="1"/>
-                    <field name="no_export_pattern" invisible="1"/>
-                    <field name="pattern_config_id"
-                           domain="[('resource', '=', model)]"
-                           options="{'no_create': True, 'no_edit': True}"/>
-                    <span attrs="{'invisible': [('no_export_pattern', '=', False)]}" colspan="2">
-                        There is no export pattern for this object !<br/>
+                    <field name="model" invisible="1" />
+                    <field name="no_export_pattern" invisible="1" />
+                    <field
+                        name="pattern_config_id"
+                        domain="[('resource', '=', model)]"
+                        options="{'no_create': True, 'no_edit': True}"
+                    />
+                    <span
+                        attrs="{'invisible': [('no_export_pattern', '=', False)]}"
+                        colspan="2"
+                    >
+                        There is no export pattern for this object !<br />
                         Please go to the menu .... and create one.
                     </span>
                 </group>
                 <footer>
-                    <button name="run" string="Export" type="object" class="btn-primary" attrs="{'invisible': [('no_export_pattern', '=', True)]}"/>
-                    <button string="Cancel" class="btn-default" special="cancel"/>
+                    <button
+                        name="run"
+                        string="Export"
+                        type="object"
+                        class="btn-primary"
+                        attrs="{'invisible': [('no_export_pattern', '=', True)]}"
+                    />
+                    <button string="Cancel" class="btn-default" special="cancel" />
                 </footer>
             </form>
         </field>
