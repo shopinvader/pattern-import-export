@@ -3,10 +3,19 @@
 
 from openupgradelib import openupgrade
 
-# relative imports don't work here
-from odoo.addons.pattern_import_export.migrations.common import delete_obsolete_views
+OBSOLETE_VIEWS = [
+    "pattern_import_export_synchronize.ir_exports_form_view",
+    "pattern_import_export_csv.ir_exports_form_view",
+    "pattern_import_export_xlsx.ir_exports_form_view",
+    "pattern_import_export.ir_exports_form_view",
+    "pattern_import_export.act_open_pattern_view",
+]
 
 
 @openupgrade.migrate()
 def migrate(env, version):
-    delete_obsolete_views(env)
+    for el in OBSOLETE_VIEWS:
+        # avoid lock due to fkey constraint
+        view = env.ref(el, raise_if_not_found=False)
+        if view:
+            view.unlink()

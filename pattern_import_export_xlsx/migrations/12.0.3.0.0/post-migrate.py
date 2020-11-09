@@ -5,16 +5,13 @@ from openupgradelib import openupgrade
 
 @openupgrade.migrate()
 def migrate(env, version):
-    def migrate_ir_exports_misc_fields():
-        env.cr.execute(
-            """
-            UPDATE pattern_config
-            SET
-                export_format = ir_exports.export_format,
-                tab_to_import = ir_exports.tab_to_import
-            FROM ir_exports
-            WHERE export_id = ir_exports.id
-            """
-        )
-
-    migrate_ir_exports_misc_fields()
+    env.cr.execute(
+        """
+        UPDATE pattern_config
+        SET
+            export_format = ir_exports.export_format,
+            tab_to_import = ir_exports.tab_to_import
+        FROM ir_exports
+        WHERE export_id = ir_exports.id
+        """
+    )
