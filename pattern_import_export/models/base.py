@@ -7,7 +7,6 @@ import logging
 from odoo import _, api, models
 from odoo.exceptions import ValidationError
 from odoo.osv import expression
-from odoo.tools import pycompat
 from odoo.tools.misc import CountingStream
 
 from odoo.addons.queue_job.job import job
@@ -210,7 +209,6 @@ class Base(models.AbstractModel):
         """Converts records from the source iterable (recursive dicts of
         strings) into forms which can be written to the database (via
         self.create or (ir.model.data)._update)
-
         :returns: a list of triplets of (id, xid, record)
         :rtype: list((int|None, str|None, dict))
         """
@@ -221,16 +219,16 @@ class Base(models.AbstractModel):
         convert = self.env["ir.fields.converter"].for_model(self)
 
         def _log(base, record, field, exception):
-            kind = "warning" if isinstance(exception, Warning) else "error"
+            type = "warning" if isinstance(exception, Warning) else "error"
             # logs the logical (not human-readable) field name for automated
             # processing of response, but injects human readable in message
             exc_vals = dict(base, record=record, field=field_names[field])
             record = dict(
                 base,
-                type=kind,
+                type=type,
                 record=record,
                 field=field,
-                message=pycompat.text_type(exception.args[0]) % exc_vals,
+                message=str(exception.args[0]) % exc_vals,
             )
             if len(exception.args) > 1 and exception.args[1]:
                 record.update(exception.args[1])
@@ -246,7 +244,6 @@ class Base(models.AbstractModel):
                 try:
                     dbid = int(record[".id"])
                 except ValueError:
-                    # Code changed
                     if self._fields["id"].type != "integer":
                         # in case of overridden id column
                         dbid = record[".id"]
@@ -260,7 +257,7 @@ class Base(models.AbstractModel):
                                 message=_(u"Invalid database identifier '%s'") % dbid,
                             )
                         )
-                    # End of code changed
+
                 if not self.search([("id", "=", dbid)]):
                     log(
                         dict(
@@ -268,7 +265,7 @@ class Base(models.AbstractModel):
                             type="error",
                             record=stream.index,
                             field=".id",
-                            message=_(u"Unknown database identifier '%s'") % dbid,
+                            message=_(u"Unknown database identifier '%s'", dbid),
                         )
                     )
                     dbid = False
