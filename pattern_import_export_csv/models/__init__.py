@@ -1,1 +1,1 @@
-from . import ir_exports
+from . import pattern_config

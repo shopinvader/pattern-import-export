@@ -35,55 +35,10 @@ def is_not_empty(item):
 class Base(models.AbstractModel):
     _inherit = "base"
 
-    def _helper_build_export_url(self, export):
-        base = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
-        web = "/web#"
-        args = [
-            "action="
-            + str(self.env.ref("pattern_import_export.action_pattern_file_imports").id),
-            "id=" + str(export.id),
-            "model=pattern.file",
-            "view_type=form",
-            "menu_id="
-            + str(self.env.ref("pattern_import_export.import_export_menu_root").id),
-        ]
-        url = "<a href=" + base + web + "&".join(args) + ">" + _("View Job") + "</a>"
-        return url
-
-    def _helper_build_export_content_url(self, export):
-        base = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
-        web = "/web/content/"
-        args = [
-            "?model=" + "pattern.file",
-            "id=" + str(export.id),
-            "filename_field=datas_fname",
-            "field=datas",
-            "download=true",
-            "filename=" + export.datas_fname,
-        ]
-        url = "<a href=" + base + web + "&".join(args) + ">" + _("Download") + "</a>"
-        return url
-
     @api.multi
     @job(default_channel="root.exportwithpattern")
     def _generate_export_with_pattern_job(self, export_pattern):
         export = export_pattern._export_with_record(self)
-        if export.state == "success":
-            self.env.user.notify_success(
-                message=_(
-                    "Export job has finished. You can access it here: %s"
-                    % self._helper_build_export_content_url(export)
-                ),
-                sticky=True,
-            )
-        elif export.state == "fail":
-            self.env.user.notify_danger(
-                message=_(
-                    "Export job has failed. You can access it here: %s"
-                    % self._helper_build_export_url(export)
-                ),
-                sticky=True,
-            )
         return export
 
     # There is a native bug in odoo

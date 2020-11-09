@@ -2,8 +2,8 @@
 <odoo>
 
 <record id="ir_exports_form_view" model="ir.ui.view">
-    <field name="model">ir.exports</field>
-    <field name="inherit_id" ref="pattern_import_export.ir_exports_form_view"/>
+    <field name="model">pattern.config</field>
+    <field name="inherit_id" ref="pattern_import_export.pattern_config_form_view"/>
     <field name="arch" type="xml">
         <field name="export_fields" position="after">
             <group name="auto_import" string="Automatic Import" colspan="4" col="2">

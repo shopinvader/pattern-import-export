@@ -1,7 +1,7 @@
 # Copyright 2020 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import _, fields, models
+from odoo import fields, models
 
 
 class ImportPatternWizard(models.TransientModel):
@@ -14,8 +14,8 @@ class ImportPatternWizard(models.TransientModel):
     _name = "import.pattern.wizard"
     _description = "Import pattern wizard"
 
-    ir_exports_id = fields.Many2one(
-        comodel_name="ir.exports",
+    pattern_config_id = fields.Many2one(
+        comodel_name="pattern.config",
         string="Import pattern",
         required=True,
         help="Pattern used to import this file (it should be the same "
@@ -36,20 +36,8 @@ class ImportPatternWizard(models.TransientModel):
                 "datas": self.import_file,
                 "datas_fname": self.filename,
                 "kind": "import",
-                "export_id": self.ir_exports_id.id,
+                "pattern_config_id": self.pattern_config_id.id,
             }
         )
-
-        description = _(
-            "Generate import '{model}' with pattern '{export_name}' using "
-            "format {format}"
-        ).format(
-            model=self.ir_exports_id.model_id.model,
-            export_name=self.ir_exports_id.name,
-            format=self.ir_exports_id.export_format,
-        )
-
-        self.ir_exports_id.with_delay(
-            description=description
-        )._generate_import_with_pattern_job(pattern_file_import)
+        pattern_file_import.enqueue()
         return {}

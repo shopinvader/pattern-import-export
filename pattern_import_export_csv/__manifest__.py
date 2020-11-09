@@ -3,13 +3,13 @@
 {
     "name": "Pattern Import Export CSV",
     "summary": "Pattern for import or export from to CSV files",
-    "version": "12.0.1.5.0",
+    "version": "12.0.2.0.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "http://www.akretion.com",
     "license": "AGPL-3",
     "depends": ["pattern_import_export"],
     "demo": ["demo/demo.xml"],
-    "data": ["views/ir_exports.xml"],
+    "data": ["views/pattern_config.xml"],
     "installable": True,
 }

@@ -8,4 +8,4 @@ from odoo import fields, models
 class AttachmentSynchronizeTask(models.Model):
     _inherit = "attachment.synchronize.task"
 
-    export_id = fields.Many2one("ir.exports", string="Pattern Config")
+    pattern_config_id = fields.Many2one("pattern.config", string="Pattern Config")

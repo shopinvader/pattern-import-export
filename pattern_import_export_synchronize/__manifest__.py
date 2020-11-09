@@ -3,7 +3,7 @@
 
 {
     "name": "Attachment Synchronize using patterns",
-    "version": "12.0.1.1.0",
+    "version": "12.0.2.0.0",
     "author": "Akretion,Odoo Community Association (OCA)",
     "website": "https://github.com/oca/server-tools",
     "maintainers": ["kevinkhao", "sebastienbeau"],
@@ -11,10 +11,11 @@
     "category": "Generic Modules",
     "depends": ["attachment_synchronize", "pattern_import_export"],
     "data": [
-        "views/ir_exports_view.xml",
+        "views/pattern_config_view.xml",
         "security/ir.model.access.csv",
         "views/pattern_export_task_view.xml",
         "views/pattern_file_view.xml",
     ],
+    "external_dependencies": {"python": ["mock"]},
     "demo": ["demo/demo.xml"],
 }

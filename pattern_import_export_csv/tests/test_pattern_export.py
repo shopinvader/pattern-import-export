@@ -18,12 +18,14 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.ir_exports = cls.env.ref("pattern_import_export_csv.demo_export_csv")
-        cls.ir_exports_m2m = cls.env.ref(
-            "pattern_import_export_csv.demo_export_m2m_csv"
+        cls.pattern_config = cls.env.ref(
+            "pattern_import_export_csv.demo_pattern_config_csv"
         )
-        cls.ir_exports_o2m = cls.env.ref(
-            "pattern_import_export_csv.demo_export_o2m_csv"
+        cls.pattern_config_m2m = cls.env.ref(
+            "pattern_import_export_csv.demo_pattern_config_m2m_csv"
+        )
+        cls.pattern_config_o2m = cls.env.ref(
+            "pattern_import_export_csv.demo_pattern_config_o2m_csv"
         )
 
     def _helper_get_resulting_csv(self, export, records):
@@ -38,7 +40,9 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         return self._split_csv_str(decoded_data, export)
 
     def test_export_headers(self):
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.pattern_config, self.partners
+        )
         expected_content = [
             ".id",
             "name",
@@ -49,9 +53,11 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.assertEqual(csv_file_lines[0], expected_content)
 
     def test_export_headers_fmt2(self):
-        self.ir_exports.csv_value_delimiter = "²"
-        self.ir_exports.csv_quote_character = "%"
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        self.pattern_config.csv_value_delimiter = "²"
+        self.pattern_config.csv_quote_character = "%"
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.pattern_config, self.partners
+        )
         expected_content = [
             ".id",
             "name",
@@ -62,8 +68,10 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.assertEqual(csv_file_lines[0], expected_content)
 
     def test_export_headers_descriptive(self):
-        self.ir_exports.use_description = True
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        self.pattern_config.use_description = True
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.pattern_config, self.partners
+        )
         expected_headers = [
             "ID",
             "Name",
@@ -74,7 +82,9 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.assertEqual(csv_file_lines[0], expected_headers)
 
     def test_export_vals(self):
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports, self.partners)
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.pattern_config, self.partners
+        )
         id1 = self.env.ref("base.res_partner_1").id
         id2 = self.env.ref("base.res_partner_2").id
         id3 = self.env.ref("base.res_partner_3").id
@@ -86,12 +96,16 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.assertEqual(csv_file_lines[1:4], expected_content)
 
     def test_export_m2m_headers(self):
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_m2m, self.users)
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.pattern_config_m2m, self.users
+        )
         expected_headers = [".id", "name", "company_ids|1|name"]
         self.assertEqual(csv_file_lines[0], expected_headers)
 
     def test_export_m2m_values(self):
-        csv_file_lines = self._helper_get_resulting_csv(self.ir_exports_m2m, self.users)
+        csv_file_lines = self._helper_get_resulting_csv(
+            self.pattern_config_m2m, self.users
+        )
         expected_values = [
             [str(self.user1.id), "Wood Corner", "Awesome company"],
             [str(self.user2.id), "Wood Corner", "Awesome company"],
@@ -101,7 +115,7 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
 
     def test_export_o2m_headers(self):
         csv_file_lines = self._helper_get_resulting_csv(
-            self.ir_exports_o2m, self.partners
+            self.pattern_config_o2m, self.partners
         )
         expected_headers = [
             ".id",
@@ -120,7 +134,7 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
 
     def test_export_o2m_values(self):
         csv_file_lines = self._helper_get_resulting_csv(
-            self.ir_exports_o2m, self.partners
+            self.pattern_config_o2m, self.partners
         )
         id1 = self.env.ref("base.res_partner_1").id
         id2 = self.env.ref("base.res_partner_2").id
