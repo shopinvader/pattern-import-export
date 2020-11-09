@@ -18,4 +18,5 @@
     ],
     "external_dependencies": {"python": ["mock"]},
     "demo": ["demo/demo.xml"],
+    "installable": False,
 }

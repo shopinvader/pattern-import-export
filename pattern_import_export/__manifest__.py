@@ -28,5 +28,5 @@
     ],
     "demo": ["demo/demo.xml"],
     "external_dependencies": {"python": ["numpy", "openupgradelib"]},
-    "installable": True,
+    "installable": False,
 }
