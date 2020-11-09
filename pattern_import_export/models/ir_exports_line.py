@@ -2,13 +2,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import ast
 
+# pylint: disable=missing-manifest-dependency
+from _collections import OrderedDict
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 from odoo.addons.base_jsonify.models.ir_export import convert_dict, update_dict
-
-# pylint: disable=missing-manifest-dependency
-from _collections import OrderedDict
 
 from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 

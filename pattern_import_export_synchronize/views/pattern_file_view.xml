@@ -1,13 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
 
 <record id="pattern_file_view_form" model="ir.ui.view">
     <field name="model">pattern.file</field>
-    <field name="inherit_id" ref="pattern_import_export.pattern_file_view_form"/>
+    <field name="inherit_id" ref="pattern_import_export.pattern_file_view_form" />
     <field name="arch" type="xml">
         <group name="main" position="after">
-            <group name="sync" string="Synchronization" colspan="4" attrs="{'invisible': [('attachment_queue_ids', '=', False)]}">
-                <field name="attachment_queue_ids" nolabel="1"/>
+            <group
+                    name="sync"
+                    string="Synchronization"
+                    colspan="4"
+                    attrs="{'invisible': [('attachment_queue_ids', '=', False)]}"
+                >
+                <field name="attachment_queue_ids" nolabel="1" />
             </group>
         </group>
     </field>

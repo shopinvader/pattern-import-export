@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <data noupdate="1">
         <!--Note that the following are identical to the base module's demo data-->
@@ -17,63 +17,87 @@
         </record>
         <record id="demo_pattern_config_csv" model="pattern.config">
             <field name="export_format">csv</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv"/>
+            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv" />
         </record>
         <record id="demo_pattern_config_m2m_csv" model="pattern.config">
             <field name="export_format">csv</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_m2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_m2m_csv"
+            />
         </record>
         <record id="demo_pattern_config_o2m_csv" model="pattern.config">
             <field name="export_format">csv</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_o2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_o2m_csv"
+            />
         </record>
         <!--Export lines-->
         <record id="demo_export_csv_line_1" model="ir.exports.line">
             <field name="name">id</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv"/>
+            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv" />
         </record>
         <record id="demo_export_csv_line_2" model="ir.exports.line">
             <field name="name">name</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv"/>
+            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv" />
         </record>
         <record id="demo_export_csv_line_3" model="ir.exports.line">
             <field name="name">street</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv"/>
+            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv" />
         </record>
         <record id="demo_export_csv_line_4" model="ir.exports.line">
             <field name="name">country_id/code</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv"/>
+            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv" />
         </record>
         <record id="demo_export_csv_line_5" model="ir.exports.line">
             <field name="name">parent_id/country_id/code</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv"/>
+            <field name="export_id" ref="pattern_import_export_csv.demo_export_csv" />
         </record>
         <record id="demo_export_csv_m2m_line_1" model="ir.exports.line">
             <field name="name">id</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_m2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_m2m_csv"
+            />
         </record>
         <record id="demo_export_csv_m2m_line_2" model="ir.exports.line">
             <field name="name">name</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_m2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_m2m_csv"
+            />
         </record>
         <record id="demo_export_csv_m2m_line_3" model="ir.exports.line">
             <field name="name">company_ids/name</field>
             <field name="number_occurence">1</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_m2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_m2m_csv"
+            />
         </record>
         <record id="demo_export_csv_o2m_line_1" model="ir.exports.line">
             <field name="name">id</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_o2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_o2m_csv"
+            />
         </record>
         <record id="demo_export_csv_o2m_line_2" model="ir.exports.line">
             <field name="name">name</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_o2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_o2m_csv"
+            />
         </record>
         <record id="demo_export_csv_o2m_line_3" model="ir.exports.line">
             <field name="name">user_ids</field>
             <field name="number_occurence">3</field>
-            <field name="export_id" ref="pattern_import_export_csv.demo_export_o2m_csv"/>
-            <field name="sub_pattern_config_id" ref="demo_pattern_config_m2m_csv"/>
+            <field
+                name="export_id"
+                ref="pattern_import_export_csv.demo_export_o2m_csv"
+            />
+            <field name="sub_pattern_config_id" ref="demo_pattern_config_m2m_csv" />
         </record>
     </data>
 </odoo>

@@ -1,11 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <!--Exports-->
-    <menuitem id="import_export_menu_root"
-              name="Import/Export"
-              active="True"
-              sequence="100"
-              groups="base.group_user"/>
+    <menuitem
+        id="import_export_menu_root"
+        name="Import/Export"
+        active="True"
+        sequence="100"
+        groups="base.group_user"
+    />
 
     <record model="ir.actions.act_window" id="act_open_pattern_config_view">
         <field name="name">Import/Export Patterns</field>
@@ -13,15 +15,17 @@
         <field name="res_model">pattern.config</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="pattern_import_export.pattern_config_tree_view"/>
+        <field name="view_id" ref="pattern_import_export.pattern_config_tree_view" />
     </record>
 
-    <menuitem id="patterns_menu"
-              name="Patterns"
-              parent="import_export_menu_root"
-              sequence="1"
-              groups="base.group_user"
-              action="act_open_pattern_config_view"/>
+    <menuitem
+        id="patterns_menu"
+        name="Patterns"
+        parent="import_export_menu_root"
+        sequence="1"
+        groups="base.group_user"
+        action="act_open_pattern_config_view"
+    />
 
     <!--Pattern files-->
     <record id="action_pattern_file_imports" model="ir.actions.act_window">
@@ -42,17 +46,21 @@
         <field name="view_type">form</field>
     </record>
 
-    <menuitem id="pattern_file_imports_menu"
-              name="Pattern files (imports)"
-              parent="import_export_menu_root"
-              sequence="3"
-              groups="base.group_user"
-              action="action_pattern_file_imports"/>
+    <menuitem
+        id="pattern_file_imports_menu"
+        name="Pattern files (imports)"
+        parent="import_export_menu_root"
+        sequence="3"
+        groups="base.group_user"
+        action="action_pattern_file_imports"
+    />
 
-    <menuitem id="pattern_file_export_menu"
-              name="Pattern files (exports)"
-              parent="import_export_menu_root"
-              sequence="4"
-              groups="base.group_user"
-              action="action_pattern_file_exports"/>
+    <menuitem
+        id="pattern_file_export_menu"
+        name="Pattern files (exports)"
+        parent="import_export_menu_root"
+        sequence="4"
+        groups="base.group_user"
+        action="action_pattern_file_exports"
+    />
 </odoo>

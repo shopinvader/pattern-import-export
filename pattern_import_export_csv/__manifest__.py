@@ -6,7 +6,7 @@
     "version": "12.0.2.0.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
-    "website": "http://www.akretion.com",
+    "website": "https://github.com/OCA/pattern-import-export",
     "license": "AGPL-3",
     "depends": ["pattern_import_export"],
     "demo": ["demo/demo.xml"],
