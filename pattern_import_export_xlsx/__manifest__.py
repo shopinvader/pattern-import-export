@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export XLSX",
     "summary": "Pattern for import or export from to XLSX files",
-    "version": "12.0.3.0.0",
+    "version": "14.0.1.0.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/pattern-import-export",
@@ -12,5 +12,5 @@
     "external_dependencies": {"python": ["openpyxl"]},
     "demo": ["demo/demo.xml"],
     "data": ["views/pattern_config.xml"],
-    "installable": False,
+    "installable": True,
 }

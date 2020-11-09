@@ -127,7 +127,6 @@ class TestPatternImportExcel(SavepointCase):
         """
         self.pattern_config_partner.partial_commit = False
         self._load_file("example.partners.fail.xlsx", self.pattern_config_partner)
-        self.env.clear()
 
         # check that nothong have been done
         partner = self.env.ref("base.res_partner_1")
@@ -150,11 +149,7 @@ class TestPatternImportExcel(SavepointCase):
         self.assertIsNone(ws["A2"].value)
         self.assertIsNone(ws["A3"].value)
         self.assertIsNone(ws["A4"].value)
-        self.assertIn(
-            'new row for relation "res_partner" '
-            'violates check constraint "res_partner_check_name"',
-            ws["A5"].value,
-        )
+        self.assertIn("Contacts require a name", ws["A5"].value)
 
     def test_import_users_ok(self):
         """
