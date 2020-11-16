@@ -59,7 +59,7 @@ class IrFieldsConverter(models.AbstractModel):
                     domain = []
                 domain = expression.AND([domain, [(subfield, "=", value)]])
                 if (
-                    self.env.context.get("pattern_import_export_model")
+                    self.env.context.get("pattern_config", {}).get("model")
                     == field._related_comodel_name
                 ):
                     self._context["import_flush"]()
