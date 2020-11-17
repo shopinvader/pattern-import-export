@@ -165,9 +165,11 @@ class Base(models.AbstractModel):
         self._clean_identifier_key(res, ident_keys)
         return res
 
-    def _remove_commented_columns(self, row):
+    def _remove_commented_and_empty_columns(self, row):
         for key in list(row.keys()):
-            if key.startswith("#"):
+            if key is None:
+                row.pop(None)
+            elif key.startswith("#"):
                 row.pop(key)
 
     @api.model
@@ -177,7 +179,7 @@ class Base(models.AbstractModel):
             partial_commit = pattern_config["partial_commit"]
             flush = self._context["import_flush"]
             for idx, row in enumerate(data):
-                self._remove_commented_columns(row)
+                self._remove_commented_and_empty_columns(row)
                 if not any(row.values()):
                     continue
                 yield self._pattern_format2json(row), {
