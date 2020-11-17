@@ -105,10 +105,11 @@ class IrExportsLine(models.Model):
 
     def _inverse_name(self):
         super()._inverse_name()
-        if not self.id:
-            self.with_context(skip_check=True)._check_required_fields()
-        else:
-            self._check_required_fields()
+        for rec in self:
+            if not rec.id:
+                rec.with_context(skip_check=True)._check_required_fields()
+            else:
+                rec._check_required_fields()
 
     @api.constrains("name", "number_occurence", "sub_pattern_config_id")
     def _check_required_fields(self):
@@ -199,7 +200,7 @@ class IrExportsLine(models.Model):
                 last_relation_field = record["field{}_id".format(record.level)]
                 if last_relation_field.ttype == "many2one":
                     headers.append(
-                        record._build_header(self.level + 1, use_description)
+                        record._build_header(record.level + 1, use_description)
                     )
                 else:
                     base_header = record._build_header(record.level, use_description)
