@@ -194,7 +194,7 @@ class IrExportsLine(models.Model):
                 last_relation_field = record["field{}_id".format(record.level)]
                 if last_relation_field.ttype == "many2one":
                     headers.append(
-                        record._build_header(self.level + 1, use_description)
+                        record._build_header(record.level + 1, use_description)
                     )
                 else:
                     base_header = record._build_header(record.level, use_description)
