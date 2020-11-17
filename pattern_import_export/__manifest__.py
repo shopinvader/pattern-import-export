@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export",
     "summary": "Pattern for import or export",
-    "version": "12.0.4.0.0",
+    "version": "12.0.4.0.1",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/pattern-import-export",
