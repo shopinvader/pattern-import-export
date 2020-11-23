@@ -15,7 +15,8 @@ from odoo.exceptions import UserError
 class PatternConfig(models.Model):
     _inherit = "pattern.config"
 
-    export_format = fields.Selection(selection_add=[("xlsx", "Excel")])
+    export_format = fields.Selection(selection_add=[("xlsx", "Excel")],
+        ondelete={'xlsx': 'set null'})
     tab_to_import = fields.Selection(
         [("first", "First"), ("match_name", "Match Name")], default="first"
     )
