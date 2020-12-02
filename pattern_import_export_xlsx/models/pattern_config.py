@@ -11,6 +11,8 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+STOP_AFTER_NBR_EMPTY = 10
+
 
 class PatternConfig(models.Model):
     _inherit = "pattern.config"
@@ -23,7 +25,7 @@ class PatternConfig(models.Model):
     @api.multi
     def _create_xlsx_file(self, records):
         self.ensure_one()
-        book = openpyxl.Workbook()
+        book = openpyxl.Workbook(write_only=True)
         main_sheet = self._build_main_sheet_structure(book)
         self._populate_main_sheet_rows(main_sheet, records)
         tab_data = self.export_fields._get_tab_data()
@@ -131,62 +133,61 @@ class PatternConfig(models.Model):
             raise UserError(_("Please select a tab to import on the pattern"))
         return workbook[name]
 
-    def _find_real_last_column(self, worksheet):
-        """
-        The last column and row are actually written in the excel file
-        Openpyxl doesn't automatically verify if it is right or not
-        """
-        tentative_last_column = worksheet.max_column
-        for col in reversed(range(tentative_last_column)):
-            if worksheet.cell(1, col + 1).value:
-                break
-        return col + 1
-
-    def _find_real_last_row(self, worksheet, max_col):
-        """ See _find_real_last_column """
-        tentative_last_row = worksheet.max_row
-        for row in reversed(range(tentative_last_row)):
-            row_has_val = any(
-                worksheet.cell(row + 1, col + 1).value for col in range(max_col)
-            )
-            if row_has_val:
-                break
-        return row + 1
-
     @api.multi
     def _read_import_data_xlsx(self, datafile):
-        # note that columns and rows are 1-based
-        workbook = openpyxl.load_workbook(BytesIO(datafile), data_only=True)
+        workbook = openpyxl.load_workbook(
+            BytesIO(datafile), data_only=True, read_only=True
+        )
         worksheet = self._get_worksheet(workbook)
-        headers = []
-        real_last_column = self._find_real_last_column(worksheet)
-        for col in range(real_last_column):
-            headers.append(worksheet.cell(self.nr_of_header_rows, col + 1).value)
-        real_last_row = self._find_real_last_row(worksheet, real_last_column)
-        for row in range(self.row_start_records, real_last_row + 1):
-            elm = {}
-            for col in range(real_last_column):
-                elm[headers[col]] = worksheet.cell(row, col + 1).value
-            yield elm
+        headers = None
+        count_empty = 0
+        for idx, row in enumerate(worksheet.rows):
+            if self.nr_of_header_rows == idx + 1:
+                headers = [x.value for x in row]
+            elif headers:
+                vals = [x.value for x in row]
+                if any(vals):
+                    count_empty = 0
+                    yield dict(zip(headers, vals))
+                else:
+                    count_empty += 1
+            if count_empty > STOP_AFTER_NBR_EMPTY:
+                break
+        workbook.close()
 
-    def _process_load_result_for_xls(self, attachment, res):
+    def _write_error_in_xlsx(self, attachment, vals):
+        # TODO writing in an existing big excel file is long with openpyxl
+        # maybe we should try some other tools
+        # https://editpyxl.readthedocs.io
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)
         ws = self._get_worksheet(wb)
-        global_message = []
+
         # we clear the error col if exist
         if ws["A1"].value == _("#Error"):
             ws.delete_cols(1)
         ws.insert_cols(1)
         ws.cell(1, 1, value=_("#Error"))
-        for message in res["messages"]:
-            if "rows" in message:
-                ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
-            else:
-                global_message.append(message)
+
+        for idx, message in vals:
+            ws.cell(idx, 1, value=message)
+
         output = BytesIO()
         wb.save(output)
         attachment.datas = base64.b64encode(output.getvalue())
+
+    def _process_load_result_for_xls(self, attachment, res):
+        global_message = []
+        vals = []
+        for message in res["messages"]:
+            if "rows" in message:
+                vals.append((message["rows"]["to"] + 1, message["message"].strip()))
+            else:
+                global_message.append(message)
+
+        if vals:
+            self._write_error_in_xlsx(attachment, vals)
+
         ids = res["ids"] or []
         info = _("Number of record imported {} Number of error/warning {}").format(
             len(ids), len(res.get("messages", []))
