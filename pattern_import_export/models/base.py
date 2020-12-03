@@ -55,6 +55,20 @@ class Base(models.AbstractModel):
     def _load_records_create(self, values):
         return super()._load_records_create(copy.deepcopy(values))
 
+    def _load_records(self, data_list, update=False):
+        records = super()._load_records(data_list, update=update)
+        if self._context.get("pattern_config"):
+            self._context["pattern_config"]["record_ids"] += records.ids
+        return records
+
+    def load(self, fields, data):
+        result = super().load(fields, data)
+        if not result["ids"] and self._context.get("pattern_config", {}).get(
+            "record_ids"
+        ):
+            result["ids"] = self._context["pattern_config"]["record_ids"]
+        return result
+
     def _pattern_format2json(self, row):
         def convert_header_key(key):
             return [int(k) if k.isdigit() else k for k in key.split("|")]
@@ -139,7 +153,7 @@ class Base(models.AbstractModel):
                 res[key] = valid_subitems
 
     def _set_record_id_from_domain(self, res, ident_keys, domain):
-        record = self.search(domain)
+        record = self.with_context(active_test=False).search(domain)
         if len(record) > 1:
             raise ValidationError(
                 _("Too many {} found for the key/value : {}").format(
@@ -176,8 +190,6 @@ class Base(models.AbstractModel):
     def _extract_records(self, fields_, data, log=lambda a: None):
         pattern_config = self._context.get("pattern_config")
         if pattern_config:
-            partial_commit = pattern_config["partial_commit"]
-            flush = self._context["import_flush"]
             for idx, row in enumerate(data):
                 self._remove_commented_and_empty_columns(row)
                 if not any(row.values()):
@@ -185,20 +197,6 @@ class Base(models.AbstractModel):
                 yield self._pattern_format2json(row), {
                     "rows": {"from": idx + 1, "to": idx + 1}
                 }
-                if idx % pattern_config["flush_step"] == 0:
-                    flush()
-                    _logger.info("Progress state: record imported {}".format(idx + 1))
-                    if partial_commit:
-                        # set the model_load savepoint so that in case of error,
-                        # rollback to this point
-                        self._cr.execute("SAVEPOINT model_load")
-            # we force to flush before ending the loop
-            # so we can log correctly and commit if needed
-            flush()
-            _logger.info("Progress state: Total record imported {}".format(idx + 1))
-            if partial_commit:
-                # so we can update the savepoint
-                self._cr.execute("SAVEPOINT model_load")
         else:
             yield from super()._extract_records(fields_, data, log=log)
 

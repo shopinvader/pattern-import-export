@@ -4,7 +4,7 @@
 import csv
 import io
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 
 
 class PatternConfig(models.Model):
@@ -47,45 +47,3 @@ class PatternConfig(models.Model):
         self._csv_write_rows(writer, records)
         output.seek(0)
         return output.getvalue().encode("utf_8")
-
-    # Import part
-
-    def _read_import_data_csv(self, datafile):
-        in_file = io.StringIO(datafile.decode("utf-8"))
-        if self.use_description:
-            # read the first line to skip it
-            in_file.readline()
-        reader = csv.DictReader(
-            in_file,
-            delimiter=self.csv_value_delimiter,
-            quotechar=self.csv_quote_character,
-        )
-        for line in reader:
-            for k, v in line.items():
-                if v == "":
-                    line[k] = None
-            yield line
-
-    def _process_load_result_for_csv(self, attachment, res):
-        ids = res["ids"] or []
-        info = _("Number of record imported {} Number of error/warning {}").format(
-            len(ids), len(res.get("messages", []))
-        )
-        concatenated_msgs = "\n".join(
-            [
-                "{}: {}".format(message["type"], message["message"])
-                for message in res["messages"]
-            ]
-        )
-        info_detail = _("Details: ids: {}, messages: {}".format(ids, concatenated_msgs))
-        if res.get("messages"):
-            state = "fail"
-        else:
-            state = "success"
-        return info, info_detail, state
-
-    def _process_load_result(self, attachment, res):
-        if self.export_format == "csv":
-            return self._process_load_result_for_csv(attachment, res)
-        else:
-            return super()._process_load_result(attachment, res)

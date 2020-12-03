@@ -10,14 +10,14 @@ from os import path
 from odoo.tests.common import SavepointCase
 
 # pylint: disable=odoo-addons-relative-import
-from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
+from odoo.addons.pattern_import_export.tests.common import PatternCommon
 
 DEBUG_SAVE_EXPORTS = False
 PATH = path.dirname(__file__)
 CELL_VALUE_EMPTY = ""
 
 
-class ExportPatternCsvCommon(ExportPatternCommon, SavepointCase):
+class ExportPatternCsvCommon(PatternCommon, SavepointCase):
     def _split_csv_str(self, astring, export_id):
         result = []
         virtual_file = io.StringIO(astring)

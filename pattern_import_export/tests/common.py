@@ -1,7 +1,10 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import json
 from base64 import b64encode
 from contextlib import contextmanager
+
+from mock import Mock
 
 from odoo.tests import new_test_user
 
@@ -10,11 +13,18 @@ from odoo.addons.queue_job.tests.common import JobMixin
 from ..models.pattern_config import COLUMN_X2M_SEPARATOR
 
 
-class ExportPatternCommon(JobMixin):
+class PatternCommon(JobMixin):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
+        cls.env.cr.commit = Mock()
+        cls.env = cls.env(
+            context=dict(
+                cls.env.context,
+                tracking_disable=True,
+                test_queue_job_no_delay=True,
+            )
+        )
         cls.partner_1 = cls.env.ref("base.res_partner_1")
         cls.partner_2 = cls.env.ref("base.res_partner_2")
         cls.partner_3 = cls.env.ref("base.res_partner_3")
@@ -77,17 +87,6 @@ class ExportPatternCommon(JobMixin):
         cls.pattern_config_o2m = cls.env.ref(
             "pattern_import_export.demo_pattern_config_o2m"
         )
-        cls.empty_pattern_file = cls.env["pattern.file"].create(
-            {
-                "datas": b64encode(b"a"),
-                "datas_fname": "a_file_name",
-                "name": "a_file_name",
-                "kind": "export",  # not always true but doesn't matter
-                "pattern_config_id": cls.env["pattern.config"]
-                .search([])[0]
-                .id,  # doesn't matter
-            }
-        )
         cls.filter_ignore_one = cls.env.ref(
             "pattern_import_export.demo_filter_companies"
         )
@@ -96,6 +95,17 @@ class ExportPatternCommon(JobMixin):
         )
         cls.filter_countries_2 = cls.env.ref(
             "pattern_import_export.demo_filter_countries_2"
+        )
+
+    def create_pattern(self, config, kind, data):
+        return self.env["pattern.file"].create(
+            {
+                "datas": b64encode(bytes(json.dumps(data), "utf-8")),
+                "datas_fname": "foo.json",
+                "name": "Foo",
+                "kind": kind,
+                "pattern_config_id": config.id,
+            }
         )
 
     def _get_attachment(self, record):

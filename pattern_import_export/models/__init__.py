@@ -5,4 +5,5 @@ from . import ir_actions
 from . import base
 from . import ir_fields
 from . import pattern_file
+from . import pattern_chunk
 from . import ir_attachment

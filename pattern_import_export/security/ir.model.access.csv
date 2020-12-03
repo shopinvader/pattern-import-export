@@ -3,4 +3,6 @@ access_export_pattern_wizard_user,export.pattern.wizard.user,model_export_patter
 access_export_pattern_wizard_manager,export.pattern.wizard.manager,model_export_pattern_wizard,base.group_system,1,1,1,1
 access_pattern_file_user,pattern.file.user,model_pattern_file,base.group_user,1,0,0,0
 access_pattern_file_manager,pattern.file.manager,model_pattern_file,base.group_system,1,1,1,1
+access_pattern_chunk_user,pattern.chunk.user,model_pattern_chunk,base.group_user,1,0,0,0
+access_pattern_chunk_manager,pattern.chunk.manager,model_pattern_chunk,base.group_system,1,1,1,1
 access_pattern_config_user,pattern.config.user,model_pattern_config,base.group_user,1,1,1,1

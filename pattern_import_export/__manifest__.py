@@ -21,6 +21,7 @@
         "wizard/import_pattern_wizard.xml",
         "views/pattern_config.xml",
         "views/pattern_file.xml",
+        "views/pattern_chunk.xml",
         "views/menuitems.xml",
     ],
     "demo": ["demo/demo.xml"],

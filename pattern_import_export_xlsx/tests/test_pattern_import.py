@@ -9,6 +9,7 @@ from os import path
 # the warning shows only here and not in any other import of openpyxl?
 # pylint: disable=missing-manifest-dependency
 import openpyxl
+from mock import Mock
 
 from odoo.tests import SavepointCase
 from odoo.tools import mute_logger
@@ -37,6 +38,7 @@ class TestPatternImportExcel(SavepointCase):
         )
         cls.user_admin = cls.env.ref("base.user_admin")
         cls.user_demo = cls.env.ref("base.user_demo")
+        cls.env.cr.commit = Mock()
 
     @classmethod
     def _load_file(cls, filename, pattern_config_id):

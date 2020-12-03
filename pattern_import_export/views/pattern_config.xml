@@ -98,8 +98,8 @@
                     <field name="pattern_file_name" invisible="1" />
                     <field name="pattern_last_generation_date" />
                     <field name="id" invisible="1" />
-                    <field name="partial_commit" />
-                    <field name="flush_step" />
+                    <field name="chunk_size" />
+                    <field name="process_multi" />
                     <field name="use_description" />
                 </group>
             </xpath>

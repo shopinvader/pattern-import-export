@@ -1,17 +1,13 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 # pylint: disable=missing-manifest-dependency
-import base64
 from io import BytesIO
 
 import openpyxl
 from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from odoo import _, api, fields, models
-from odoo.exceptions import UserError
-
-STOP_AFTER_NBR_EMPTY = 10
+from odoo import api, fields, models
 
 
 class PatternConfig(models.Model):
@@ -22,10 +18,11 @@ class PatternConfig(models.Model):
         [("first", "First"), ("match_name", "Match Name")], default="first"
     )
 
+    # TODO we should move this code in pattern.file
     @api.multi
     def _create_xlsx_file(self, records):
         self.ensure_one()
-        book = openpyxl.Workbook(write_only=True)
+        book = openpyxl.Workbook()
         main_sheet = self._build_main_sheet_structure(book)
         self._populate_main_sheet_rows(main_sheet, records)
         tab_data = self.export_fields._get_tab_data()
@@ -113,102 +110,3 @@ class PatternConfig(models.Model):
         self.ensure_one()
         excel_file = self._create_xlsx_file(records)
         return excel_file.getvalue()
-
-    # Import part
-
-    def _get_worksheet(self, workbook):
-        name = None
-        if self.tab_to_import == "first":
-            name = workbook.sheetnames[0]
-        elif self.tab_to_import == "match_name":
-            for sheetname in workbook.sheetnames:
-                if sheetname.lower() == self.name.lower():
-                    name = sheetname
-                    break
-            if not name:
-                raise UserError(
-                    _("The file do not contain tab with the name {}").format(self.name)
-                )
-        else:
-            raise UserError(_("Please select a tab to import on the pattern"))
-        return workbook[name]
-
-    @api.multi
-    def _read_import_data_xlsx(self, datafile):
-        workbook = openpyxl.load_workbook(
-            BytesIO(datafile), data_only=True, read_only=True
-        )
-        worksheet = self._get_worksheet(workbook)
-        headers = None
-        count_empty = 0
-        for idx, row in enumerate(worksheet.rows):
-            if self.nr_of_header_rows == idx + 1:
-                headers = [x.value for x in row]
-            elif headers:
-                vals = [x.value for x in row]
-                if any(vals):
-                    count_empty = 0
-                    yield dict(zip(headers, vals))
-                else:
-                    count_empty += 1
-            if count_empty > STOP_AFTER_NBR_EMPTY:
-                break
-        workbook.close()
-
-    def _write_error_in_xlsx(self, attachment, vals):
-        # TODO writing in an existing big excel file is long with openpyxl
-        # maybe we should try some other tools
-        # https://editpyxl.readthedocs.io
-        infile = BytesIO(base64.b64decode(attachment.datas))
-        wb = openpyxl.load_workbook(filename=infile)
-        ws = self._get_worksheet(wb)
-
-        # we clear the error col if exist
-        if ws["A1"].value == _("#Error"):
-            ws.delete_cols(1)
-        ws.insert_cols(1)
-        ws.cell(1, 1, value=_("#Error"))
-
-        for idx, message in vals:
-            ws.cell(idx, 1, value=message)
-
-        output = BytesIO()
-        wb.save(output)
-        attachment.datas = base64.b64encode(output.getvalue())
-
-    def _process_load_result_for_xls(self, attachment, res):
-        global_message = []
-        vals = []
-        for message in res["messages"]:
-            if "rows" in message:
-                vals.append((message["rows"]["to"] + 1, message["message"].strip()))
-            else:
-                global_message.append(message)
-
-        if vals:
-            self._write_error_in_xlsx(attachment, vals)
-
-        ids = res["ids"] or []
-        info = _("Number of record imported {} Number of error/warning {}").format(
-            len(ids), len(res.get("messages", []))
-        )
-        info_detail = _("Record ids: {}" "\nDetails: {}").format(
-            ids,
-            "\n".join(
-                [
-                    "{}: {}".format(message["type"], message["message"])
-                    for message in global_message
-                ]
-            ),
-        )
-        if res.get("messages"):
-            state = "fail"
-        else:
-            state = "success"
-        return info, info_detail, state
-
-    def _process_load_result(self, attachment, res):
-        if self.export_format == "xlsx":
-            return self._process_load_result_for_xls(attachment, res)
-        else:
-            return super()._process_load_result(attachment, res)

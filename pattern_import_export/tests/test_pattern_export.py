@@ -2,10 +2,10 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from odoo.tests.common import SavepointCase
 
-from .common import ExportPatternCommon
+from .common import PatternCommon
 
 
-class TestPatternExport(ExportPatternCommon, SavepointCase):
+class TestPatternExport(PatternCommon, SavepointCase):
     def test_get_header1(self):
         """
         Ensure the header is correctly generated

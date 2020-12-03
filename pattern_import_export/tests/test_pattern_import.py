@@ -5,10 +5,24 @@ from uuid import uuid4
 from odoo.tests.common import SavepointCase
 from odoo.tools import mute_logger
 
-from .common import ExportPatternCommon
+from .common import PatternCommon
 
 
-class TestPatternImport(ExportPatternCommon, SavepointCase):
+class TestPatternImport(PatternCommon, SavepointCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.pattern_config_m2m.export_format = "json"
+        cls.pattern_config.export_format = "json"
+
+    def run_pattern_file(self, pattern_file):
+        model = self.env[pattern_file.pattern_config_id.model_id.model].with_context(
+            active_test=False
+        )
+        records = model.search([])
+        pattern_file.split_in_chunk()
+        return model.search([("id", "not in", records.ids)])
+
     def test_update_with_external_id(self):
         """
         For this test, simulate the case of an update of existing record
@@ -16,48 +30,39 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         @return:
         """
         unique_name = str(uuid4())
-        main_data = [
-            {"id": self.user3.get_xml_id().get(self.user3.id), "name": unique_name}
-        ]
-        target_model = self.pattern_config_m2m.model_id.model
-        existing_records = self.env[target_model].search([])
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        new_records = self.env[target_model].search(
-            [("id", "not in", existing_records.ids)]
-        )
-        self.assertFalse(new_records)
+        data = [{"id": self.user3.get_xml_id().get(self.user3.id), "name": unique_name}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
         self.assertEquals(unique_name, self.user3.name)
 
-    # TODO FIXME
-    def disable_test_update_with_external_id_bad_data_1(self):
+    def test_update_with_external_id_bad_data_1(self):
         """
         For this test, simulate the case of an update of existing record
         with 'simple' fields and ensure no new records are created
         @return:
         """
         unique_name = str(uuid4())
-        main_data = [{"id": 2, "name": unique_name}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
+        data = [{"id": 0, "name": unique_name}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
+        self.assertEqual(pattern_file.state, "fail")
+        # TODO check message
 
-    # TODO FIXME
-    def disable_test_update_with_external_id_bad_data_2(self):
+    def test_update_with_external_id_bad_data_2(self):
         """
         For this test, simulate the case of an update of existing record
         with 'simple' fields and ensure no new records are created
         @return:
         """
         unique_name = str(uuid4())
-        main_data = [{".id": "bad data", "name": unique_name}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
+        data = [{".id": "bad data", "name": unique_name}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
+        self.assertEqual(pattern_file.state, "fail")
+        # TODO check message
 
     def test_create_new_record(self):
         """
@@ -66,43 +71,32 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         """
         unique_name = str(uuid4())
         unique_login = str(uuid4())
-        main_data = [{"name": unique_name, "login": unique_login}]
-        target_model = self.pattern_config_m2m.model_id.model
-        existing_records = self.env[target_model].search([])
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        new_records = self.env[target_model].search(
-            [("id", "not in", existing_records.ids)]
-        )
-        self.assertEquals(len(new_records), 1)
-        self.assertEquals(unique_name, new_records.name)
-        self.assertEquals(unique_login, new_records.login)
+        data = [{"name": unique_name, "login": unique_login}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertEquals(len(records), 1)
+        self.assertEquals(unique_name, records.name)
+        self.assertEquals(unique_login, records.login)
 
     def test_empty_external_id(self):
         unique_name = str(uuid4())
         unique_login = str(uuid4())
-        main_data = [{"name": unique_name, "login": unique_login, "id": None}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        self.assertEqual(self.empty_pattern_file.state, "success")
-        partner = self.env["res.users"].search([("name", "=", unique_name)])
-        self.assertEqual(len(partner), 1)
+        data = [{"name": unique_name, "login": unique_login, "id": None}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records.name, unique_name)
 
     def test_empty_id(self):
         unique_name = str(uuid4())
         unique_login = str(uuid4())
-        main_data = [{"name": unique_name, "login": unique_login, ".id": None}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        self.assertEqual(self.empty_pattern_file.state, "success")
-        partner = self.env["res.users"].search([("name", "=", unique_name)])
-        self.assertEqual(len(partner), 1)
+        data = [{"name": unique_name, "login": unique_login, ".id": None}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records.name, unique_name)
 
     def test_update_o2m_with_external_id(self):
         """
@@ -113,7 +107,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         partner2_name = str(uuid4())
         partner3_name = str(uuid4())
-        main_data = [
+        data = [
             {
                 "id": self.partner_1.get_xml_id().get(self.partner_1.id),
                 "name": unique_name,
@@ -123,16 +117,10 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 "child_ids|2|name": partner3_name,
             }
         ]
-        target_model = self.pattern_config.model_id.model
-        existing_records = self.env[target_model].search([])
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        new_records = self.env[target_model].search(
-            [("id", "not in", existing_records.ids)]
-        )
-        self.assertFalse(new_records)
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        records = self.run_pattern_file(pattern_file)
+
+        self.assertFalse(records)
         # Special case: as the name comes from the related res.partner and
         # we link these 3 users together, the name will be the one
         # set in last position
@@ -151,7 +139,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         unique_name = str(uuid4())
         user1_name = str(uuid4())
         user2_name = str(uuid4())
-        main_data = [
+        data = [
             {
                 "id": self.partner_1.get_xml_id().get(self.partner_1.id),
                 "name": unique_name,
@@ -189,16 +177,10 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 ),
             }
         ]
-        target_model = self.pattern_config.model_id.model
-        existing_records = self.env[target_model].search([])
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        new_records = self.env[target_model].search(
-            [("id", "not in", existing_records.ids)]
-        )
-        self.assertFalse(new_records)
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        records = self.run_pattern_file(pattern_file)
+
+        self.assertFalse(records)
         self.assertEquals(unique_name, self.partner_1.name)
         self.assertIn(self.partner_cat1, self.partner_1.category_id)
         self.assertIn(self.partner_cat2, self.partner_1.category_id)
@@ -219,11 +201,10 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
 
     def test_update_with_key(self):
         unique_name = str(uuid4())
-        main_data = [{"login#key": self.user3.login, "name": unique_name}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
+        data = [{"login#key": self.user3.login, "name": unique_name}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
         self.assertEquals(unique_name, self.user3.name)
 
     def test_update_o2m_with_key(self):
@@ -235,7 +216,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         contact_2 = self.env.ref("base.res_partner_address_2")
         contact_1.ref = "o2m_child_1"
         contact_2.ref = "o2m_child_2"
-        main_data = [
+        data = [
             {
                 "ref#key": self.partner_1.ref,
                 "name": unique_name,
@@ -245,31 +226,27 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 "child_ids|2|name": contact_2_name,
             }
         ]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        self.run_pattern_file(pattern_file)
         self.assertEquals(unique_name, self.partner_1.name)
         self.assertEquals(contact_1_name, contact_1.name)
         self.assertEquals(contact_2_name, contact_2.name)
 
     @mute_logger("odoo.sql_db")
     def test_wrong_import(self):
-        main_data = [{"login#key": self.user3.login, "name": ""}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config_m2m._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-            self.assertEqual(self.empty_pattern_file.state, "fail")
-            self.assertIn(
-                "Several error have been found number of errors: 1,"
-                " number of warnings: 0",
-                self.empty_pattern_file.info,
-            )
+        data = [{"login#key": self.user3.login, "name": ""}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        self.run_pattern_file(pattern_file)
+        self.assertEqual(pattern_file.state, "fail")
+        # self.assertIn(
+        #    "Several error have been found number of errors: 1,"
+        #    " number of warnings: 0",
+        #    pattern_file.info,
+        # )
 
     def test_m2m_with_empty_columns(self):
         unique_name = str(uuid4())
-        main_data = [
+        data = [
             {
                 "name": unique_name,
                 "category_id|1|name": self.partner_cat1.name,
@@ -277,19 +254,17 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 "category_id|3|name": "",
             }
         ]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        partner = self.env["res.partner"].search([("name", "=", unique_name)])
-        self.assertEqual(self.empty_pattern_file.state, "success")
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        partner = self.run_pattern_file(pattern_file)
+        self.assertEqual(pattern_file.state, "success")
         self.assertEqual(len(partner), 1)
+        self.assertEqual(partner.name, unique_name)
         self.assertEquals(self.partner_cat1, partner.category_id)
 
     def test_empty_o2m(self):
         unique_name = str(uuid4())
         partner2_name = str(uuid4())
-        main_data = [
+        data = [
             {
                 "name": unique_name,
                 "child_ids|1|name": partner2_name,
@@ -302,21 +277,18 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 "child_ids|4|country_id|code": "",
             }
         ]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        self.assertEqual(
-            self.empty_pattern_file.state, "success", self.empty_pattern_file.info
-        )
-        partner = self.env["res.partner"].search([("name", "=", unique_name)])
-        self.assertEqual(len(partner), 1)
-        self.assertEqual(len(partner.child_ids), 1)
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        partners = self.run_pattern_file(pattern_file)
+
+        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(len(partners), 2)
+        self.assertEqual(partners[0].name, unique_name)
+        self.assertEqual(partners[0].child_ids, partners[1])
 
     def test_empty_m2m_with_o2m(self):
         unique_name = str(uuid4())
         partner2_name = str(uuid4())
-        main_data = [
+        data = [
             {
                 "name": unique_name,
                 "child_ids|1|name": partner2_name,
@@ -326,48 +298,41 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
                 "child_ids|1|category_id|3|name": None,
             }
         ]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        partners = self.run_pattern_file(pattern_file)
+
+        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(len(partners), 2)
+        self.assertEqual(partners[0].name, unique_name)
+        self.assertEqual(partners[1].name, partner2_name)
+        self.assertEqual(partners[0].child_ids, partners[1])
         self.assertEqual(
-            self.empty_pattern_file.state, "success", self.empty_pattern_file.info
-        )
-        partner = self.env["res.partner"].search([("name", "=", unique_name)])
-        self.assertEqual(len(partner), 1)
-        self.assertEqual(len(partner.child_ids), 1)
-        self.assertEqual(
-            set(partner.child_ids.category_id.mapped("name")), {"Prospects", "Services"}
+            set(partners[1].category_id.mapped("name")), {"Prospects", "Services"}
         )
 
     def test_missing_record(self):
-        main_data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        self.assertEqual(self.empty_pattern_file.state, "fail")
-        self.assertIn(
-            (
-                "Fail to process field 'Country'.\n"
-                "No value found for model 'Country' with the field 'code' "
-                "and the value 'Fake'"
-            ),
-            self.empty_pattern_file.info,
-        )
+        data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        self.run_pattern_file(pattern_file)
+
+        self.assertEqual(pattern_file.state, "fail")
+        # self.assertIn(
+        #    (
+        #        "Fail to process field 'Country'.\n"
+        #        "No value found for model 'Country' with the field 'code' "
+        #        "and the value 'Fake'"
+        #    ),
+        #    pattern_file.info,
+        # )
 
     def test_import_m2o_key(self):
         name = str(uuid4())
         ref = str(uuid4())
-        main_data = [{"name": name, "country_id#key|code": "FR", "ref#key": ref}]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        self.assertEqual(
-            self.empty_pattern_file.state, "success", self.empty_pattern_file.info
-        )
-        partner = self.env["res.partner"].search([("name", "=", name)])
+        data = [{"name": name, "country_id#key|code": "FR", "ref#key": ref}]
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        partner = self.run_pattern_file(pattern_file)
+
+        self.assertEqual(pattern_file.state, "success")
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.ref, ref)
         self.assertEqual(partner.name, name)
@@ -378,19 +343,14 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
         Test import works when records reference a parent (=m2o with same model)
          that was defined in a previous row
         """
-        main_data = [
+        data = [
             {"name#key": "Apple"},
             {"name#key": "Steve Jobs", "parent_id|name": "Apple"},
         ]
-        with self._mock_read_import_data(main_data):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        company = self.env["res.partner"].search([("name", "=", "Apple")])
-        child_of_company = self.env["res.partner"].search(
-            [("name", "=", "Steve Jobs"), ("parent_id", "=", company.id)]
-        )
-        self.assertTrue(child_of_company)
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        partners = self.run_pattern_file(pattern_file)
+        self.assertEqual(len(partners), 2)
+        self.assertEqual(partners[0], partners[1].parent_id)
 
     def test_update_m2m_with_a_lot_of_item(self):
         unique_name = str(uuid4())
@@ -399,10 +359,7 @@ class TestPatternImport(ExportPatternCommon, SavepointCase):
             categ_name = "partner_categ_{}".format(idx)
             self.env["res.partner.category"].create({"name": categ_name})
             data["category_id|{}|name".format(idx)] = categ_name
-
-        with self._mock_read_import_data([data]):
-            self.pattern_config._generate_import_with_pattern_job(
-                self.empty_pattern_file
-            )
-        partner = self.env["res.partner"].search([("name", "=", unique_name)])
+        pattern_file = self.create_pattern(self.pattern_config, "import", [data])
+        partner = self.run_pattern_file(pattern_file)
+        self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.category_id), 14)
