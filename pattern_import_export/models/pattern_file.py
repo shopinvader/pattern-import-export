@@ -6,7 +6,6 @@ import json
 import urllib.parse
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
 
 from odoo.addons.queue_job.job import job
 
@@ -22,7 +21,6 @@ class PatternFile(models.Model):
         default="pending",
     )
     info = fields.Char()
-    info_detail = fields.Char()
     kind = fields.Selection([("import", "import"), ("export", "export")], required=True)
     pattern_config_id = fields.Many2one(
         "pattern.config", required=True, string="Export pattern"
@@ -183,57 +181,22 @@ class PatternFile(models.Model):
                     self._create_chunk(start_idx, previous_idx, items)
                     items = []
                     start_idx = idx
-                items.append(item)
+                items.append((idx, item))
                 previous_idx = idx
             if items:
                 self._create_chunk(start_idx, idx, items)
         except Exception as e:
             self.state = "fail"
-            self.info = _("Failed to read (check details)")
-            self.info_detail = e
+            self.info = _("Failed to create the chunk: %s") % e
         return True
 
     def set_import_done(self):
         for record in self:
             if record.nbr_error:
                 record.state = "fail"
-                record.post_process_error()
             else:
                 record.state = "success"
             record.date_done = fields.Datetime.now()
-
-    def post_process_error(self):
-        # TODO maybe we can generate a html report ?
-        pass
-
-    def _process_load_message(self, messages):
-        count_errors = 0
-        count_warnings = 0
-        error_message = _(
-            "\n Several error have been found "
-            "number of errors: {}, number of warnings: {}"
-            "\nDetail:\n {}"
-        )
-        error_details = []
-        for message in messages:
-            error_details.append(
-                _("Line {} : {}, {}").format(
-                    message["rows"]["to"], message["type"], message["message"]
-                )
-            )
-            if message["type"] == "error":
-                count_errors += 1
-            elif message["type"] == "warning":
-                count_warnings += 1
-            else:
-                raise UserError(
-                    _("Message type {} is not supported").format(message["type"])
-                )
-        if count_errors or count_warnings:
-            return error_message.format(
-                count_errors, count_warnings, "\n".join(error_details)
-            )
-        return ""
 
     def refresh(self):
         """Empty function to refresh view"""

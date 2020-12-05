@@ -47,7 +47,9 @@ class PatternFile(models.Model):
                 vals = [x.value for x in row]
                 if any(vals):
                     count_empty = 0
-                    yield idx, dict(zip(headers, vals))
+                    # the position return is the row number
+                    # libreoffice/excel/human start from 1
+                    yield idx + 1, dict(zip(headers, vals))
                 else:
                     count_empty += 1
             if count_empty > STOP_AFTER_NBR_EMPTY:
@@ -67,15 +69,27 @@ class PatternFile(models.Model):
             ws.delete_cols(1)
         ws.insert_cols(1)
         ws.cell(1, 1, value=_("#Error"))
+        last_row_idx = 0
         for chunk in self.chunk_ids:
             for message in chunk.messages:
-                ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
+                if "rows" in message:
+                    last_row_idx = message["rows"]["to"]
+                    ws.cell(message["rows"]["to"], 1, value=message["message"].strip())
+                else:
+                    # If no row are specify, this is a global message
+                    # that should be applied until the end of the chunk
+                    for idx in range(last_row_idx, chunk.stop_idx + 1):
+                        ws.cell(idx, 1, value=message["message"].strip())
         output = BytesIO()
         wb.save(output)
         self.datas = base64.b64encode(output.getvalue())
 
-    def post_process_error(self):
-        super().post_process_error()
-        if self.pattern_config_id.export_format == "xlsx":
-            self.write_error_in_xlsx()
+    def set_import_done(self):
+        super().set_import_done()
+        for record in self:
+            if (
+                record.state == "fail"
+                and record.pattern_config_id.export_format == "xlsx"
+            ):
+                record.write_error_in_xlsx()
         return True

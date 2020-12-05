@@ -25,6 +25,7 @@
                 <field name="nbr_success" />
                 <field name="state" />
             </group>
+            <field name="result_info" />
         </form>
     </field>
 </record>

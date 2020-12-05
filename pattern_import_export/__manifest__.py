@@ -23,6 +23,7 @@
         "views/pattern_file.xml",
         "views/pattern_chunk.xml",
         "views/menuitems.xml",
+        "views/templates.xml",
     ],
     "demo": ["demo/demo.xml"],
     "external_dependencies": {"python": ["numpy", "openupgradelib"]},

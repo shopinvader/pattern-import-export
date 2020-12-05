@@ -50,13 +50,14 @@ class TestPatternImportExcel(SavepointCase):
                 "filename": "example.xlsx",
             }
         )
-        wizard.action_launch_import()
+        pattern_file = wizard.action_launch_import()
 
         if DUMP_OUTPUT:
             attachment = cls.env["pattern.file"].search([], limit=1, order="id desc")
             output_name = filename.replace(".xlsx", ".result.xlsx")
             with open(output_name, "wb") as output:
                 output.write(base64.b64decode(attachment.datas))
+        return pattern_file
 
     def test_import_partners_ok(self):
         """
@@ -122,30 +123,27 @@ class TestPatternImportExcel(SavepointCase):
         self.assertEqual(contact_2.function, "Store Manager")
 
     @mute_logger("odoo.sql_db")
-    def test_import_partners_fail(self):
-        """
-        * Lookup by email
-        * Report error in excel file through wrong email
-        """
-        self.pattern_config_partner.partial_commit = False
-        self._load_file("example.partners.fail.xlsx", self.pattern_config_partner)
+    def test_partial_import(self):
+        pattern_file = self._load_file(
+            "example.partners.fail.xlsx", self.pattern_config_partner
+        )
         self.env.clear()
 
-        # check that nothong have been done
-        partner = self.env.ref("base.res_partner_1")
+        self.assertEqual(pattern_file.state, "fail")
 
-        self.assertEqual(partner.name, "Wood Corner")
+        # Check that the data without error are updated
+        partner = self.env.ref("base.res_partner_1")
+        self.assertEqual(partner.name, "Wood Corner Updated")
 
         partner = self.env.ref("base.res_partner_2")
-
-        self.assertEqual(partner.name, "Deco Addict")
+        self.assertEqual(partner.name, "Deco Addict Updated")
 
         partner = self.env["res.partner"].search(
             [("email", "=", "akretion-pattern@example.com")]
         )
-        self.assertEqual(len(partner), 0)
-        attachment = self.env["pattern.file"].search([], order="id desc", limit=1)
-        infile = BytesIO(base64.b64decode(attachment.datas))
+        self.assertEqual(len(partner), 1)
+
+        infile = BytesIO(base64.b64decode(pattern_file.datas))
         wb = openpyxl.load_workbook(filename=infile)
         ws = wb.worksheets[0]
         self.assertEqual(ws["A1"].value, "#Error")
@@ -157,6 +155,87 @@ class TestPatternImportExcel(SavepointCase):
             'violates check constraint "res_partner_check_name"',
             ws["A5"].value,
         )
+
+    @mute_logger("odoo.sql_db")
+    def test_partial_import_too_many_error(self):
+        pattern_file = self._load_file(
+            "example.partners.too_many_error.xlsx", self.pattern_config_partner
+        )
+        self.env.clear()
+
+        self.assertEqual(pattern_file.state, "fail")
+        # Check that the data without error are updated
+        partner = self.env.ref("base.res_partner_1")
+        self.assertEqual(partner.name, "Wood Corner Updated")
+
+        partner = self.env.ref("base.res_partner_2")
+        self.assertEqual(partner.name, "Deco Addict Updated")
+
+        # Last line should not have been imported as
+        # odoo break when there is too many error
+        partner = self.env["res.partner"].search(
+            [("email", "=", "akretion-pattern@example.com")]
+        )
+        self.assertEqual(len(partner), 0)
+
+        infile = BytesIO(base64.b64decode(pattern_file.datas))
+        wb = openpyxl.load_workbook(filename=infile)
+        ws = wb.worksheets[0]
+        self.assertEqual(ws["A1"].value, "#Error")
+        self.assertIsNone(ws["A2"].value)
+        self.assertIsNone(ws["A3"].value)
+
+        for idx in range(4, 13):
+            self.assertIn(
+                'new row for relation "res_partner" '
+                'violates check constraint "res_partner_check_name"',
+                ws["A%s" % idx].value,
+            )
+        for idx in range(13, 21):
+            self.assertEqual(
+                "Found more than 10 errors and more than one error per 10 records, "
+                "interrupted to avoid showing too many errors.",
+                ws["A%s" % idx].value,
+            )
+        self.assertIsNone(ws["A21"].value)
+
+    @mute_logger("odoo.sql_db")
+    def test_multi_chunk(self):
+        self.pattern_config_partner.chunk_size = 5
+        self.pattern_config_partner.process_multi = True
+        pattern_file = self._load_file(
+            "example.partners.too_many_error.xlsx", self.pattern_config_partner
+        )
+        self.env.clear()
+
+        self.assertEqual(pattern_file.state, "fail")
+        # Check that the data without error are updated
+        partner = self.env.ref("base.res_partner_1")
+        self.assertEqual(partner.name, "Wood Corner Updated")
+
+        partner = self.env.ref("base.res_partner_2")
+        self.assertEqual(partner.name, "Deco Addict Updated")
+
+        # Last line should have been imported as
+        # we have chunk of 5 so we can not have 10 error
+        partner = self.env["res.partner"].search(
+            [("email", "=", "akretion-pattern@example.com")]
+        )
+        self.assertEqual(len(partner), 1)
+
+        infile = BytesIO(base64.b64decode(pattern_file.datas))
+        wb = openpyxl.load_workbook(filename=infile)
+        ws = wb.worksheets[0]
+        self.assertEqual(ws["A1"].value, "#Error")
+        self.assertIsNone(ws["A2"].value)
+        self.assertIsNone(ws["A3"].value)
+        for idx in range(4, 20):
+            self.assertIn(
+                'new row for relation "res_partner" '
+                'violates check constraint "res_partner_check_name"',
+                ws["A%s" % idx].value or "",
+            )
+        self.assertIsNone(ws["A20"].value)
 
     def test_import_users_ok(self):
         """

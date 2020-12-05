@@ -19,6 +19,7 @@ class PatternChunk(models.Model):
     data = fields.Serialized()
     record_ids = fields.Serialized()
     messages = fields.Serialized()
+    result_info = fields.Html()
     nbr_error = fields.Integer()
     nbr_success = fields.Integer()
     nbr_item = fields.Integer()
@@ -44,24 +45,7 @@ class PatternChunk(models.Model):
                     .env[model]
                     .load([], self.data)
                 )
-                if res.get("ids"):
-                    nbr_success = len(res["ids"])
-                else:
-                    nbr_success = 0
-                nbr_error = self.nbr_item - nbr_success
-                if nbr_error:
-                    state = "failed"
-                else:
-                    state = "done"
-                self.write(
-                    {
-                        "record_ids": res.get("ids"),
-                        "messages": res.get("messages"),
-                        "state": state,
-                        "nbr_success": nbr_success,
-                        "nbr_error": nbr_error,
-                    }
-                )
+                self.write(self._prepare_chunk_result(res))
                 if not self.pattern_file_id.pattern_config_id.process_multi:
                     next_chunk = self.get_next_chunk()
                     if next_chunk:
@@ -71,11 +55,36 @@ class PatternChunk(models.Model):
                 else:
                     self.with_delay().check_last()
 
-        except Exception:
-            self.write({"nbr_error": self.nbr_item, "state": "failed"})
+        except Exception as e:
+            self.write(
+                {
+                    "result_info": "Fail to process chunk %s" % e,
+                    "nbr_error": self.nbr_item,
+                    "state": "failed",
+                }
+            )
             self.with_delay().check_last()
-            # TODO return exception into the messages
         return "OK"
+
+    def _prepare_chunk_result(self, res):
+        if res.get("ids"):
+            nbr_success = len(res["ids"])
+        else:
+            nbr_success = 0
+        nbr_error = self.nbr_item - nbr_success
+        if nbr_error:
+            state = "failed"
+        else:
+            state = "done"
+        result = self.env["ir.qweb"].render("pattern_import_export.format_message", res)
+        return {
+            "record_ids": res.get("ids"),
+            "messages": res.get("messages"),
+            "result_info": result,
+            "state": state,
+            "nbr_success": nbr_success,
+            "nbr_error": nbr_error,
+        }
 
     def get_next_chunk(self):
         return self.search(

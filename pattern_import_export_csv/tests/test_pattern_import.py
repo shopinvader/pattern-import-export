@@ -124,19 +124,18 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         * Lookup by email
         * Report error in excel file through wrong email
         """
-        self.pattern_config_partner.partial_commit = False
         self._load_file("example.partners.fail.csv", self.pattern_config_partner)
         self.env.clear()
 
-        # check that nothing has been done
+        # check that valid item have been imported
         partner = self.env.ref("base.res_partner_1")
-        self.assertEqual(partner.name, "Wood Corner")
+        self.assertEqual(partner.name, "Wood Corner Updated")
         partner = self.env.ref("base.res_partner_2")
-        self.assertEqual(partner.name, "Deco Addict")
+        self.assertEqual(partner.name, "Deco Addict Updated")
         partner = self.env["res.partner"].search(
             [("email", "=", "akretion-pattern@example.com")]
         )
-        self.assertEqual(len(partner), 0)
+        self.assertEqual(len(partner), 1)
 
     def test_import_users_ok(self):
         """

@@ -44,13 +44,12 @@
                     </div>
                     <notebook>
                         <page name="chunk" string="Chunk">
+                            <field
+                                name="info"
+                                readonly="1"
+                                attrs="{'invisible': [('info', '=', False)]}"
+                            />
                             <field name="chunk_ids" nolabel="1" />
-                        </page>
-                        <page name="details" string="Details">
-                            <group>
-                                <field name="info" readonly="1" />
-                                <field name="info_detail" readonly="1" />
-                            </group>
                         </page>
                     </notebook>
                 </sheet>

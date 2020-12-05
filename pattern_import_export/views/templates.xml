@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="format_message">
+        <div>
+            <table class="table">
+               <thead>
+                 <tr>
+                   <th scope="col">#</th>
+                   <th scope="col">type</th>
+                   <th scope="col">Message</th>
+                 </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="messages" t-as="rec">
+                      <tr class="table_price_note_row">
+                          <th scope="row"><t
+                                    t-esc="rec.get('rows', {}).get('from')"
+                                /></th>
+                          <td scope="row"><t t-esc="rec['type']" /></td>
+                          <td scope="row"><t t-esc="rec['message']" /></td>
+                    </tr>
+                </t>
+                </tbody>
+            </table>
+        </div>
+    </template>
+</odoo>

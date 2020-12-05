@@ -48,7 +48,13 @@ class TestPatternImport(PatternCommon, SavepointCase):
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
         self.assertEqual(pattern_file.state, "fail")
-        # TODO check message
+        # TODO it will be better to retour a better exception
+        # but it's not that easy
+        chunk = pattern_file.chunk_ids
+        self.assertEqual(
+            chunk.result_info,
+            "<p>Fail to process chunk 'int' object has no attribute 'split'</p>",
+        )
 
     def test_update_with_external_id_bad_data_2(self):
         """
@@ -62,7 +68,8 @@ class TestPatternImport(PatternCommon, SavepointCase):
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
         self.assertEqual(pattern_file.state, "fail")
-        # TODO check message
+        chunk = pattern_file.chunk_ids
+        self.assertIn("Invalid database identifier", chunk.result_info)
 
     def test_create_new_record(self):
         """
@@ -238,11 +245,8 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         self.run_pattern_file(pattern_file)
         self.assertEqual(pattern_file.state, "fail")
-        # self.assertIn(
-        #    "Several error have been found number of errors: 1,"
-        #    " number of warnings: 0",
-        #    pattern_file.info,
-        # )
+        self.assertEqual(pattern_file.nbr_error, 1)
+        self.assertIn("res_partner_check_name", pattern_file.chunk_ids.result_info)
 
     def test_m2m_with_empty_columns(self):
         unique_name = str(uuid4())
@@ -316,14 +320,14 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.run_pattern_file(pattern_file)
 
         self.assertEqual(pattern_file.state, "fail")
-        # self.assertIn(
-        #    (
-        #        "Fail to process field 'Country'.\n"
-        #        "No value found for model 'Country' with the field 'code' "
-        #        "and the value 'Fake'"
-        #    ),
-        #    pattern_file.info,
-        # )
+        self.assertIn(
+            (
+                "Fail to process field 'Country'.\n"
+                "No value found for model 'Country' with the field 'code' "
+                "and the value 'Fake'"
+            ),
+            pattern_file.chunk_ids.result_info,
+        )
 
     def test_import_m2o_key(self):
         name = str(uuid4())
@@ -363,3 +367,30 @@ class TestPatternImport(PatternCommon, SavepointCase):
         partner = self.run_pattern_file(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.category_id), 14)
+
+    def test_partial_import(self):
+        data = [
+            {"name": "foo"},
+            {"name": "bar"},
+            {"name": "", "street": "empty"},
+            {"name": "foobar"},
+        ]
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertEqual(len(records), 3)
+        self.assertEqual(pattern_file.nbr_error, 1)
+        self.assertEqual(pattern_file.nbr_success, 3)
+
+    def test_partial_import_too_many_error(self):
+        data = (
+            [{"name": "foo"}, {"name": "bar"}]
+            + [{"name": "", "street": "empty"}] * 15
+            + [{"name": "foobar"}]
+        )
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertEqual(len(records), 2)
+        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.nbr_error, 16)
+        self.assertIn("res_partner_check_name", pattern_file.chunk_ids.result_info)
+        self.assertIn("Found more than 10 errors", pattern_file.chunk_ids.result_info)

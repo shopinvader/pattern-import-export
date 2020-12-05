@@ -59,6 +59,10 @@ class Base(models.AbstractModel):
         records = super()._load_records(data_list, update=update)
         if self._context.get("pattern_config"):
             self._context["pattern_config"]["record_ids"] += records.ids
+            # We want to save all correct data so we have to update the savepoint
+            self._cr.execute("RELEASE SAVEPOINT model_load")
+            self._cr.execute("SAVEPOINT model_load")
+            self._cr.execute("SAVEPOINT model_load_save")
         return records
 
     def load(self, fields, data):
@@ -190,13 +194,12 @@ class Base(models.AbstractModel):
     def _extract_records(self, fields_, data, log=lambda a: None):
         pattern_config = self._context.get("pattern_config")
         if pattern_config:
-            for idx, row in enumerate(data):
+            for idx, row in data:
                 self._remove_commented_and_empty_columns(row)
                 if not any(row.values()):
                     continue
-                yield self._pattern_format2json(row), {
-                    "rows": {"from": idx + 1, "to": idx + 1}
-                }
+
+                yield self._pattern_format2json(row), {"rows": {"from": idx, "to": idx}}
         else:
             yield from super()._extract_records(fields_, data, log=log)
 

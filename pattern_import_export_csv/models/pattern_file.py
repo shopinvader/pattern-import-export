@@ -27,30 +27,3 @@ class PatternFile(models.Model):
                 if v == "":
                     line[k] = None
             yield idx + 1, line
-
-
-#    def _process_load_result_for_csv(self, attachment, res):
-#        ids = res["ids"] or []
-#        info = _("Number of record imported {} Number of error/warning {}").format(
-#            len(ids), len(res.get("messages", []))
-#        )
-#        concatenated_msgs = "\n".join(
-#            [
-#                "{}: {}".format(message["type"], message["message"])
-#                for message in res["messages"]
-#            ]
-#        )
-#        info_detail = _("Details: ids: {},
-#            messages: {}".format(ids, concatenated_msgs))
-#        if res.get("messages"):
-#            state = "fail"
-#        else:
-#            state = "success"
-#        return info, info_detail, state
-#
-#    def _process_load_result(self, attachment, res):
-#        if self.export_format == "csv":
-#            return self._process_load_result_for_csv(attachment, res)
-#        else:
-#            return super()._process_load_result(attachment, res)
-#
