@@ -39,14 +39,12 @@ class PatternConfig(models.Model):
     # we redefine previous onchanges since delegation inheritance breaks
     # onchanges on ir.exports
 
-    @api.multi
     @api.onchange("model_id")
     def _inverse_model_id(self):
         """Get the resource from the model."""
         for s in self:
             s.resource = s.model_id.model
 
-    @api.multi
     @api.onchange("resource")
     def _onchange_resource(self):
         """Void fields if model is changed in a view."""
@@ -92,7 +90,6 @@ class PatternConfig(models.Model):
     def nr_of_header_rows(self):
         return 1 + int(self.use_description)
 
-    @api.multi
     def _get_header(self, use_description=False):
         """
         Build header of data-structure.
@@ -105,7 +102,6 @@ class PatternConfig(models.Model):
             header.extend(export_line._get_header(use_description))
         return header
 
-    @api.multi
     def generate_pattern(self):
         """
         Allows you to generate an (empty) file to be used a
@@ -127,7 +123,6 @@ class PatternConfig(models.Model):
             )
         return True
 
-    @api.multi
     def _get_data_to_export(self, records):
         """
         Iterator who built data dict record by record.
@@ -158,7 +153,6 @@ class PatternConfig(models.Model):
             res[header] = val
         return res
 
-    @api.multi
     def _get_data_to_export_by_record(self, record, parser):
         """
         Use the ORM cache to re-use already exported data and
@@ -171,7 +165,6 @@ class PatternConfig(models.Model):
         data = record.jsonify(parser)[0]
         return self.json2pattern_format(data)
 
-    @api.multi
     def _generate_with_records(self, records):
         """
         Export given recordset
@@ -193,7 +186,6 @@ class PatternConfig(models.Model):
                 all_data.append(base64.b64encode(export_data))
         return all_data
 
-    @api.multi
     def _export_with_record(self, records):
         """
         Export given recordset

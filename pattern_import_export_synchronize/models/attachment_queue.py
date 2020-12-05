@@ -14,7 +14,7 @@ class AttachmentQueue(models.Model):
     def _run_import_pattern(self):
         pattern_file_import = self.env["pattern.file"].create(
             {
-                "name": self.datas_fname,
+                "name": self.name,
                 "attachment_id": self.attachment_id.id,
                 "kind": "import",
                 "pattern_config_id": self.task_id.pattern_config_id.id,

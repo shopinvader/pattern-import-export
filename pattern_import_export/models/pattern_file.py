@@ -82,7 +82,7 @@ class PatternFile(models.Model):
     def _helper_build_details(self):
         details = self._helper_build_link()
         if self.kind == "export":
-            details += (self.datas_fname and self._helper_build_content_link()) or ""
+            details += (self.name and self._helper_build_content_link()) or ""
         return details
 
     def _helper_build_link(self):
@@ -107,10 +107,10 @@ class PatternFile(models.Model):
         args = [
             "?model=" + "pattern.file",
             "id=" + str(self.id),
-            "filename_field=datas_fname",
+            "filename_field=name",
             "field=datas",
             "download=true",
-            "filename=" + urllib.parse.quote(self.datas_fname),
+            "filename=" + urllib.parse.quote(self.name),
         ]
         link = "<br>"
         url = base + web + "&".join(args)
@@ -128,7 +128,6 @@ class PatternFile(models.Model):
         )
         self.with_delay(description=description).split_in_chunk()
 
-    @api.multi
     def _parse_data(self):
         data = base64.b64decode(self.datas.decode("utf-8"))
         target_function = "_parse_data_{format}".format(

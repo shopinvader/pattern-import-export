@@ -138,7 +138,6 @@ class IrExportsLine(models.Model):
                             )
                         )
 
-    @api.multi
     @api.depends("name")
     def _compute_related_level_field(self):
         for export_line in self:
@@ -179,7 +178,6 @@ class IrExportsLine(models.Model):
                 base_header.append(field_name)
         return COLUMN_X2M_SEPARATOR.join(base_header)
 
-    @api.multi
     def _get_header(self, use_description=False):
         """
         @return: list of str

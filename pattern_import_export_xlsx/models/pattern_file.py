@@ -7,7 +7,7 @@ from io import BytesIO
 
 import openpyxl
 
-from odoo import _, api, models
+from odoo import _, models
 from odoo.exceptions import UserError
 
 STOP_AFTER_NBR_EMPTY = 10
@@ -34,7 +34,6 @@ class PatternFile(models.Model):
             raise UserError(_("Please select a tab to import on the pattern"))
         return workbook[name]
 
-    @api.multi
     def _parse_data_xlsx(self, data):
         workbook = openpyxl.load_workbook(BytesIO(data), data_only=True, read_only=True)
         worksheet = self._get_worksheet(workbook)

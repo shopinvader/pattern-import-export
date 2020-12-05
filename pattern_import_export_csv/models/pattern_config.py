@@ -4,7 +4,7 @@
 import csv
 import io
 
-from odoo import api, fields, models
+from odoo import fields, models
 
 
 class PatternConfig(models.Model):
@@ -33,7 +33,6 @@ class PatternConfig(models.Model):
         for row in self._get_data_to_export(records):
             writer.writerow(row)
 
-    @api.multi
     def _export_with_record_csv(self, records):
         self.ensure_one()
         output = io.StringIO()

@@ -102,7 +102,7 @@ class PatternCommon(JobMixin):
             {
                 "datas": b64encode(bytes(json.dumps(data), "utf-8")),
                 "datas_fname": "foo.json",
-                "name": "Foo",
+                "name": "foo.json",
                 "kind": kind,
                 "pattern_config_id": config.id,
             }

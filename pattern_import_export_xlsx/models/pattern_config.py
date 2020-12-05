@@ -7,7 +7,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from odoo import api, fields, models
+from odoo import fields, models
 
 
 class PatternConfig(models.Model):
@@ -19,7 +19,6 @@ class PatternConfig(models.Model):
     )
 
     # TODO we should move this code in pattern.file
-    @api.multi
     def _create_xlsx_file(self, records):
         self.ensure_one()
         book = openpyxl.Workbook()
@@ -100,7 +99,6 @@ class PatternConfig(models.Model):
             validation.add(range_dst)
             main_sheet.add_data_validation(validation)
 
-    @api.multi
     def _export_with_record_xlsx(self, records):
         """
         Export given recordset

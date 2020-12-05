@@ -19,7 +19,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "country_id|code",
             "parent_id|country_id|code",
         ]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header1_descriptive(self):
         headers = self.pattern_config._get_header(use_description=True)
@@ -30,7 +30,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "Country|Country Code",
             "Related Company|Country|Country Code",
         ]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header2(self):
         """
@@ -39,7 +39,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
         """
         headers = self.pattern_config_m2m._get_header()
         expected_header = [".id", "name", "company_ids|1|name"]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header3(self):
         """
@@ -58,7 +58,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "company_ids|4|name",
             "company_ids|5|name",
         ]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header4(self):
         """
@@ -80,7 +80,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "user_ids|3|name",
             "user_ids|3|company_ids|1|name",
         ]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_header5(self):
         """
@@ -117,7 +117,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "user_ids|3|company_ids|4|name",
             "user_ids|3|company_ids|5|name",
         ]
-        self.assertEquals(expected_header, headers)
+        self.assertEqual(expected_header, headers)
 
     def test_get_data_to_export1(self):
         """

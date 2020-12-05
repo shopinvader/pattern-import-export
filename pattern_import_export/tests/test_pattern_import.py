@@ -368,6 +368,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(len(partner), 1)
         self.assertEqual(len(partner.category_id), 14)
 
+    @mute_logger("odoo.sql_db")
     def test_partial_import(self):
         data = [
             {"name": "foo"},
@@ -381,6 +382,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(pattern_file.nbr_error, 1)
         self.assertEqual(pattern_file.nbr_success, 3)
 
+    @mute_logger("odoo.sql_db")
     def test_partial_import_too_many_error(self):
         data = (
             [{"name": "foo"}, {"name": "bar"}]

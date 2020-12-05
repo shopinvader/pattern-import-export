@@ -35,14 +35,13 @@
         </field>
     </record>
 
-    <act_window
-        id="action_export_with_pattern"
-        name="Export With Pattern"
-        res_model="export.pattern.wizard"
-        view_type="form"
-        view_mode="form"
-        key2="client_action_multi"
-        view_id="view_export_with_pattern_wizard"
-        target="new"
-    />
+    <record id="action_export_with_pattern" model="ir.actions.act_window">
+        <field name="name">Export With Pattern</field>
+        <field name="res_model">export.pattern.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="binding_view_types">list</field>
+        <field name="view_id" ref="view_export_with_pattern_wizard" />
+        <field name="target">new</field>
+    </record>
+
 </odoo>
