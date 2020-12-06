@@ -42,5 +42,5 @@ class ExportPatternWizard(models.Model):
             )
             records.with_delay(
                 description=description
-            )._generate_export_with_pattern_job(wiz.pattern_config_id)
+            ).generate_export_with_pattern_job(wiz.pattern_config_id)
         return {}

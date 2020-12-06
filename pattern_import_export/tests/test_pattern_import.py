@@ -394,5 +394,5 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(len(records), 2)
         self.assertEqual(pattern_file.state, "failed")
         self.assertEqual(pattern_file.nbr_error, 16)
-        self.assertIn("res_partner_check_name", pattern_file.chunk_ids.result_info)
+        self.assertIn("Contacts require a name", pattern_file.chunk_ids.result_info)
         self.assertIn("Found more than 10 errors", pattern_file.chunk_ids.result_info)

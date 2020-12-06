@@ -1,0 +1,14 @@
+<odoo noupdate="1">
+    <record model="queue.job.channel" id="channel_pattern">
+        <field name="name">pattern</field>
+        <field name="parent_id" ref="queue_job.channel_root" />
+    </record>
+    <record model="queue.job.channel" id="channel_pattern_import">
+        <field name="name">import</field>
+        <field name="parent_id" ref="channel_pattern" />
+    </record>
+    <record model="queue.job.channel" id="channel_pattern_export">
+        <field name="name">export</field>
+        <field name="parent_id" ref="channel_pattern" />
+    </record>
+</odoo>

@@ -7,14 +7,13 @@ import logging
 from odoo import _, api, models
 from odoo.exceptions import ValidationError
 from odoo.osv import expression
-from odoo.tools import pycompat
 from odoo.tools.misc import CountingStream
-
-from odoo.addons.queue_job.job import job
 
 from .common import IDENTIFIER_SUFFIX
 
 _logger = logging.getLogger(__name__)
+
+FLOAT_INF = float("inf")
 
 
 def is_not_empty(item):
@@ -35,8 +34,7 @@ def is_not_empty(item):
 class Base(models.AbstractModel):
     _inherit = "base"
 
-    @job(default_channel="root.pattern.export")
-    def _generate_export_with_pattern_job(self, export_pattern):
+    def generate_export_with_pattern_job(self, export_pattern):
         export = export_pattern._export_with_record(self)
         return export
 
@@ -58,10 +56,6 @@ class Base(models.AbstractModel):
         records = super()._load_records(data_list, update=update)
         if self._context.get("pattern_config"):
             self._context["pattern_config"]["record_ids"] += records.ids
-            # We want to save all correct data so we have to update the savepoint
-            self._cr.execute("RELEASE SAVEPOINT model_load")
-            self._cr.execute("SAVEPOINT model_load")
-            self._cr.execute("SAVEPOINT model_load_save")
         return records
 
     def load(self, fields, data):
@@ -190,7 +184,7 @@ class Base(models.AbstractModel):
                 row.pop(key)
 
     @api.model
-    def _extract_records(self, fields_, data, log=lambda a: None):
+    def _extract_records(self, fields_, data, log=lambda a: None, limit=FLOAT_INF):
         pattern_config = self._context.get("pattern_config")
         if pattern_config:
             for idx, row in data:
@@ -199,8 +193,23 @@ class Base(models.AbstractModel):
                     continue
 
                 yield self._pattern_format2json(row), {"rows": {"from": idx, "to": idx}}
+
+                # WARNING: complex code
+                # As we are in an generator the following code is executed
+                # after the "for id, xid, record, info in converted:" in model.py:1090
+                # the idea is to call the flush manually for the last line
+                # and set new savepoint so the rollback in case of error
+                # "if any(message['type'] == 'error' for message in messages):"
+                # in model.py:1100
+                # will do nothing
+                # this is a crazy hack but there is better solution
+                # in V15 we should propose a refactor of load method
+                if data[-1][0] == idx:
+                    self._context["import_flush"]()
+                    self._cr.execute("RELEASE SAVEPOINT model_load")
+                    self._cr.execute("SAVEPOINT model_load")
         else:
-            yield from super()._extract_records(fields_, data, log=log)
+            yield from super()._extract_records(fields_, data, log=log, limit=limit)
 
     # PATCH
     # be careful we redifine the broken native code
@@ -231,7 +240,7 @@ class Base(models.AbstractModel):
                 type=kind,
                 record=record,
                 field=field,
-                message=pycompat.text_type(exception.args[0]) % exc_vals,
+                message=str(exception.args[0]) % exc_vals,
             )
             if len(exception.args) > 1 and exception.args[1]:
                 record.update(exception.args[1])

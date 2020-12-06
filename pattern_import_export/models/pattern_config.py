@@ -66,7 +66,6 @@ class PatternConfig(models.Model):
         domain = expression.AND([[("pattern_config_id", "=", self.id)], domain])
         return {
             "name": _("Pattern files"),
-            "view_type": "form",
             "view_mode": "tree,form",
             "res_model": "pattern.file",
             "type": "ir.actions.act_window",
@@ -216,7 +215,6 @@ class PatternConfig(models.Model):
                 "res_id": self.id,
                 "res_model": "pattern.config",
                 "datas": attachment_datas,
-                "datas_fname": name,
                 "kind": "export",
                 "state": "done",
                 "pattern_config_id": self.id,

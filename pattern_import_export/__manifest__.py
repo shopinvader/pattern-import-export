@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export",
     "summary": "Pattern for import or export",
-    "version": "12.0.6.2.0",
+    "version": "14.0.1.0.0",
     "category": "Extra Tools",
     "author": "Akretion",
     "website": "https://github.com/OCA/pattern-import-export",
@@ -11,9 +11,10 @@
     "depends": [
         "base_jsonify",
         "queue_job",
-        "document",
         "base_export_manager",
         "web_notify",
+        "base_sparse_field_list_support",
+        "base_sparse_field",
     ],
     "data": [
         "security/pattern_security.xml",
@@ -25,8 +26,9 @@
         "views/pattern_chunk.xml",
         "views/menuitems.xml",
         "views/templates.xml",
+        "data/queue_job_channel_data.xml",
+        "data/queue_job_function_data.xml",
     ],
     "demo": ["demo/demo.xml"],
-    "external_dependencies": {"python": ["numpy", "openupgradelib"]},
-    "installable": False,
+    "installable": True,
 }

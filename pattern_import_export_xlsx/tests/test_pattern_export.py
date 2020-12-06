@@ -86,9 +86,9 @@ class TestPatternExportExcel(PatternCommon, SavepointCase):
         id2 = self.env.ref("base.res_partner_2").id
         id3 = self.env.ref("base.res_partner_3").id
         expected_values = [
-            [id1, "Wood Corner", "1164 Cambridge Drive", "US"],
-            [id2, "Deco Addict", "325 Elsie Drive", "US"],
-            [id3, "Gemini Furniture", "1128 Lunetta Street", "US"],
+            [id1, "Wood Corner", "1839 Arbor Way", "US"],
+            [id2, "Deco Addict", "77 Santa Barbara Rd", "US"],
+            [id3, "Gemini Furniture", "317 Fairchild Dr", "US"],
         ]
         self._helper_check_cell_values(sheet, expected_values)
 

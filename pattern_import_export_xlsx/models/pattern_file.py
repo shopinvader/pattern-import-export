@@ -46,9 +46,12 @@ class PatternFile(models.Model):
                 vals = [x.value for x in row]
                 if any(vals):
                     count_empty = 0
+                    item = dict(zip(headers, vals))
+                    # we remove column without header
+                    item.pop(None, "")
                     # the position return is the row number
                     # libreoffice/excel/human start from 1
-                    yield idx + 1, dict(zip(headers, vals))
+                    yield idx + 1, item
                 else:
                     count_empty += 1
             if count_empty > STOP_AFTER_NBR_EMPTY:

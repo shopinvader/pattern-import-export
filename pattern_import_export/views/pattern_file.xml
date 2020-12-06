@@ -27,8 +27,8 @@
                 <sheet>
                     <group>
                         <group name="main">
-                            <field name="datas" filename="datas_fname" readonly="1" />
-                            <field name="datas_fname" invisible="1" />
+                            <field name="datas" filename="name" readonly="1" />
+                            <field name="name" invisible="1" />
                             <field name="kind" readonly="1" />
                             <field name="pattern_config_id" readonly="1" />
                         </group>
