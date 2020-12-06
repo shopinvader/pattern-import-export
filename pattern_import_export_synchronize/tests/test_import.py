@@ -27,7 +27,7 @@ class TestImport(SavepointCase):
         # note we only test that running an attachment queue create a correct
         # pattern file. The sync feature and import feature are already tested
         vals = {
-            "name": "whatever",
+            "name": "whatever.csv",
             "datas": b"Y292aWQxOQ==",
             "datas_fname": "whatever.csv",
             "pattern_config_id": self.pattern_config.id,

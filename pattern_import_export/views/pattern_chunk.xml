@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+<record id="pattern_chunk_view_tree" model="ir.ui.view">
+    <field name="model">pattern.chunk</field>
+    <field name="arch" type="xml">
+        <tree string="Chunk">
+            <field name="start_idx" />
+            <field name="stop_idx" />
+            <field name="nbr_error" />
+            <field name="nbr_success" />
+            <field name="state" />
+        </tree>
+    </field>
+</record>
+
+<record id="pattern_chunk_view_form" model="ir.ui.view">
+    <field name="model">pattern.chunk</field>
+    <field name="arch" type="xml">
+        <form string="Chunk">
+            <group>
+                <field name="start_idx" />
+                <field name="stop_idx" />
+                <field name="nbr_error" />
+                <field name="nbr_success" />
+                <field name="state" />
+            </group>
+            <field name="result_info" />
+        </form>
+    </field>
+</record>
+
+</odoo>

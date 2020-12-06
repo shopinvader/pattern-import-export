@@ -17,16 +17,12 @@ class ExportPatternWizard(models.Model):
     )
 
     @api.depends("model")
-    @api.multi
     def _compute_no_export_pattern(self):
         for wiz in self:
-            pattern_config = wiz.env["pattern.config"].search_count(
+            wiz.no_export_pattern = not wiz.env["pattern.config"].search_count(
                 [("resource", "=", wiz.model)]
             )
-            if not pattern_config:
-                wiz.no_export_pattern = True
 
-    @api.multi
     def run(self):
         """
         Launch the export

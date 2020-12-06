@@ -10,12 +10,12 @@ import openpyxl
 from odoo.tests.common import SavepointCase
 
 # pylint: disable=odoo-addons-relative-import
-from odoo.addons.pattern_import_export.tests.common import ExportPatternCommon
+from odoo.addons.pattern_import_export.tests.common import PatternCommon
 
 CELL_VALUE_EMPTY = None
 
 
-class TestPatternExportExcel(ExportPatternCommon, SavepointCase):
+class TestPatternExportExcel(PatternCommon, SavepointCase):
     @classmethod
     def _set_up_tab_names(cls):
         for el in ("ignore_one", "countries_1", "countries_2"):

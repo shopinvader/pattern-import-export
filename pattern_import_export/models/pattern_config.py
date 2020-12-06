@@ -1,14 +1,9 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import base64
-import traceback
-from io import StringIO
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
 from odoo.osv import expression
-
-from odoo.addons.queue_job.job import job
 
 from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 
@@ -34,27 +29,22 @@ class PatternConfig(models.Model):
     pattern_last_generation_date = fields.Datetime(
         string="Pattern last generation date", readonly=True
     )
-    export_format = fields.Selection(selection=[])
-    partial_commit = fields.Boolean(
-        default=True, help="Import data even if some lines fail to import"
-    )
-    flush_step = fields.Integer(default=500, help="Define the size of batch import")
+    export_format = fields.Selection(selection=[("json", "Json")])
+    chunk_size = fields.Integer(default=500, help="Define the size of the chunk")
     count_pattern_file_fail = fields.Integer(compute="_compute_pattern_file_counts")
     count_pattern_file_pending = fields.Integer(compute="_compute_pattern_file_counts")
     count_pattern_file_success = fields.Integer(compute="_compute_pattern_file_counts")
     pattern_file_ids = fields.One2many("pattern.file", "pattern_config_id")
-
+    process_multi = fields.Boolean()
     # we redefine previous onchanges since delegation inheritance breaks
     # onchanges on ir.exports
 
-    @api.multi
     @api.onchange("model_id")
     def _inverse_model_id(self):
         """Get the resource from the model."""
         for s in self:
             s.resource = s.model_id.model
 
-    @api.multi
     @api.onchange("resource")
     def _onchange_resource(self):
         """Void fields if model is changed in a view."""
@@ -100,7 +90,6 @@ class PatternConfig(models.Model):
     def nr_of_header_rows(self):
         return 1 + int(self.use_description)
 
-    @api.multi
     def _get_header(self, use_description=False):
         """
         Build header of data-structure.
@@ -113,7 +102,6 @@ class PatternConfig(models.Model):
             header.extend(export_line._get_header(use_description))
         return header
 
-    @api.multi
     def generate_pattern(self):
         """
         Allows you to generate an (empty) file to be used a
@@ -135,7 +123,6 @@ class PatternConfig(models.Model):
             )
         return True
 
-    @api.multi
     def _get_data_to_export(self, records):
         """
         Iterator who built data dict record by record.
@@ -166,7 +153,6 @@ class PatternConfig(models.Model):
             res[header] = val
         return res
 
-    @api.multi
     def _get_data_to_export_by_record(self, record, parser):
         """
         Use the ORM cache to re-use already exported data and
@@ -179,7 +165,6 @@ class PatternConfig(models.Model):
         data = record.jsonify(parser)[0]
         return self.json2pattern_format(data)
 
-    @api.multi
     def _generate_with_records(self, records):
         """
         Export given recordset
@@ -201,7 +186,6 @@ class PatternConfig(models.Model):
                 all_data.append(base64.b64encode(export_data))
         return all_data
 
-    @api.multi
     def _export_with_record(self, records):
         """
         Export given recordset
@@ -238,96 +222,3 @@ class PatternConfig(models.Model):
                 "pattern_config_id": self.id,
             }
         )
-
-    # Import part
-
-    @api.multi
-    def _read_import_data(self, datafile):
-        """
-
-        @param datafile:
-        @return: list of str
-        """
-        target_function = "_read_import_data_{format}".format(
-            format=self.export_format or ""
-        )
-        if not hasattr(self, target_function):
-            raise NotImplementedError()
-        return getattr(self, target_function)(datafile)
-
-    def _process_load_message(self, messages):
-        count_errors = 0
-        count_warnings = 0
-        error_message = _(
-            "\n Several error have been found "
-            "number of errors: {}, number of warnings: {}"
-            "\nDetail:\n {}"
-        )
-        error_details = []
-        for message in messages:
-            error_details.append(
-                _("Line {} : {}, {}").format(
-                    message["rows"]["to"], message["type"], message["message"]
-                )
-            )
-            if message["type"] == "error":
-                count_errors += 1
-            elif message["type"] == "warning":
-                count_warnings += 1
-            else:
-                raise UserError(
-                    _("Message type {} is not supported").format(message["type"])
-                )
-        if count_errors or count_warnings:
-            return error_message.format(
-                count_errors, count_warnings, "\n".join(error_details)
-            )
-        return ""
-
-    def _process_load_result(self, pattern_file_import, res):
-        ids = res["ids"] or []
-        info = _("Number of record imported {}").format(len(ids))
-        info_detail = _("Details: {}".format(ids))
-        if res.get("messages"):
-            info += self._process_load_message(res["messages"])
-        if res.get("messages"):
-            state = "fail"
-        else:
-            state = "success"
-        return info, info_detail, state
-
-    @job(default_channel="root.importwithpattern")
-    def _generate_import_with_pattern_job(self, pattern_file_import):
-        try:
-            attachment_data = base64.b64decode(
-                pattern_file_import.datas.decode("utf-8")
-            )
-            datas = self._read_import_data(attachment_data)
-        except Exception as e:
-            pattern_file_import.state = "fail"
-            pattern_file_import.info = _("Failed (check details)")
-            pattern_file_import.info_detail = e
-        try:
-            res = (
-                self.with_context(
-                    pattern_config={
-                        "model": self.model_id.model,
-                        "flush_step": self.flush_step,
-                        "partial_commit": self.partial_commit,
-                    }
-                )
-                .env[self.model_id.model]
-                .load([], datas)
-            )
-            (
-                pattern_file_import.info,
-                pattern_file_import.info_detail,
-                pattern_file_import.state,
-            ) = self._process_load_result(pattern_file_import, res)
-        except Exception:
-            buff = StringIO()
-            traceback.print_exc(file=buff)
-            pattern_file_import.state = "fail"
-            pattern_file_import.info = "Failed To load (check details)"
-            pattern_file_import.info_detail = buff.getvalue()
-        return

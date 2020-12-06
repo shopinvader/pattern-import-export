@@ -40,4 +40,4 @@ class ImportPatternWizard(models.TransientModel):
             }
         )
         pattern_file_import.enqueue()
-        return {}
+        return pattern_file_import

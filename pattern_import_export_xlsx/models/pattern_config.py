@@ -1,15 +1,13 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 # pylint: disable=missing-manifest-dependency
-import base64
 from io import BytesIO
 
 import openpyxl
 from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo import fields, models
 
 
 class PatternConfig(models.Model):
@@ -20,7 +18,7 @@ class PatternConfig(models.Model):
         [("first", "First"), ("match_name", "Match Name")], default="first"
     )
 
-    @api.multi
+    # TODO we should move this code in pattern.file
     def _create_xlsx_file(self, records):
         self.ensure_one()
         book = openpyxl.Workbook()
@@ -101,7 +99,6 @@ class PatternConfig(models.Model):
             validation.add(range_dst)
             main_sheet.add_data_validation(validation)
 
-    @api.multi
     def _export_with_record_xlsx(self, records):
         """
         Export given recordset
@@ -111,103 +108,3 @@ class PatternConfig(models.Model):
         self.ensure_one()
         excel_file = self._create_xlsx_file(records)
         return excel_file.getvalue()
-
-    # Import part
-
-    def _get_worksheet(self, workbook):
-        name = None
-        if self.tab_to_import == "first":
-            name = workbook.sheetnames[0]
-        elif self.tab_to_import == "match_name":
-            for sheetname in workbook.sheetnames:
-                if sheetname.lower() == self.name.lower():
-                    name = sheetname
-                    break
-            if not name:
-                raise UserError(
-                    _("The file do not contain tab with the name {}").format(self.name)
-                )
-        else:
-            raise UserError(_("Please select a tab to import on the pattern"))
-        return workbook[name]
-
-    def _find_real_last_column(self, worksheet):
-        """
-        The last column and row are actually written in the excel file
-        Openpyxl doesn't automatically verify if it is right or not
-        """
-        tentative_last_column = worksheet.max_column
-        for col in reversed(range(tentative_last_column)):
-            if worksheet.cell(1, col + 1).value:
-                break
-        return col + 1
-
-    def _find_real_last_row(self, worksheet, max_col):
-        """ See _find_real_last_column """
-        tentative_last_row = worksheet.max_row
-        for row in reversed(range(tentative_last_row)):
-            row_has_val = any(
-                worksheet.cell(row + 1, col + 1).value for col in range(max_col)
-            )
-            if row_has_val:
-                break
-        return row + 1
-
-    @api.multi
-    def _read_import_data_xlsx(self, datafile):
-        # note that columns and rows are 1-based
-        workbook = openpyxl.load_workbook(BytesIO(datafile), data_only=True)
-        worksheet = self._get_worksheet(workbook)
-        headers = []
-        real_last_column = self._find_real_last_column(worksheet)
-        for col in range(real_last_column):
-            headers.append(worksheet.cell(self.nr_of_header_rows, col + 1).value)
-        real_last_row = self._find_real_last_row(worksheet, real_last_column)
-        for row in range(self.row_start_records, real_last_row + 1):
-            elm = {}
-            for col in range(real_last_column):
-                elm[headers[col]] = worksheet.cell(row, col + 1).value
-            yield elm
-
-    def _process_load_result_for_xls(self, attachment, res):
-        infile = BytesIO(base64.b64decode(attachment.datas))
-        wb = openpyxl.load_workbook(filename=infile)
-        ws = self._get_worksheet(wb)
-        global_message = []
-        # we clear the error col if exist
-        if ws["A1"].value == _("#Error"):
-            ws.delete_cols(1)
-        ws.insert_cols(1)
-        ws.cell(1, 1, value=_("#Error"))
-        for message in res["messages"]:
-            if "rows" in message:
-                ws.cell(message["rows"]["to"] + 1, 1, value=message["message"].strip())
-            else:
-                global_message.append(message)
-        output = BytesIO()
-        wb.save(output)
-        attachment.datas = base64.b64encode(output.getvalue())
-        ids = res["ids"] or []
-        info = _("Number of record imported {} Number of error/warning {}").format(
-            len(ids), len(res.get("messages", []))
-        )
-        info_detail = _("Record ids: {}" "\nDetails: {}").format(
-            ids,
-            "\n".join(
-                [
-                    "{}: {}".format(message["type"], message["message"])
-                    for message in global_message
-                ]
-            ),
-        )
-        if res.get("messages"):
-            state = "fail"
-        else:
-            state = "success"
-        return info, info_detail, state
-
-    def _process_load_result(self, attachment, res):
-        if self.export_format == "xlsx":
-            return self._process_load_result_for_xls(attachment, res)
-        else:
-            return super()._process_load_result(attachment, res)

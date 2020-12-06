@@ -18,7 +18,7 @@ class TestExport(SavepointCase):
         # Mock the file generation
         pattern_file = self.env["pattern.file"].create(
             {
-                "name": "foo",
+                "name": "foo.csv",
                 "datas_fname": "foo.csv",
                 "state": "success",
                 "pattern_config_id": self.task_export.pattern_config_id.id,
