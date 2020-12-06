@@ -19,10 +19,10 @@ Available addons
 ----------------
 addon | version | summary
 --- | --- | ---
-[pattern_import_export](pattern_import_export/) | 12.0.4.0.1 | Pattern for import or export
-[pattern_import_export_csv](pattern_import_export_csv/) | 12.0.2.0.0 | Pattern for import or export from to CSV files
-[pattern_import_export_synchronize](pattern_import_export_synchronize/) | 12.0.2.0.0 | Attachment Synchronize using patterns
-[pattern_import_export_xlsx](pattern_import_export_xlsx/) | 12.0.3.0.0 | Pattern for import or export from to XLSX files
+[pattern_import_export](pattern_import_export/) | 12.0.5.0.0 | Pattern for import or export
+[pattern_import_export_csv](pattern_import_export_csv/) | 12.0.3.0.0 | Pattern for import or export from to CSV files
+[pattern_import_export_synchronize](pattern_import_export_synchronize/) | 12.0.3.0.0 | Attachment Synchronize using patterns
+[pattern_import_export_xlsx](pattern_import_export_xlsx/) | 12.0.4.0.0 | Pattern for import or export from to XLSX files
 
 [//]: # (end addons)
 
