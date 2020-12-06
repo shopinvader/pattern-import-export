@@ -119,12 +119,12 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.assertEqual(contact_2.function, "Store Manager")
 
     @mute_logger("odoo.sql_db")
-    def test_import_partners_fail(self):
+    def test_import_partners_failed(self):
         """
         * Lookup by email
         * Report error in excel file through wrong email
         """
-        self._load_file("example.partners.fail.csv", self.pattern_config_partner)
+        self._load_file("example.partners.failed.csv", self.pattern_config_partner)
         self.env.clear()
 
         # check that valid item have been imported
@@ -156,7 +156,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
-    def test_import_users_fail_bad_fmt(self):
+    def test_import_users_failed_bad_fmt(self):
         """
         Use working file for default config; change config to mismatch
         """
@@ -167,7 +167,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         pattimpex_new = self.env["pattern.file"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
-        self.assertEqual(pattimpex_new.state, "fail")
+        self.assertEqual(pattimpex_new.state, "failed")
 
     def test_import_users_descriptive_ok(self):
         """
@@ -180,13 +180,13 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")
 
-    def test_import_users_fail_bad_id(self):
+    def test_import_users_failed_bad_id(self):
         pattimpex_start = self.env["pattern.file"].search([])
-        self._load_file("example.users.fail.csv", self.pattern_config_users)
+        self._load_file("example.users.failed.csv", self.pattern_config_users)
         pattimpex_new = self.env["pattern.file"].search(
             [("id", "not in", pattimpex_start.ids)]
         )
-        self.assertEqual(pattimpex_new.state, "fail")
+        self.assertEqual(pattimpex_new.state, "failed")
 
     def test_import_partners_with_parents(self):
         self._load_file("example.partners.parent.csv", self.pattern_config_partner)

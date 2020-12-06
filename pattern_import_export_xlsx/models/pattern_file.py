@@ -87,7 +87,7 @@ class PatternFile(models.Model):
         super().set_import_done()
         for record in self:
             if (
-                record.state == "fail"
+                record.state == "failed"
                 and record.pattern_config_id.export_format == "xlsx"
             ):
                 record.write_error_in_xlsx()

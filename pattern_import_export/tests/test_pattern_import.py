@@ -47,7 +47,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
         # TODO it will be better to retour a better exception
         # but it's not that easy
         chunk = pattern_file.chunk_ids
@@ -67,7 +67,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
         chunk = pattern_file.chunk_ids
         self.assertIn("Invalid database identifier", chunk.result_info)
 
@@ -91,7 +91,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"name": unique_name, "login": unique_login, "id": None}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(pattern_file.state, "done")
         self.assertEqual(len(records), 1)
         self.assertEqual(records.name, unique_name)
 
@@ -101,7 +101,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"name": unique_name, "login": unique_login, ".id": None}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(pattern_file.state, "done")
         self.assertEqual(len(records), 1)
         self.assertEqual(records.name, unique_name)
 
@@ -244,7 +244,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"login#key": self.user3.login, "name": ""}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
         self.assertEqual(pattern_file.nbr_error, 1)
         self.assertIn("res_partner_check_name", pattern_file.chunk_ids.result_info)
 
@@ -260,7 +260,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         ]
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(pattern_file.state, "done")
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.name, unique_name)
         self.assertEquals(self.partner_cat1, partner.category_id)
@@ -284,7 +284,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partners = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(pattern_file.state, "done")
         self.assertEqual(len(partners), 2)
         self.assertEqual(partners[0].name, unique_name)
         self.assertEqual(partners[0].child_ids, partners[1])
@@ -305,7 +305,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partners = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(pattern_file.state, "done")
         self.assertEqual(len(partners), 2)
         self.assertEqual(partners[0].name, unique_name)
         self.assertEqual(partners[1].name, partner2_name)
@@ -319,7 +319,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
         self.assertIn(
             (
                 "Fail to process field 'Country'.\n"
@@ -336,7 +336,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "success")
+        self.assertEqual(pattern_file.state, "done")
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.ref, ref)
         self.assertEqual(partner.name, name)
@@ -392,7 +392,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         records = self.run_pattern_file(pattern_file)
         self.assertEqual(len(records), 2)
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
         self.assertEqual(pattern_file.nbr_error, 16)
         self.assertIn("res_partner_check_name", pattern_file.chunk_ids.result_info)
         self.assertIn("Found more than 10 errors", pattern_file.chunk_ids.result_info)

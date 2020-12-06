@@ -31,9 +31,9 @@ class PatternConfig(models.Model):
     )
     export_format = fields.Selection(selection=[("json", "Json")])
     chunk_size = fields.Integer(default=500, help="Define the size of the chunk")
-    count_pattern_file_fail = fields.Integer(compute="_compute_pattern_file_counts")
+    count_pattern_file_failed = fields.Integer(compute="_compute_pattern_file_counts")
     count_pattern_file_pending = fields.Integer(compute="_compute_pattern_file_counts")
-    count_pattern_file_success = fields.Integer(compute="_compute_pattern_file_counts")
+    count_pattern_file_done = fields.Integer(compute="_compute_pattern_file_counts")
     pattern_file_ids = fields.One2many("pattern.file", "pattern_config_id")
     process_multi = fields.Boolean()
     # we redefine previous onchanges since delegation inheritance breaks
@@ -53,7 +53,7 @@ class PatternConfig(models.Model):
 
     def _compute_pattern_file_counts(self):
         for rec in self:
-            for state in ("fail", "pending", "success"):
+            for state in ("failed", "pending", "done"):
                 field_name = "count_pattern_file_" + state
                 count = len(
                     rec.pattern_file_ids.filtered(lambda r: r.state == state).ids
@@ -73,14 +73,14 @@ class PatternConfig(models.Model):
             "domain": domain,
         }
 
-    def button_open_pattern_file_fail(self):
-        return self._open_pattern_file([("state", "=", "fail")])
+    def button_open_pattern_file_failed(self):
+        return self._open_pattern_file([("state", "=", "failed")])
 
     def button_open_pattern_file_pending(self):
         return self._open_pattern_file([("state", "=", "pending")])
 
-    def button_open_pattern_file_success(self):
-        return self._open_pattern_file([("state", "=", "success")])
+    def button_open_pattern_file_done(self):
+        return self._open_pattern_file([("state", "=", "done")])
 
     @property
     def row_start_records(self):
@@ -218,7 +218,7 @@ class PatternConfig(models.Model):
                 "datas": attachment_datas,
                 "datas_fname": name,
                 "kind": "export",
-                "state": "success",
+                "state": "done",
                 "pattern_config_id": self.id,
             }
         )

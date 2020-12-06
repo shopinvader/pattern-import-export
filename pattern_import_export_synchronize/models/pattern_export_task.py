@@ -77,7 +77,7 @@ class PatternExportTask(models.Model):
 
     def open_generated_file(self):
         return self.pattern_config_id._open_pattern_file(
-            [("state", "=", "success"), ("export_task_id", "=", self.id)]
+            [("state", "=", "done"), ("export_task_id", "=", self.id)]
         )
 
     def _get_records_to_export(self):
