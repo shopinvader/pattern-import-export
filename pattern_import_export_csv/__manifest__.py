@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export CSV",
     "summary": "Pattern for import or export from to CSV files",
-    "version": "12.0.2.0.0",
+    "version": "12.0.3.0.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/pattern-import-export",
