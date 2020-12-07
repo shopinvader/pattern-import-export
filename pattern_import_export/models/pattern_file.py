@@ -165,7 +165,7 @@ class PatternFile(models.Model):
             chunk.with_delay().run()
         return chunk
 
-    @job(default_channel="root.pattern.split_in_chunk")
+    @job(default_channel="root.pattern.import")
     def split_in_chunk(self):
         # purge chunk in case of retring a job
         self.chunk_ids.unlink()

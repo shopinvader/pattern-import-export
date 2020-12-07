@@ -87,7 +87,7 @@ class PatternExportTask(models.Model):
             domain = []
         return self.env[self.pattern_config_id.resource].search(domain)
 
-    @job(default_channel="root.exportwithpattern")
+    @job(default_channel="root.pattern.export")
     def _run(self):
         self.ensure_one()
         records = self._get_records_to_export()

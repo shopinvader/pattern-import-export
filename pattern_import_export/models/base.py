@@ -35,7 +35,7 @@ def is_not_empty(item):
 class Base(models.AbstractModel):
     _inherit = "base"
 
-    @job(default_channel="root.exportwithpattern")
+    @job(default_channel="root.pattern.export")
     def _generate_export_with_pattern_job(self, export_pattern):
         export = export_pattern._export_with_record(self)
         return export
