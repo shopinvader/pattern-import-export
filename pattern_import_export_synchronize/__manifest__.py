@@ -3,7 +3,7 @@
 
 {
     "name": "Attachment Synchronize using patterns",
-    "version": "12.0.3.0.0",
+    "version": "12.0.4.0.0",
     "author": "Akretion,Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/pattern-import-export",
     "maintainers": ["kevinkhao", "sebastienbeau"],
