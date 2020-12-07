@@ -16,6 +16,7 @@
         "web_notify",
     ],
     "data": [
+        "security/pattern_security.xml",
         "security/ir.model.access.csv",
         "wizard/export_with_pattern.xml",
         "wizard/import_pattern_wizard.xml",
