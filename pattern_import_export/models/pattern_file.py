@@ -117,17 +117,6 @@ class PatternFile(models.Model):
         link += "<a href=" + url + ">" + _("Download") + "</a>"
         return link
 
-    def enqueue(self):
-        description = _(
-            "Generate import '{model}' with pattern '{export_name}' using "
-            "format {format}"
-        ).format(
-            model=self.pattern_config_id.model_id.model,
-            export_name=self.pattern_config_id.name,
-            format=self.pattern_config_id.export_format,
-        )
-        self.with_delay(description=description).split_in_chunk()
-
     def _parse_data(self):
         data = base64.b64decode(self.datas.decode("utf-8"))
         target_function = "_parse_data_{format}".format(
@@ -167,6 +156,7 @@ class PatternFile(models.Model):
 
     @job(default_channel="root.pattern.import")
     def split_in_chunk(self):
+        """Split Pattern File into Pattern Chunk"""
         # purge chunk in case of retring a job
         self.chunk_ids.unlink()
         try:

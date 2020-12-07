@@ -20,7 +20,7 @@ class AttachmentQueue(models.Model):
                 "pattern_config_id": self.task_id.pattern_config_id.id,
             }
         )
-        pattern_file_import.enqueue()
+        pattern_file_import.with_delay().split_in_chunk()
         self.state = "done"
         self.state_message = "Pattern file and its job has been created"
 
