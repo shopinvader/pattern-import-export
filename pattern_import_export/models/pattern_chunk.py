@@ -34,6 +34,7 @@ class PatternChunk(models.Model):
 
     @job(default_channel="root.pattern.import")
     def run(self):
+        """Process Import of Pattern Chunk"""
         cr = self.env.cr
         try:
             self.state = "started"
@@ -101,6 +102,7 @@ class PatternChunk(models.Model):
 
     @job(default_channel="root.pattern.import")
     def check_last(self):
+        """Check if all chunk have been processed"""
         if self.is_last_job():
             self.pattern_file_id.set_import_done()
             return "Pattern file is done"
