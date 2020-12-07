@@ -32,7 +32,7 @@ class PatternChunk(models.Model):
         ]
     )
 
-    @job(default_channel="root.pattern.run_chunk")
+    @job(default_channel="root.pattern.import")
     def run(self):
         cr = self.env.cr
         try:
@@ -51,9 +51,9 @@ class PatternChunk(models.Model):
                     if next_chunk:
                         next_chunk.with_delay().run()
                     else:
-                        self.with_delay().check_last()
+                        self.with_delay(priority=5).check_last()
                 else:
-                    self.with_delay().check_last()
+                    self.with_delay(priority=5).check_last()
 
         except Exception as e:
             self.write(
@@ -99,7 +99,7 @@ class PatternChunk(models.Model):
             lambda s: s.state in ("pending", "started")
         )
 
-    @job(default_channel="root.pattern.check_last_chunk")
+    @job(default_channel="root.pattern.import")
     def check_last(self):
         if self.is_last_job():
             self.pattern_file_id.set_import_done()

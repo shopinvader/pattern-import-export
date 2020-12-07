@@ -51,6 +51,11 @@ Configuration
 * Install another module that supports a specific file type
 * Use the Patterns menu to configure your import/export formats
 
+Regarding queue job the too following channel should be configured
+
+* root.pattern.export
+* root.pattern.import
+
 Usage
 =====
 
