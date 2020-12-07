@@ -1,8 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_export_pattern_wizard_user,export.pattern.wizard.user,model_export_pattern_wizard,base.group_user,1,0,0,0
-access_export_pattern_wizard_manager,export.pattern.wizard.manager,model_export_pattern_wizard,base.group_system,1,1,1,1
-access_pattern_file_user,pattern.file.user,model_pattern_file,base.group_user,1,0,0,0
-access_pattern_file_manager,pattern.file.manager,model_pattern_file,base.group_system,1,1,1,1
-access_pattern_chunk_user,pattern.chunk.user,model_pattern_chunk,base.group_user,1,0,0,0
-access_pattern_chunk_manager,pattern.chunk.manager,model_pattern_chunk,base.group_system,1,1,1,1
-access_pattern_config_user,pattern.config.user,model_pattern_config,base.group_user,1,1,1,1
+access_export_pattern_wizard_user,export.pattern.wizard.user,model_export_pattern_wizard,group_pattern_user,1,1,1,1
+access_import_pattern_wizard_user,import.pattern.wizard.user,model_import_pattern_wizard,group_pattern_user,1,1,1,1
+access_pattern_file_user,pattern.file.user,model_pattern_file,group_pattern_user,1,1,1,1
+access_pattern_chunk_user,pattern.chunk.user,model_pattern_chunk,group_pattern_user,1,1,1,1
+access_pattern_config_user,pattern.config.user,model_pattern_config,group_pattern_user,1,0,0,0
+access_pattern_config_manager,pattern.config.manager,model_pattern_config,group_pattern_manager,1,1,1,1

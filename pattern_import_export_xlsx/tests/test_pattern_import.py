@@ -125,11 +125,11 @@ class TestPatternImportExcel(SavepointCase):
     @mute_logger("odoo.sql_db")
     def test_partial_import(self):
         pattern_file = self._load_file(
-            "example.partners.fail.xlsx", self.pattern_config_partner
+            "example.partners.failed.xlsx", self.pattern_config_partner
         )
         self.env.clear()
 
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
 
         # Check that the data without error are updated
         partner = self.env.ref("base.res_partner_1")
@@ -163,7 +163,7 @@ class TestPatternImportExcel(SavepointCase):
         )
         self.env.clear()
 
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
         # Check that the data without error are updated
         partner = self.env.ref("base.res_partner_1")
         self.assertEqual(partner.name, "Wood Corner Updated")
@@ -208,7 +208,7 @@ class TestPatternImportExcel(SavepointCase):
         )
         self.env.clear()
 
-        self.assertEqual(pattern_file.state, "fail")
+        self.assertEqual(pattern_file.state, "failed")
         # Check that the data without error are updated
         partner = self.env.ref("base.res_partner_1")
         self.assertEqual(partner.name, "Wood Corner Updated")
@@ -259,12 +259,12 @@ class TestPatternImportExcel(SavepointCase):
 
     # TODO FIXME
     @mute_logger("odoo.sql_db")
-    def disable_test_import_users_fail(self):
+    def disable_test_import_users_failed(self):
         """
         * Lookup by external ID
         * Report error in excel file through external id not found
         """
-        self._load_file("example.users.fail.xlsx", self.pattern_config_users)
+        self._load_file("example.users.failed.xlsx", self.pattern_config_users)
         attachment = self.env["ir.attachment"].search([], order="id desc", limit=1)
         infile = BytesIO(base64.b64decode(attachment.datas))
         wb = openpyxl.load_workbook(filename=infile)

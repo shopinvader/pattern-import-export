@@ -9,9 +9,9 @@
             </xpath>
             <xpath expr="//field[@name='resource']" position="after">
                 <field name="export_format" />
-                <field name="count_pattern_file_fail" />
+                <field name="count_pattern_file_failed" />
                 <field name="count_pattern_file_pending" />
-                <field name="count_pattern_file_success" />
+                <field name="count_pattern_file_done" />
             </xpath>
         </field>
     </record>
@@ -38,7 +38,7 @@
                 </header>
                 <div class="oe_button_box" name="button_box">
                     <button
-                        name="button_open_pattern_file_fail"
+                        name="button_open_pattern_file_failed"
                         type="object"
                         class="oe_stat_button"
                         icon="fa-thumbs-o-down"
@@ -46,7 +46,7 @@
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
                                 <field
-                                    name="count_pattern_file_fail"
+                                    name="count_pattern_file_failed"
                                     widget="statinfo"
                                     nolabel="1"
                                 />
@@ -72,7 +72,7 @@
                         </div>
                     </button>
                     <button
-                        name="button_open_pattern_file_success"
+                        name="button_open_pattern_file_done"
                         type="object"
                         class="oe_stat_button"
                         icon="fa-thumbs-o-up"
@@ -80,7 +80,7 @@
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value">
                                 <field
-                                    name="count_pattern_file_success"
+                                    name="count_pattern_file_done"
                                     widget="statinfo"
                                     nolabel="1"
                                 />

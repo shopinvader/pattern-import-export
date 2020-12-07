@@ -17,7 +17,7 @@ class PatternFile(models.Model):
 
     attachment_id = fields.Many2one("ir.attachment", required=True, ondelete="cascade")
     state = fields.Selection(
-        [("pending", "Pending"), ("fail", "Fail"), ("success", "Success")],
+        [("pending", "Pending"), ("failed", "Failed"), ("done", "Done")],
         default="pending",
     )
     info = fields.Char()
@@ -60,7 +60,7 @@ class PatternFile(models.Model):
     def _notify_user(self):
         import_or_export = _("Import") if self.kind == "import" else _("Export")
         details = self._helper_build_details()
-        if self.state == "fail":
+        if self.state == "failed":
             self.env.user.notify_danger(
                 message=_(
                     "{} job has failed. \nFor more details: {}".format(
@@ -185,16 +185,16 @@ class PatternFile(models.Model):
             if items:
                 self._create_chunk(start_idx, idx, items)
         except Exception as e:
-            self.state = "fail"
+            self.state = "failed"
             self.info = _("Failed to create the chunk: %s") % e
         return True
 
     def set_import_done(self):
         for record in self:
             if record.nbr_error:
-                record.state = "fail"
+                record.state = "failed"
             else:
-                record.state = "success"
+                record.state = "done"
             record.date_done = fields.Datetime.now()
 
     def refresh(self):
