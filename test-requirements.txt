@@ -1,0 +1,4 @@
+odoo14-addon-base_export_manager @ git+https://github.com/OCA/server-ux@refs/pull/227/head#subdirectory=setup/base_export_manager
+odoo14-addon-base_jsonify @ git+https://github.com/OCA/server-tools@refs/pull/1911/head#subdirectory=setup/base_jsonify
+odoo14-addon-web_notify @ git+https://github.com/OCA/web@refs/pull/1724/head#subdirectory=setup/web_notify
+odoo14-addon-base_sparse_field_list_support @ git+https://github.com/OCA/server-tools@refs/pull/1950/head#subdirectory=setup/base_sparse_field_list_support
