@@ -35,6 +35,8 @@
                         <group>
                             <field name="create_date" readonly="1" />
                             <field name="date_done" readonly="1" />
+                            <field name="nbr_error" />
+                            <field name="nbr_success" />
                         </group>
                     </group>
                     <div>
