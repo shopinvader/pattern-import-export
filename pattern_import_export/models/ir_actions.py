@@ -26,5 +26,5 @@ class IrActions(models.Model):
         if self.env.user.has_group("pattern_import_export.group_pattern_user"):
             for xml_id in xml_ids:
                 if xml_id not in [act.get("xml_id") for act in res["action"]]:
-                    res["action"].append(self.env.ref(xml_id).read()[0])
+                    res["action"].append(self.env.ref(xml_id).sudo().read()[0])
         return res
