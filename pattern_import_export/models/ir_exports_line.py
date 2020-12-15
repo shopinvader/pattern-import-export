@@ -94,9 +94,10 @@ class IrExportsLine(models.Model):
                     required.append("number_occurence")
                 if ftype in "one2many":
                     required.append("sub_pattern_config_id")
-                if record.add_select_tab:
-                    required.append("tab_filter_id")
                 record.required_fields = ",".join(required)
+                if record.add_select_tab:
+                    # this field is optionnal
+                    required.append("tab_filter_id")
                 hidden_fields = list(set(hidden_fields) - set(required))
                 record.hidden_fields = ",".join(hidden_fields)
             else:
