@@ -21,7 +21,7 @@ class ImportPatternWizard(models.TransientModel):
         help="Pattern used to import this file (it should be the same "
         "used for the export)",
     )
-    import_file = fields.Binary(String="File to import", required=True)
+    import_file = fields.Binary(string="File to import", required=True)
     filename = fields.Char()
 
     def action_launch_import(self):
