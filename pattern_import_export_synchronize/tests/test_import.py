@@ -2,34 +2,26 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 
-from odoo.tests import SavepointCase
+from odoo.addons.attachment_synchronize.tests.common import SyncCommon
 
 
-class TestImport(SavepointCase):
+class TestImport(SyncCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # Running the attachment_queue is done in a new cursor
-        cls.registry.enter_test_mode(cls.env.cr)
         cls.task_import = cls.env.ref(
             "pattern_import_export_synchronize.import_from_filestore"
         )
-        cls.pattern_config = cls.env.ref(
-            "pattern_import_export.demo_pattern_config_m2m"
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.registry.leave_test_mode()
-        super().tearDownClass()
+        cls.pattern_config = cls.env.ref("pattern_import_export.demo_pattern_config")
 
     def test_run_attachment_queue(self):
+        """Test that running an attachment queue creates a correct
+        pattern file"""
         # note we only test that running an attachment queue create a correct
         # pattern file. The sync feature and import feature are already tested
         vals = {
             "name": "whatever.csv",
             "datas": b"Y292aWQxOQ==",
-            "pattern_config_id": self.pattern_config.id,
             "file_type": "import_pattern",
             "task_id": self.task_import.id,
         }

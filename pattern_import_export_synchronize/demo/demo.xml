@@ -1,49 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <record id="import_from_filestore" model="attachment.synchronize.task">
-        <field name="name">Import from filestore with pattern</field>
+        <field name="name">Import CSVs: Partner list</field>
         <field name="backend_id" ref="storage_backend.default_storage_backend" />
         <field name="method_type">import</field>
+        <field name="file_type">import_pattern</field>
         <field name="filepath">test_import_pattimpex</field>
-        <field name="pattern">*.xlsx</field>
+        <field name="pattern">*.csv</field>
         <field
             name="pattern_config_id"
-            ref="pattern_import_export.demo_pattern_config_m2m"
+            ref="pattern_import_export.demo_pattern_config"
         />
     </record>
 
     <record id="export_to_filestore" model="attachment.synchronize.task">
-        <field name="name">Export to filestore with pattern</field>
+        <field name="name">Run exports to filestore: Users list - M2M</field>
         <field name="backend_id" ref="storage_backend.default_storage_backend" />
         <field name="method_type">export</field>
         <field name="filepath">test_export_pattimpex</field>
     </record>
 
     <record id="pattern_export_task" model="pattern.export.task">
-        <field name="name">Extract Record</field>
+        <field name="name">Run exports to files: Users list - M2M</field>
         <field name="sync_task_id" ref="export_to_filestore" />
         <field
             name="pattern_config_id"
             ref="pattern_import_export.demo_pattern_config_m2m"
         />
-    </record>
-
-    <record
-        model="ir.cron"
-        id="cronjob_run_attachment_synchronize_task_import_pattimpex"
-    >
-        <field name='name'>Run attachment tasks import using patterns</field>
-        <field name='interval_number'>30</field>
-        <field name='interval_type'>minutes</field>
-        <field name="numbercall">-1</field>
-        <field name="active">False</field>
-        <field name="doall" eval="False" />
-        <field name="model_id" ref="model_attachment_synchronize_task" />
-        <field name="state">code</field>
-        <field name="code">
-model.run_task_import_using_patterns_scheduler_step_1()
-model.run_task_import_using_patterns_scheduler_step_2()
-        </field>
     </record>
 
     <record
@@ -56,12 +39,13 @@ model.run_task_import_using_patterns_scheduler_step_2()
         <field name="numbercall">-1</field>
         <field name="active">False</field>
         <field name="doall" eval="False" />
-        <field name="model_id" ref="model_attachment_synchronize_task" />
+        <field name="model_id" ref="model_pattern_export_task" />
         <field name="state">code</field>
         <field name="code">
-sync_export_task = env.ref("attachment_synchronize_pattimpex.export_to_filestore_pattimpex")
-sync_export_task.service_trigger_exports()
+            env["pattern.export.task"].run_pattern_export_scheduler()
         </field>
     </record>
+
+    <!-- Note: Import cronjob is already implemented in attachment_synchronize module -->
 
 </odoo>

@@ -3,20 +3,21 @@
 
 {
     "name": "Attachment Synchronize using patterns",
-    "version": "12.0.4.2.0",
+    "version": "14.0.1.0.0",
     "author": "Akretion",
     "website": "https://github.com/shopinvader/pattern-import-export",
     "maintainers": ["kevinkhao", "sebastienbeau"],
     "license": "AGPL-3",
     "category": "Generic Modules",
-    "depends": ["attachment_synchronize", "pattern_import_export"],
+    "depends": ["attachment_synchronize", "pattern_import_export_csv", "queue_job"],
     "data": [
         "views/pattern_config_view.xml",
         "security/ir.model.access.csv",
         "views/pattern_export_task_view.xml",
         "views/pattern_file_view.xml",
+        "views/attachment_synchronize_task_view.xml",
     ],
     "external_dependencies": {"python": ["mock"]},
     "demo": ["demo/demo.xml"],
-    "installable": False,
+    "installable": True,
 }
