@@ -42,7 +42,12 @@
                     <div>
                         <label for="progress" />
                         <field name="progress" readonly="1" widget="progressbar" />
-                        <button name="refresh" class="fa fa-refresh" type="object" />
+                        <button
+                            name="refresh"
+                            class="fa fa-refresh"
+                            title="Refresh"
+                            type="object"
+                        />
                     </div>
                     <notebook>
                         <page name="chunk" string="Chunk">
