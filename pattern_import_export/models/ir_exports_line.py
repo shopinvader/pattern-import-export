@@ -277,7 +277,11 @@ class IrExportsLine(models.Model):
         parser = OrderedDict()
         for rec in self:
             names = rec.name.split("/")
-            update_dict(parser, names)
+            options = {
+                "resolver": rec.resolver_id,
+                "function": rec.instance_method_name,
+            }
+            update_dict(parser, names, options)
             if rec.sub_pattern_config_id:
                 last_item = parser
                 last_field = names[0]
