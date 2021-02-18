@@ -108,6 +108,9 @@ class Base(models.AbstractModel):
         if isinstance(value, dict):
             domain = []
             for key, val in value.items():
+                if key == ".id":
+                    # .id is internal db id, so we rename it
+                    key = "id"
                 domain.append(("{}.{}".format(field_name, key), "=", val))
         else:
             domain = [(field_name, "=", value)]
