@@ -23,12 +23,17 @@ class PatternFile(models.Model):
             name = workbook.sheetnames[0]
         elif tab_to_import == "match_name":
             for sheetname in workbook.sheetnames:
-                if sheetname.lower() == self.pattern_config_id.name.lower():
+                if (
+                    sheetname.lower().strip()
+                    == self.pattern_config_id.name.lower().strip()
+                ):
                     name = sheetname
                     break
             if not name:
                 raise UserError(
-                    _("The file do not contain tab with the name {}").format(self.name)
+                    _("The file do not contain tab with the name {}").format(
+                        self.pattern_config_id.name
+                    )
                 )
         else:
             raise UserError(_("Please select a tab to import on the pattern"))

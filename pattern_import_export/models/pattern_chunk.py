@@ -65,11 +65,16 @@ class PatternChunk(models.Model):
         return "OK"
 
     def _prepare_chunk_result(self, res):
-        if res.get("ids"):
-            nbr_success = len(res["ids"])
-        else:
-            nbr_success = 0
-        nbr_error = self.nbr_item - nbr_success
+        # TODO rework this part and add specific test case
+        nbr_error = len(res["messages"])
+        nbr_success = max(self.nbr_item - nbr_error, 0)
+
+        # case where error are not return and record are not imported
+        nbr_imported = len(res.get("ids") or [])
+        if nbr_success > nbr_imported:
+            nbr_success = nbr_imported
+            nbr_error = self.nbr_item - nbr_imported
+
         if nbr_error:
             state = "failed"
         else:
