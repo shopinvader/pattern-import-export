@@ -4,8 +4,6 @@
 
 from odoo import fields, models
 
-from odoo.addons.queue_job.job import job
-
 
 class PatternChunk(models.Model):
     _name = "pattern.chunk"
@@ -32,7 +30,6 @@ class PatternChunk(models.Model):
         ]
     )
 
-    @job(default_channel="root.pattern.import")
     def run(self):
         """Process Import of Pattern Chunk"""
         cr = self.env.cr
@@ -68,16 +65,23 @@ class PatternChunk(models.Model):
         return "OK"
 
     def _prepare_chunk_result(self, res):
-        if res.get("ids"):
-            nbr_success = len(res["ids"])
-        else:
-            nbr_success = 0
-        nbr_error = self.nbr_item - nbr_success
+        # TODO rework this part and add specific test case
+        nbr_error = len(res["messages"])
+        nbr_success = max(self.nbr_item - nbr_error, 0)
+
+        # case where error are not return and record are not imported
+        nbr_imported = len(res.get("ids") or [])
+        if nbr_success > nbr_imported:
+            nbr_success = nbr_imported
+            nbr_error = self.nbr_item - nbr_imported
+
         if nbr_error:
             state = "failed"
         else:
             state = "done"
-        result = self.env["ir.qweb"].render("pattern_import_export.format_message", res)
+        result = self.env["ir.qweb"]._render(
+            "pattern_import_export.format_message", res
+        )
         return {
             "record_ids": res.get("ids"),
             "messages": res.get("messages"),
@@ -92,7 +96,8 @@ class PatternChunk(models.Model):
             [
                 ("pattern_file_id", "=", self.pattern_file_id.id),
                 ("state", "=", "pending"),
-            ]
+            ],
+            limit=1,
         )
 
     def is_last_job(self):
@@ -100,7 +105,6 @@ class PatternChunk(models.Model):
             lambda s: s.state in ("pending", "started")
         )
 
-    @job(default_channel="root.pattern.import")
     def check_last(self):
         """Check if all chunk have been processed"""
         if self.is_last_job():

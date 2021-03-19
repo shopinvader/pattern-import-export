@@ -1,0 +1,30 @@
+<odoo noupdate="1">
+    <!-- TODO the method generate_export_with_pattern_job
+        is available on all models
+        queue job required a specific model
+    <record
+        id="job_function_base_generate_export_with_pattern_job"
+        model="queue.job.function"
+    >
+        <field name="model_id" ref="model_base" />
+        <field name="method">generate_export_with_pattern_job</field>
+        <field name="channel_id" ref="channel_search_engine_recompute" />
+    </record>
+    -->
+    <record id="job_function_pattern_chunk_run" model="queue.job.function">
+        <field name="model_id" ref="model_pattern_chunk" />
+        <field name="method">run</field>
+        <field name="channel_id" ref="channel_pattern_import" />
+    </record>
+    <record id="job_function_pattern_chunk_check_last" model="queue.job.function">
+        <field name="model_id" ref="model_pattern_chunk" />
+        <field name="method">check_last</field>
+        <field name="channel_id" ref="channel_pattern_import" />
+    </record>
+    <record id="job_function_pattern_file_split_in_chunk" model="queue.job.function">
+        <field name="model_id" ref="model_pattern_file" />
+        <field name="method">split_in_chunk</field>
+        <field name="channel_id" ref="channel_pattern_import" />
+    </record>
+
+</odoo>

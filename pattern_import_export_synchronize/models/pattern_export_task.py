@@ -67,7 +67,6 @@ class PatternExportTask(models.Model):
             context["search_default_{}".format(state)] = 1
         return {
             "name": _("Export Job"),
-            "view_type": "form",
             "view_mode": "tree,form",
             "res_model": "queue.job",
             "type": "ir.actions.act_window",

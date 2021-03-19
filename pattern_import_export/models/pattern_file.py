@@ -7,8 +7,6 @@ import urllib.parse
 
 from odoo import _, api, fields, models
 
-from odoo.addons.queue_job.job import job
-
 
 class PatternFile(models.Model):
     _name = "pattern.file"
@@ -92,7 +90,6 @@ class PatternFile(models.Model):
             "action=pattern_import_export.action_pattern_file_imports",
             "id=" + str(self.id),
             "model=pattern.file",
-            "view_type=form",
             "menu_id="
             + str(self.env.ref("pattern_import_export.import_export_menu_root").id),
         ]
@@ -154,7 +151,6 @@ class PatternFile(models.Model):
             chunk.with_delay().run()
         return chunk
 
-    @job(default_channel="root.pattern.import")
     def split_in_chunk(self):
         """Split Pattern File into Pattern Chunk"""
         # purge chunk in case of retring a job

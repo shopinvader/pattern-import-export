@@ -101,7 +101,6 @@ class PatternCommon(JobMixin):
         return self.env["pattern.file"].create(
             {
                 "datas": b64encode(bytes(json.dumps(data), "utf-8")),
-                "datas_fname": "foo.json",
                 "name": "foo.json",
                 "kind": kind,
                 "pattern_config_id": config.id,

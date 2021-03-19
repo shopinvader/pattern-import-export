@@ -89,9 +89,9 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         id2 = self.env.ref("base.res_partner_2").id
         id3 = self.env.ref("base.res_partner_3").id
         expected_content = [
-            [str(id1), "Wood Corner", "1164 Cambridge Drive", "US", ""],
-            [str(id2), "Deco Addict", "325 Elsie Drive", "US", ""],
-            [str(id3), "Gemini Furniture", "1128 Lunetta Street", "US", ""],
+            [str(id1), "Wood Corner", "1839 Arbor Way", "US", ""],
+            [str(id2), "Deco Addict", "77 Santa Barbara Rd", "US", ""],
+            [str(id3), "Gemini Furniture", "317 Fairchild Dr", "US", ""],
         ]
         self.assertEqual(csv_file_lines[1:4], expected_content)
 

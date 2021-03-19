@@ -23,12 +23,17 @@ class PatternFile(models.Model):
             name = workbook.sheetnames[0]
         elif tab_to_import == "match_name":
             for sheetname in workbook.sheetnames:
-                if sheetname.lower() == self.pattern_config_id.name.lower():
+                if (
+                    sheetname.lower().strip()
+                    == self.pattern_config_id.name.lower().strip()
+                ):
                     name = sheetname
                     break
             if not name:
                 raise UserError(
-                    _("The file do not contain tab with the name {}").format(self.name)
+                    _("The file do not contain tab with the name {}").format(
+                        self.pattern_config_id.name
+                    )
                 )
         else:
             raise UserError(_("Please select a tab to import on the pattern"))
@@ -46,9 +51,12 @@ class PatternFile(models.Model):
                 vals = [x.value for x in row]
                 if any(vals):
                     count_empty = 0
+                    item = dict(zip(headers, vals))
+                    # we remove column without header
+                    item.pop(None, "")
                     # the position return is the row number
                     # libreoffice/excel/human start from 1
-                    yield idx + 1, dict(zip(headers, vals))
+                    yield idx + 1, item
                 else:
                     count_empty += 1
             if count_empty > STOP_AFTER_NBR_EMPTY:

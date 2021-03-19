@@ -19,7 +19,6 @@ class TestExport(SavepointCase):
         pattern_file = self.env["pattern.file"].create(
             {
                 "name": "foo.csv",
-                "datas_fname": "foo.csv",
                 "state": "done",
                 "pattern_config_id": self.task_export.pattern_config_id.id,
                 "kind": "export",

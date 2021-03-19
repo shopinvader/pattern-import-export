@@ -342,6 +342,19 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(partner.name, name)
         self.assertEqual(partner.country_id.code, "FR")
 
+    def test_import_m2o_db_id_key(self):
+        name = str(uuid4())
+        ref = str(uuid4())
+        country = self.env.ref("base.fr")
+        data = [{"name": name, "country_id#key|.id": country.id, "ref#key": ref}]
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        partner = self.run_pattern_file(pattern_file)
+
+        self.assertEqual(pattern_file.state, "done")
+        self.assertEqual(len(partner), 1)
+        self.assertEqual(partner.name, name)
+        self.assertEqual(partner.country_id.code, "FR")
+
     def test_import_m2o_parents(self):
         """
         Test import works when records reference a parent (=m2o with same model)
@@ -394,5 +407,5 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(len(records), 2)
         self.assertEqual(pattern_file.state, "failed")
         self.assertEqual(pattern_file.nbr_error, 16)
-        self.assertIn("res_partner_check_name", pattern_file.chunk_ids.result_info)
+        self.assertIn("Contacts require a name", pattern_file.chunk_ids.result_info)
         self.assertIn("Found more than 10 errors", pattern_file.chunk_ids.result_info)

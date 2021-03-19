@@ -29,7 +29,6 @@ class TestImport(SavepointCase):
         vals = {
             "name": "whatever.csv",
             "datas": b"Y292aWQxOQ==",
-            "datas_fname": "whatever.csv",
             "pattern_config_id": self.pattern_config.id,
             "file_type": "import_pattern",
             "task_id": self.task_import.id,
