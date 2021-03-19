@@ -48,6 +48,9 @@ class IrFieldsConverter(models.AbstractModel):
 
     @api.model
     def db_id_for(self, model, field, subfield, value):
+        # We alway search on all record even inactive one as we may want to use
+        # import feature to active record
+        self = self.with_context(active_test=False)
         if subfield in [".id", "id", None]:
             return super().db_id_for(model, field, subfield, value)
         else:
