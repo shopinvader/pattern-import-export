@@ -5,7 +5,7 @@
     "summary": "Pattern for import or export from to XLSX files",
     "version": "12.0.5.0.0",
     "category": "Extra Tools",
-    "author": "Akretion, Odoo Community Association (OCA)",
+    "author": "Akretion",
     "website": "https://github.com/OCA/pattern-import-export",
     "license": "AGPL-3",
     "depends": ["pattern_import_export"],
