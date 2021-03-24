@@ -1,0 +1,55 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* pattern_import_export_csv
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 12.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: pattern_import_export_csv
+#: model:ir.model,name:pattern_import_export_csv.model_pattern_file
+msgid "Attachment with pattern file metadata"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: selection:pattern.config,export_format:0
+msgid "CSV"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__csv_quote_character
+msgid "Csv Quote Character"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__csv_value_delimiter
+msgid "Csv Value Delimiter"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: selection:pattern.config,export_format:0
+msgid "Excel"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__export_format
+msgid "Export Format"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: selection:pattern.config,export_format:0
+msgid "Json"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model,name:pattern_import_export_csv.model_pattern_config
+msgid "Pattern Config"
+msgstr ""
+
