@@ -6,7 +6,7 @@
     "version": "12.0.5.0.0",
     "category": "Extra Tools",
     "author": "Akretion, Odoo Community Association (OCA)",
-    "website": "https://github.com/OCA/pattern-import-export",
+    "website": "https://github.com/shopinvader/pattern-import-export",
     "license": "AGPL-3",
     "depends": ["pattern_import_export"],
     "external_dependencies": {"python": ["openpyxl"]},
