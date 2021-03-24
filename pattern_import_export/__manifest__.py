@@ -5,8 +5,8 @@
     "summary": "Pattern for import or export",
     "version": "12.0.6.2.0",
     "category": "Extra Tools",
-    "author": "Akretion, Odoo Community Association (OCA)",
-    "website": "https://github.com/OCA/pattern-import-export",
+    "author": "Akretion",
+    "website": "https://github.com/shopinvader/pattern-import-export",
     "license": "AGPL-3",
     "depends": [
         "base_jsonify",
