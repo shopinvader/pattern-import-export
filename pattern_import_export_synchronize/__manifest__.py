@@ -4,7 +4,7 @@
 {
     "name": "Attachment Synchronize using patterns",
     "version": "12.0.4.2.0",
-    "author": "Akretion,Odoo Community Association (OCA)",
+    "author": "Akretion",
     "website": "https://github.com/OCA/pattern-import-export",
     "maintainers": ["kevinkhao", "sebastienbeau"],
     "license": "AGPL-3",
