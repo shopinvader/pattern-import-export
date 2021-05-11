@@ -6,7 +6,7 @@
     "version": "14.0.1.0.0",
     "category": "Extra Tools",
     "author": "Akretion",
-    "website": "https://github.com/OCA/pattern-import-export",
+    "website": "https://github.com/shopinvader/pattern-import-export",
     "license": "AGPL-3",
     "depends": [
         "base_jsonify",
