@@ -1,0 +1,884 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* pattern_import_export
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 14.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__number_occurence
+msgid "# Occurence"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.view_export_with_pattern_wizard
+msgid ""
+"<span attrs=\"{'invisible': [('no_export_pattern', '=', False)]}\" colspan=\"2\">\n"
+"                        There is no export pattern for this object !<br/>\n"
+"                        Please go to the menu .... and create one.\n"
+"                    </span>"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "<span class=\"o_stat_text\">Fail</span>"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "<span class=\"o_stat_text\">Pending</span>"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "<span class=\"o_stat_text\">Success</span>"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.import_pattern_wizard_form_view
+msgid ""
+"<strong>Please note that update on relational fields (M2M/O2M) will delete "
+"and replace existing values</strong>"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__access_token
+msgid "Access Token"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_ir_actions_actions
+msgid "Actions"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__add_select_tab
+msgid "Add Select Tab"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_ir_attachment
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__attachment_id
+msgid "Attachment"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__local_url
+msgid "Attachment URL"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_pattern_file
+msgid "Attachment with pattern file metadata"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_base
+msgid "Base"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.import_pattern_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.view_export_with_pattern_wizard
+msgid "Cancel"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__checksum
+msgid "Checksum/SHA1"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.import_pattern_wizard_form_view
+msgid "Choose a file to import..."
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__chunk_ids
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_chunk_view_form
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_chunk_view_tree
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_file_view_form
+msgid "Chunk"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__chunk_size
+msgid "Chunk Size"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__company_id
+msgid "Company"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__count_pattern_file_done
+msgid "Count Pattern File Done"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__count_pattern_file_failed
+msgid "Count Pattern File Failed"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__count_pattern_file_pending
+msgid "Count Pattern File Pending"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__create_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__create_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__create_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__create_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__create_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__create_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__create_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__create_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__global_resolver_id
+msgid "Custom global resolver"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__data
+msgid "Data"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__db_datas
+msgid "Database Data"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_config__model_id
+msgid "Database model to export."
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__date_done
+msgid "Date Done"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_config__chunk_size
+msgid "Define the size of the chunk"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__description
+msgid "Description"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_ir_exports_line__is_key
+msgid ""
+"Determine if this field is considered as key to update existing record.\n"
+"Please note that the field should have a unique constraint."
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_actions_actions__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_attachment__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_fields_converter__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__display_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_chunk__state__done
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_file__state__done
+msgid "Done"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_file.py:0
+#, python-format
+msgid "Download"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.filters,name:pattern_import_export.demo_filter_countries_2
+msgid "European countries"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_file.py:0
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__export_id
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.view_export_with_pattern_wizard
+#, python-format
+msgid "Export"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__export_format
+msgid "Export Format"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__export_fields
+msgid "Export ID"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__name
+msgid "Export Name"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__pattern_config_id
+msgid "Export Pattern"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.actions.act_window,name:pattern_import_export.action_export_with_pattern
+msgid "Export With Pattern"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__pattern_config_id
+msgid "Export pattern"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_export_pattern_wizard
+msgid "Export pattern wizard"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_ir_exports
+msgid "Exports"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_ir_exports_line
+msgid "Exports Line"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/ir_fields.py:0
+#, python-format
+msgid ""
+"Fail to process field '%%(field)s'.\n"
+"No value found for model '%s' with the field '%s' and the value '%s'"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/ir_fields.py:0
+#, python-format
+msgid ""
+"Fail to process field '%%(field)s'.\n"
+"Too many records found for '%s' with the field '%s' and the value '%s'"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_chunk__state__failed
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_file__state__failed
+msgid "Failed"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_file.py:0
+#, python-format
+msgid "Failed to create the chunk: %s"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_ir_fields_converter
+msgid "Fields Converter"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__datas
+msgid "File Content (base64)"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__raw
+msgid "File Content (raw)"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__file_size
+msgid "File Size"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__import_file
+msgid "File to import"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__filename
+msgid "Filename"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "Generate Pattern"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/wizard/export_with_pattern.py:0
+#, python-format
+msgid ""
+"Generate export '{model}' with export pattern '{export_name}' using format "
+"{format}"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__hidden_fields
+msgid "Hidden Fields"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_actions_actions__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_attachment__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_fields_converter__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__id
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__id
+msgid "ID"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_config__global_resolver_id
+msgid "If set, will apply the global resolver to the result"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_config__language_agnostic
+msgid ""
+"If set, will set the lang to False when exporting lines without lang, "
+"otherwise it uses the lang in the given context to export these fields"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.filters,name:pattern_import_export.demo_filter_companies
+msgid "Ignore one"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__image_height
+msgid "Image Height"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__image_src
+msgid "Image Src"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__image_width
+msgid "Image Width"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_file.py:0
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.import_pattern_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+#, python-format
+msgid "Import"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__pattern_config_id
+msgid "Import pattern"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_import_pattern_wizard
+msgid "Import pattern wizard"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.actions.act_window,name:pattern_import_export.import_pattern_wizard_action
+msgid "Import with pattern"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.ui.menu,name:pattern_import_export.import_export_menu_root
+msgid "Import/Export"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.actions.act_window,name:pattern_import_export.act_open_pattern_config_view
+msgid "Import/Export Patterns"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__index_content
+msgid "Indexed Content"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__info
+msgid "Info"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/base.py:0
+#, python-format
+msgid "Invalid database identifier '%s'"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__is_key
+msgid "Is Key"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__public
+msgid "Is public document"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_config__export_format__json
+msgid "Json"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__kind
+msgid "Kind"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__language_agnostic
+msgid "Language Agnostic"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__last_field_id
+msgid "Last Field"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_actions_actions____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_attachment____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_fields_converter____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config____last_update
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__write_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__write_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__write_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__write_uid
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__write_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__write_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__write_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__write_date
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__level
+msgid "Level"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.format_message
+msgid "Message"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__messages
+msgid "Messages"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__mimetype
+msgid "Mime Type"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__related_model_name
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__model_id
+msgid "Model"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__model
+msgid "Model to export"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_config__resource
+msgid "Model's technical name."
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__name
+msgid "Name"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__nbr_error
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__nbr_error
+msgid "Nbr Error"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__nbr_item
+msgid "Nbr Item"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__nbr_success
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__nbr_success
+msgid "Nbr Success"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_export_pattern_wizard__no_export_pattern
+msgid "No Export Pattern"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_ir_exports_line__number_occurence
+msgid ""
+"Number of column to create to display this Many2many or One2many field.\n"
+"Value should be >= 1"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/ir_exports_line.py:0
+#, python-format
+msgid ""
+"Number of occurence for Many2many or One2many fields should be greater or equals to 1.\n"
+"The line {} have an invalid number of occurence:\n"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__original_id
+msgid "Original (unoptimized, unresized) attachment"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_pattern_chunk
+msgid "Pattern Chunk"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model,name:pattern_import_export.model_pattern_config
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports__pattern_config_id
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__pattern_config_id
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__pattern_config_id
+msgid "Pattern Config"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_attachment__pattern_file_ids
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__pattern_file_id
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__pattern_file_ids
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__pattern_file_ids
+msgid "Pattern File"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__pattern_file_name
+msgid "Pattern File Name"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.module.category,name:pattern_import_export.module_category_pattern_import_export
+msgid "Pattern Import Export"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:res.groups,name:pattern_import_export.group_pattern_manager
+msgid "Pattern Manager"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:res.groups,name:pattern_import_export.group_pattern_user
+msgid "Pattern User"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_tree_view
+msgid "Pattern config"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__pattern_file
+msgid "Pattern file"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_config.py:0
+#, python-format
+msgid "Pattern files"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.actions.act_window,name:pattern_import_export.action_pattern_file_exports
+#: model:ir.ui.menu,name:pattern_import_export.pattern_file_export_menu
+msgid "Pattern files (exports)"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.actions.act_window,name:pattern_import_export.action_pattern_file_imports
+#: model:ir.ui.menu,name:pattern_import_export.pattern_file_imports_menu
+msgid "Pattern files (imports)"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__pattern_last_generation_date
+msgid "Pattern last generation date"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_import_pattern_wizard__pattern_config_id
+msgid ""
+"Pattern used to import this file (it should be the same used for the export)"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.ui.menu,name:pattern_import_export.patterns_menu
+msgid "Patterns"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_chunk__state__pending
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_file__state__pending
+msgid "Pending"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__process_multi
+msgid "Process Multi"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__progress
+msgid "Progress"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__record_ids
+msgid "Record"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_file_view_form
+msgid "Refresh"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__related_model_id
+msgid "Related model"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__required_fields
+msgid "Required Fields"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__resource
+msgid "Resource"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__res_field
+msgid "Resource Field"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__res_id
+msgid "Resource ID"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__res_model
+msgid "Resource Model"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__res_name
+msgid "Resource Name"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__result_info
+msgid "Result Info"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__start_idx
+msgid "Start Idx"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_chunk__state__started
+msgid "Started"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__state
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__state
+msgid "State"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__stop_idx
+msgid "Stop Idx"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__store_fname
+msgid "Stored Filename"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__sub_pattern_config_id
+msgid "Sub Pattern Config"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_ir_exports_line__sub_pattern_config_id
+msgid "Sub-pattern used to export O2M fields"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_ir_exports_line__tab_filter_id
+msgid "Tab Filter"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_file__res_model
+msgid "The database object this attachment will be attached to."
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/ir_exports_line.py:0
+#, python-format
+msgid "The field {} is empty for the line {}"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_file__res_id
+msgid "The record id this is attached to."
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/base.py:0
+#, python-format
+msgid "Too many {} found for the key/value : {}"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__type
+msgid "Type"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.filters,name:pattern_import_export.demo_filter_countries_1
+msgid "US, FR, BE"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/base.py:0
+#, python-format
+msgid "Unknown database identifier '%s'"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__url
+msgid "Url"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__use_description
+msgid "Use descriptive in addition to technical headers"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_file.py:0
+#, python-format
+msgid "View Job"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_file__type
+msgid ""
+"You can either upload a file from your computer or copy/paste an internet "
+"link to your file."
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_file__kind__export
+msgid "export"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_file__kind__import
+msgid "import"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_file_view_form
+msgid "pattern_file_form"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.format_message
+msgid "type"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_file.py:0
+#, python-format
+msgid ""
+"{} job has failed. \n"
+"For more details: {}"
+msgstr ""
+
+#. module: pattern_import_export
+#: code:addons/pattern_import_export/models/pattern_file.py:0
+#, python-format
+msgid ""
+"{} job has finished. \n"
+"For more details: {}"
+msgstr ""
