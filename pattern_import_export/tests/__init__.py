@@ -5,3 +5,4 @@ from . import test_converter
 from . import test_pattern_export
 from . import test_pattern_import
 from . import test_pattern_constraint
+from . import test_pattern_config

@@ -150,11 +150,7 @@ class TestPatternImportExcel(SavepointCase):
         self.assertIsNone(ws["A2"].value)
         self.assertIsNone(ws["A3"].value)
         self.assertIsNone(ws["A4"].value)
-        self.assertIn(
-            'new row for relation "res_partner" '
-            'violates check constraint "res_partner_check_name"',
-            ws["A5"].value,
-        )
+        self.assertEqual("'Contacts require a name'", ws["A5"].value)
 
     @mute_logger("odoo.sql_db")
     def test_partial_import_too_many_error(self):
@@ -186,11 +182,7 @@ class TestPatternImportExcel(SavepointCase):
         self.assertIsNone(ws["A3"].value)
 
         for idx in range(4, 13):
-            self.assertIn(
-                'new row for relation "res_partner" '
-                'violates check constraint "res_partner_check_name"',
-                ws["A%s" % idx].value,
-            )
+            self.assertEqual("'Contacts require a name'", ws["A%s" % idx].value)
         for idx in range(13, 21):
             self.assertEqual(
                 "Found more than 10 errors and more than one error per 10 records, "
@@ -230,11 +222,7 @@ class TestPatternImportExcel(SavepointCase):
         self.assertIsNone(ws["A2"].value)
         self.assertIsNone(ws["A3"].value)
         for idx in range(4, 20):
-            self.assertIn(
-                'new row for relation "res_partner" '
-                'violates check constraint "res_partner_check_name"',
-                ws["A%s" % idx].value or "",
-            )
+            self.assertEqual("'Contacts require a name'", ws["A%s" % idx].value)
         self.assertIsNone(ws["A20"].value)
 
     def test_import_users_ok(self):

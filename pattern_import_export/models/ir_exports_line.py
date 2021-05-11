@@ -8,7 +8,11 @@ from _collections import OrderedDict
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-from odoo.addons.base_jsonify.models.ir_export import convert_dict, update_dict
+from odoo.addons.base_jsonify.models.ir_export import (
+    convert_dict,
+    partition,
+    update_dict,
+)
 
 from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 
@@ -94,9 +98,10 @@ class IrExportsLine(models.Model):
                     required.append("number_occurence")
                 if ftype in "one2many":
                     required.append("sub_pattern_config_id")
-                if record.add_select_tab:
-                    required.append("tab_filter_id")
                 record.required_fields = ",".join(required)
+                if record.add_select_tab:
+                    # this field is optionnal
+                    required.append("tab_filter_id")
                 hidden_fields = list(set(hidden_fields) - set(required))
                 record.hidden_fields = ",".join(hidden_fields)
             else:
@@ -105,11 +110,7 @@ class IrExportsLine(models.Model):
 
     def _inverse_name(self):
         super()._inverse_name()
-        for rec in self:
-            if not rec.id:
-                rec.with_context(skip_check=True)._check_required_fields()
-            else:
-                rec._check_required_fields()
+        self._check_required_fields()
 
     @api.constrains("name", "number_occurence", "sub_pattern_config_id")
     def _check_required_fields(self):
@@ -141,9 +142,9 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_related_level_field(self):
         for export_line in self:
-            if export_line.pattern_config_id.model_id.model and export_line.name:
+            if export_line.name:
                 field, model, level = export_line._get_last_relation_field(
-                    export_line.pattern_config_id.model_id.model, export_line.name
+                    export_line.export_id.model_id.model, export_line.name
                 )
                 related_comodel = self.env[model]._fields[field]._related_comodel_name
                 if related_comodel:
@@ -276,22 +277,26 @@ class IrExportsLine(models.Model):
             result.append((tab_name, headers, data, itr))
         return result
 
-    def _get_dict_parser_for_pattern(self):
-        parser = OrderedDict()
-        for rec in self:
-            names = rec.name.split("/")
-            update_dict(parser, names)
-            if rec.sub_pattern_config_id:
-                last_item = parser
-                last_field = names[0]
-                for field in names[:-1]:
-                    last_item = last_item[field]
-                    last_field = field
-                sub_pattern_fields = rec.sub_pattern_config_id.export_fields
-                last_item[
-                    last_field
-                ] = sub_pattern_fields._get_dict_parser_for_pattern()
-        return parser
-
     def _get_json_parser_for_pattern(self):
-        return convert_dict(self._get_dict_parser_for_pattern())
+        parser = {}
+        lang_to_lines = partition(self, lambda l: l.lang_id.code)
+        lang_parsers = {}
+        for lang in lang_to_lines:
+            dict_parser = OrderedDict()
+            for line in lang_to_lines[lang]:
+                names = line.name.split("/")
+                if line.target:
+                    names = line.target.split("/")
+                function = line.instance_method_name
+                options = {"resolver": line.resolver_id, "function": function}
+                update_dict(dict_parser, names, options)
+            lang_parsers[lang] = convert_dict(dict_parser)
+        if list(lang_parsers.keys()) == [False]:
+            parser["fields"] = lang_parsers[False]
+        else:
+            parser["langs"] = lang_parsers
+        if self.export_id.global_resolver_id:
+            parser["resolver"] = self.global_resolver_id
+        if self.export_id.language_agnostic:
+            parser["language_agnostic"] = self.language_agnostic
+        return parser
