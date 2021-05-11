@@ -1,0 +1,62 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* pattern_import_export_csv
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 14.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: pattern_import_export_csv
+#: model:ir.model,name:pattern_import_export_csv.model_pattern_file
+msgid "Attachment with pattern file metadata"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields.selection,name:pattern_import_export_csv.selection__pattern_config__export_format__csv
+msgid "CSV"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__csv_quote_character
+msgid "Csv Quote Character"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__csv_value_delimiter
+msgid "Csv Value Delimiter"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__display_name
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_file__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__export_format
+msgid "Export Format"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config__id
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_file__id
+msgid "ID"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_config____last_update
+#: model:ir.model.fields,field_description:pattern_import_export_csv.field_pattern_file____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: pattern_import_export_csv
+#: model:ir.model,name:pattern_import_export_csv.model_pattern_config
+msgid "Pattern Config"
+msgstr ""
