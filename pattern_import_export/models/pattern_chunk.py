@@ -11,7 +11,9 @@ class PatternChunk(models.Model):
     _order = "start_idx"
     _rec_name = "start_idx"
 
-    pattern_file_id = fields.Many2one("pattern.file", "Pattern File", required=True)
+    pattern_file_id = fields.Many2one(
+        "pattern.file", "Pattern File", required=True, ondelete="cascade"
+    )
     start_idx = fields.Integer()
     stop_idx = fields.Integer()
     data = fields.Serialized()

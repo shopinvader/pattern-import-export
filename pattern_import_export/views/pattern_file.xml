@@ -22,6 +22,13 @@
         <field name="arch" type="xml">
             <form string="pattern_file_form" create="false">
                 <header>
+                    <button
+                        name="split_in_chunk"
+                        string="Re-launch Import"
+                        type="object"
+                        confirm="Are you sure to reimport the current file?"
+                        attrs="{'invisible': [('kind', '!=', 'import')]}"
+                    />
                     <field name="state" widget="statusbar" />
                 </header>
                 <sheet>
@@ -50,7 +57,11 @@
                         />
                     </div>
                     <notebook>
-                        <page name="chunk" string="Chunk">
+                        <page
+                            name="chunk"
+                            string="Chunk"
+                            attrs="{'invisible': [('kind', '!=', 'import')]}"
+                        >
                             <field
                                 name="info"
                                 readonly="1"
