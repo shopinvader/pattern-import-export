@@ -38,5 +38,7 @@ class ImportPatternWizard(models.TransientModel):
                 "pattern_config_id": self.pattern_config_id.id,
             }
         )
-        pattern_file_import.with_delay().split_in_chunk()
+        pattern_file_import.with_delay(
+            priority=self.pattern_config_id.job_priority
+        ).split_in_chunk()
         return pattern_file_import

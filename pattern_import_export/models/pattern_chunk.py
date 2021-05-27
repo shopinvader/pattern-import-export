@@ -46,10 +46,12 @@ class PatternChunk(models.Model):
                     .load([], self.data)
                 )
                 self.write(self._prepare_chunk_result(res))
-                if not self.pattern_file_id.pattern_config_id.process_multi:
+                config = self.pattern_file_id.pattern_config_id
+                priority = config.job_priority
+                if not config.process_multi:
                     next_chunk = self.get_next_chunk()
                     if next_chunk:
-                        next_chunk.with_delay().run()
+                        next_chunk.with_delay(priority=priority).run()
                     else:
                         self.with_delay(priority=5).check_last()
                 else:

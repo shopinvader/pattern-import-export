@@ -148,7 +148,7 @@ class PatternFile(models.Model):
         chunk = self.env["pattern.chunk"].create(vals)
         # we enqueue the chunk in case of multi process of if it's the first chunk
         if self.pattern_config_id.process_multi or len(self.chunk_ids) == 1:
-            chunk.with_delay().run()
+            chunk.with_delay(priority=self.pattern_config_id.job_priority).run()
         return chunk
 
     def split_in_chunk(self):
