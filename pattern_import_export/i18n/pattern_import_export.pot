@@ -65,6 +65,11 @@ msgid "Add Select Tab"
 msgstr ""
 
 #. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_file_view_form
+msgid "Are you sure to reimport the current file?"
+msgstr ""
+
+#. module: pattern_import_export
 #: model:ir.model,name:pattern_import_export.model_ir_attachment
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__attachment_id
 msgid "Attachment"
@@ -460,6 +465,11 @@ msgid "Is public document"
 msgstr ""
 
 #. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__job_priority
+msgid "Job Priority"
+msgstr ""
+
+#. module: pattern_import_export
 #: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_config__export_format__json
 msgid "Json"
 msgstr ""
@@ -693,6 +703,11 @@ msgstr ""
 #. module: pattern_import_export
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__progress
 msgid "Progress"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_file_view_form
+msgid "Re-launch Import"
 msgstr ""
 
 #. module: pattern_import_export
