@@ -36,6 +36,8 @@ class PatternConfig(models.Model):
     count_pattern_file_done = fields.Integer(compute="_compute_pattern_file_counts")
     pattern_file_ids = fields.One2many("pattern.file", "pattern_config_id")
     process_multi = fields.Boolean()
+    job_priority = fields.Integer(default=20)
+
     # we redefine previous onchanges since delegation inheritance breaks
     # onchanges on ir.exports
 
