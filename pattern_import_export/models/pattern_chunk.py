@@ -32,6 +32,25 @@ class PatternChunk(models.Model):
         ]
     )
 
+    def run_import(self):
+        model = self.pattern_file_id.pattern_config_id.model_id.model
+        res = (
+            self.with_context(pattern_config={"model": model, "record_ids": []})
+            .env[model]
+            .load([], self.data)
+        )
+        self.write(self._prepare_chunk_result(res))
+        config = self.pattern_file_id.pattern_config_id
+        priority = config.job_priority
+        if not config.process_multi:
+            next_chunk = self.get_next_chunk()
+            if next_chunk:
+                next_chunk.with_delay(priority=priority).run()
+            else:
+                self.with_delay(priority=5).check_last()
+        else:
+            self.with_delay(priority=5).check_last()
+
     def run(self):
         """Process Import of Pattern Chunk"""
         cr = self.env.cr
@@ -39,24 +58,7 @@ class PatternChunk(models.Model):
             self.state = "started"
             cr.commit()  # pylint: disable=invalid-commit
             with cr.savepoint():
-                model = self.pattern_file_id.pattern_config_id.model_id.model
-                res = (
-                    self.with_context(pattern_config={"model": model, "record_ids": []})
-                    .env[model]
-                    .load([], self.data)
-                )
-                self.write(self._prepare_chunk_result(res))
-                config = self.pattern_file_id.pattern_config_id
-                priority = config.job_priority
-                if not config.process_multi:
-                    next_chunk = self.get_next_chunk()
-                    if next_chunk:
-                        next_chunk.with_delay(priority=priority).run()
-                    else:
-                        self.with_delay(priority=5).check_last()
-                else:
-                    self.with_delay(priority=5).check_last()
-
+                self.run_import()
         except Exception as e:
             self.write(
                 {

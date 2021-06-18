@@ -18,14 +18,19 @@
     <field name="model">pattern.chunk</field>
     <field name="arch" type="xml">
         <form string="Chunk">
-            <group>
-                <field name="start_idx" />
-                <field name="stop_idx" />
-                <field name="nbr_error" />
-                <field name="nbr_success" />
-                <field name="state" />
-            </group>
-            <field name="result_info" />
+            <header>
+                <button name="run_import" type="object" string="Force manual run" />
+            </header>
+            <sheet>
+                <group>
+                    <field name="start_idx" />
+                    <field name="stop_idx" />
+                    <field name="nbr_error" />
+                    <field name="nbr_success" />
+                    <field name="state" />
+                </group>
+                <field name="result_info" />
+            </sheet>
         </form>
     </field>
 </record>
