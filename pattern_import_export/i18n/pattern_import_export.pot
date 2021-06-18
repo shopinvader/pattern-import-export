@@ -342,6 +342,11 @@ msgid "Filename"
 msgstr ""
 
 #. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_chunk_view_form
+msgid "Force manual run"
+msgstr ""
+
+#. module: pattern_import_export
 #: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
 msgid "Generate Pattern"
 msgstr ""
