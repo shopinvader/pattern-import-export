@@ -5,7 +5,7 @@ import functools
 import logging
 
 from odoo import _, api, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 from odoo.tools.misc import CountingStream
 
@@ -141,6 +141,16 @@ class Base(models.AbstractModel):
             if field and field.type == "one2many":
                 subdomain = []
                 if parent_id:
+                    if not field.inverse_name:
+                        # TODO this case should not happen
+                        # but it seem that you can have issue with o2m and inherit
+                        # odoo may no have the inverse_name define
+                        # in my case if you try to import fixed_pricelist_item_ids
+                        # (module: product_form_pricelist) from a product product
+                        # the inverse name of fixed_pricelist_item_ids is not define
+                        raise UserError(
+                            f"inverse name is missing on the field {field.name}"
+                        )
                     subdomain.append((field.inverse_name, "=", parent_id))
                 # empty subitem are removed
                 valid_subitems = []
@@ -270,7 +280,7 @@ class Base(models.AbstractModel):
                                 type="error",
                                 record=stream.index,
                                 field=".id",
-                                message=_(u"Invalid database identifier '%s'") % dbid,
+                                message=_("Invalid database identifier '%s'") % dbid,
                             )
                         )
                     # End of code changed
@@ -281,7 +291,7 @@ class Base(models.AbstractModel):
                             type="error",
                             record=stream.index,
                             field=".id",
-                            message=_(u"Unknown database identifier '%s'") % dbid,
+                            message=_("Unknown database identifier '%s'") % dbid,
                         )
                     )
                     dbid = False
