@@ -253,16 +253,18 @@ class IrExportsLine(models.Model):
     def _get_tab_data(self):
         """
         :return: iterable of 4-tuples of format:
-        (name, headers, data, origin_col)
+        (name, headers, data, idx_col_validator)
         one tuple for each tab
         name: sheet name
         headers: list of strings, each element mapping to one header cell
         data: list of lists, each element mapping to one row/cells
-        origin_col: position of the column on the main sheet
+        idx_col_validator: position of the column on the main sheet
         """
         result = []
-        for itr, rec in enumerate(self, start=1):
+        offset = 0
+        for rec in self:
             if not rec.add_select_tab:
+                offset += rec.number_occurence or 1
                 continue
             permitted_records = []
             model_name = rec.related_model_id.model
@@ -274,7 +276,11 @@ class IrExportsLine(models.Model):
             data = rec._format_tab_records(permitted_records)
             headers = rec._get_tab_headers()
             tab_name = rec._get_tab_name()
-            result.append((tab_name, headers, data, itr))
+            idx_col_validator = []
+            for __ in range(rec.number_occurence or 1):
+                offset += 1
+                idx_col_validator += [offset]
+            result.append((tab_name, headers, data, idx_col_validator))
         return result
 
     def _get_json_parser_for_pattern(self):

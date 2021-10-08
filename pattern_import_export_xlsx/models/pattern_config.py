@@ -26,11 +26,7 @@ class PatternConfig(models.Model):
         self._populate_main_sheet_rows(main_sheet, records)
         tab_data = self.export_fields._get_tab_data()
         self._create_tabs(book, tab_data)
-        if len(records.ids) < 1000:
-            main_sheet_length = 1000
-        else:
-            main_sheet_length = len(records.ids) + 2
-        self._create_validators(main_sheet, main_sheet_length, tab_data)
+        self._create_validators(main_sheet, records, tab_data)
         book.close()
         xlsx_file = BytesIO()
         book.save(xlsx_file)
@@ -76,12 +72,14 @@ class PatternConfig(models.Model):
                 for col_number, cell_data in enumerate(row_data, start=1):
                     new_sheet.cell(row=row_number, column=col_number, value=cell_data)
 
-    def _create_validators(self, main_sheet, main_sheet_length, tab_data):
+    def _create_validators(self, main_sheet, records, tab_data):
         """Add validators: source permitted records from tab sheets,
         apply validation to main sheet"""
-        for el in tab_data:
-            tab_name, _, data, col_dst = el
-            col_letter_dst = get_column_letter(col_dst)
+        if len(records.ids) < 1000:
+            main_sheet_length = 1000
+        else:
+            main_sheet_length = len(records.ids) + 2
+        for tab_name, _, data, cols_dst in tab_data:
             # TODO support arbitrary columns/attributes instead of
             #  only name
             col_letter_src = get_column_letter(1)
@@ -90,13 +88,15 @@ class PatternConfig(models.Model):
             )
             formula_range_src = "=" + quote_sheetname(tab_name) + "!" + range_src
             validation = DataValidation(type="list", formula1=formula_range_src)
-            range_dst = "${}${}:${}${}".format(
-                col_letter_dst,
-                str(self.row_start_records),
-                col_letter_dst,
-                str(max(main_sheet_length, 2)),
-            )
-            validation.add(range_dst)
+            for idx_col in cols_dst:
+                col_letter_dst = get_column_letter(idx_col)
+                range_dst = "${}${}:${}${}".format(
+                    col_letter_dst,
+                    str(self.row_start_records),
+                    col_letter_dst,
+                    str(max(main_sheet_length, 2)),
+                )
+                validation.add(range_dst)
             main_sheet.add_data_validation(validation)
 
     def _export_with_record_xlsx(self, records):

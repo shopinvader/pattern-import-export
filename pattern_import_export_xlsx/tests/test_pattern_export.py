@@ -118,7 +118,7 @@ class TestPatternExportExcel(PatternCommon, SavepointCase):
         )
         self.assertTrue(wb[expected_tab_name])
 
-    def test_export_validators(self):
+    def test_export_validators_simple(self):
         wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheet_base = wb["Partner list"]
         self.assertEqual(
@@ -135,6 +135,20 @@ class TestPatternExportExcel(PatternCommon, SavepointCase):
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1000"
         )
+
+    def test_export_validators_many2many(self):
+        self.pattern_config_m2m.export_fields[2].number_occurence = 3
+        wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
+        sheet_base = wb["Users list - M2M"]
+        self.assertEqual(
+            sheet_base.data_validations.dataValidation[0].formula1,
+            "='{}'!$A$2:$A$4".format(self.tab_name_ignore_one),
+        )
+        for idx, col_letter in enumerate(("C", "D", "E")):
+            self.assertEqual(
+                str(sheet_base.data_validations.dataValidation[0].cells.ranges[idx]),
+                "{0}2:{0}1000".format(col_letter),
+            )
 
     def test_export_m2m_headers(self):
         wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
