@@ -24,7 +24,7 @@
 
         <!--Exports-->
         <record id="demo_export" model="ir.exports">
-            <field name="name">Partner list</field>
+            <field name="name">Partner</field>
             <field name="resource">res.partner</field>
         </record>
         <record id="demo_export_m2m" model="ir.exports">
@@ -32,7 +32,7 @@
             <field name="resource">res.users</field>
         </record>
         <record id="demo_export_o2m" model="ir.exports">
-            <field name="name">Partner - O2M</field>
+            <field name="name">Partner with contact</field>
             <field name="resource">res.partner</field>
         </record>
         <record id="demo_pattern_config" model="pattern.config">

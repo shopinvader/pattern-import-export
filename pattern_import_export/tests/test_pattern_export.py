@@ -5,13 +5,19 @@ from odoo.tests.common import SavepointCase
 from .common import PatternCommon
 
 
-class TestPatternExport(PatternCommon, SavepointCase):
+class PatternCaseExport:
+    def _get_header(self, pattern_config, use_description=False):
+        raise NotImplementedError
+
+    def _get_data(self, pattern_config, records):
+        raise NotImplementedError
+
     def test_get_header1(self):
         """
         Ensure the header is correctly generated
         @return:
         """
-        headers = self.pattern_config._get_header()
+        headers = self._get_header(self.pattern_config)
         expected_header = [
             ".id",
             "name",
@@ -22,7 +28,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
         self.assertEqual(expected_header, headers)
 
     def test_get_header1_descriptive(self):
-        headers = self.pattern_config._get_header(use_description=True)
+        headers = self._get_header(self.pattern_config, use_description=True)
         expected_header = [
             "ID",
             "Name",
@@ -37,7 +43,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
         Ensure the header is correctly generated in case of M2M with 1 occurrence
         @return:
         """
-        headers = self.pattern_config_m2m._get_header()
+        headers = self._get_header(self.pattern_config_m2m)
         expected_header = [".id", "name", "company_ids|1|name"]
         self.assertEqual(expected_header, headers)
 
@@ -48,7 +54,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
         """
         export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
         export_fields_m2m.write({"number_occurence": 5})
-        headers = self.pattern_config_m2m._get_header()
+        headers = self._get_header(self.pattern_config_m2m)
         expected_header = [
             ".id",
             "name",
@@ -66,7 +72,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
         This O2M contains a sub-pattern whith a M2M with 1 occurrence.
         @return:
         """
-        headers = self.pattern_config_o2m._get_header()
+        headers = self._get_header(self.pattern_config_o2m)
         expected_header = [
             ".id",
             "name",
@@ -97,7 +103,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
         """
         export_fields_m2m = self.env.ref("pattern_import_export.demo_export_line_5")
         export_fields_m2m.write({"number_occurence": 5})
-        headers = self.pattern_config_o2m._get_header()
+        headers = self._get_header(self.pattern_config_o2m)
         expected_header = [
             ".id",
             "name",
@@ -136,6 +142,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
         Ensure the _get_data_to_export return expected data
         @return:
         """
+        results = self._get_data(self.pattern_config, self.partners)
         expected_results = [
             {
                 ".id": self.partner_1.id,
@@ -159,7 +166,6 @@ class TestPatternExport(PatternCommon, SavepointCase):
                 "category_id|1|name": "Consulting Services",
             },
         ]
-        results = self.pattern_config._get_data_to_export(self.partners)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)
 
@@ -176,7 +182,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
                 "company_ids|1|name": "Awesome company",
             }
         ]
-        results = self.pattern_config_m2m._get_data_to_export(self.env.user)
+        results = self._get_data(self.pattern_config_m2m, self.env.user)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)
 
@@ -199,7 +205,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
                 "company_ids|5|name": None,
             }
         ]
-        results = self.pattern_config_m2m._get_data_to_export(self.env.user)
+        results = self._get_data(self.pattern_config_m2m, self.env.user)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)
 
@@ -271,7 +277,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
                 "child_ids|3|category_id|1|name": None,
             },
         ]
-        results = self.pattern_config_o2m._get_data_to_export(self.partners)
+        results = self._get_data(self.pattern_config_o2m, self.partners)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)
 
@@ -345,7 +351,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             },
         ]
 
-        results = self.pattern_config_o2m._get_data_to_export(self.partners)
+        results = self._get_data(self.pattern_config_o2m, self.partners)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)
 
@@ -357,8 +363,17 @@ class TestPatternExport(PatternCommon, SavepointCase):
         """
         self.env.ref("pattern_import_export.demo_export_line_2").write({"is_key": True})
         self.env.ref("pattern_import_export.demo_export_line_4").write({"is_key": True})
-        for result in self.pattern_config._get_data_to_export(self.partners):
+        results = self._get_data(self.pattern_config, self.partners)
+        for result in results:
             self.assertNotIn("name", result)
             self.assertIn("name#key", result)
             self.assertNotIn("country_id|code", result)
             self.assertIn("country_id#key|code", result)
+
+
+class PatternTestExport(PatternCommon, SavepointCase, PatternCaseExport):
+    def _get_header(self, pattern_config, use_description=False):
+        return pattern_config._get_header(use_description=use_description)
+
+    def _get_data(self, pattern_config, records):
+        return pattern_config._get_data_to_export(records)
