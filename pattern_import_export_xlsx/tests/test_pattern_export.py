@@ -136,6 +136,24 @@ class TestPatternExportExcel(PatternCommon, SavepointCase):
             str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1000"
         )
 
+    def test_export_validators_simple_with_subpattern(self):
+        wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
+        sheet_base = wb["Partner list"]
+        self.assertEqual(
+            sheet_base.data_validations.dataValidation[0].formula1,
+            "='{}'!$A$2:$A$4".format(self.tab_name_countries_1),
+        )
+        self.assertEqual(
+            str(sheet_base.data_validations.dataValidation[0].cells), "D2:D1000"
+        )
+        self.assertEqual(
+            sheet_base.data_validations.dataValidation[1].formula1,
+            "='{}'!$A$2:$A$5".format(self.tab_name_countries_2),
+        )
+        self.assertEqual(
+            str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1000"
+        )
+
     def test_export_validators_many2many(self):
         self.pattern_config_m2m.export_fields[2].number_occurence = 3
         wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)

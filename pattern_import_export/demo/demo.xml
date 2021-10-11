@@ -64,12 +64,6 @@
             <field name="tab_filter_id" ref="demo_filter_countries_1" />
             <field name="add_select_tab" eval="True" />
         </record>
-        <record id="demo_export_line_5" model="ir.exports.line">
-            <field name="name">parent_id/country_id/code</field>
-            <field name="export_id" ref="pattern_import_export.demo_export" />
-            <field name="tab_filter_id" ref="demo_filter_countries_2" />
-            <field name="add_select_tab" eval="True" />
-        </record>
         <record id="demo_export_m2m_line_1" model="ir.exports.line">
             <field name="name">id</field>
             <field name="export_id" ref="pattern_import_export.demo_export_m2m" />

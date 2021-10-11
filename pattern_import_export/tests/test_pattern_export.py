@@ -17,7 +17,6 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "name",
             "street",
             "country_id|code",
-            "parent_id|country_id|code",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -28,7 +27,6 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "Name",
             "Street",
             "Country|Country Code",
-            "Related Company|Country|Country Code",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -130,21 +128,18 @@ class TestPatternExport(PatternCommon, SavepointCase):
                 "name": "Wood Corner",
                 "street": "1839 Arbor Way",
                 "country_id|code": "US",
-                "parent_id|country_id|code": None,
             },
             {
                 ".id": self.partner_2.id,
                 "name": "Deco Addict",
                 "street": "77 Santa Barbara Rd",
                 "country_id|code": "US",
-                "parent_id|country_id|code": None,
             },
             {
                 ".id": self.partner_3.id,
                 "name": "Gemini Furniture",
                 "street": "317 Fairchild Dr",
                 "country_id|code": "US",
-                "parent_id|country_id|code": None,
             },
         ]
         results = self.pattern_config._get_data_to_export(self.partners)
@@ -312,21 +307,18 @@ class TestPatternExport(PatternCommon, SavepointCase):
                 "name#key": "Wood Corner",
                 "street": "1839 Arbor Way",
                 "country_id#key|code": "US",
-                "parent_id|country_id|code": None,
             },
             {
                 ".id": self.partner_2.id,
                 "name#key": "Deco Addict",
                 "street": "77 Santa Barbara Rd",
                 "country_id#key|code": "US",
-                "parent_id|country_id|code": None,
             },
             {
                 ".id": self.partner_3.id,
                 "name#key": "Gemini Furniture",
                 "street": "317 Fairchild Dr",
                 "country_id#key|code": "US",
-                "parent_id|country_id|code": None,
             },
         ]
         self.env.ref("pattern_import_export.demo_export_line_2").write({"is_key": True})
