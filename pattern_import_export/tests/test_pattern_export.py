@@ -17,6 +17,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "name",
             "street",
             "country_id|code",
+            "category_id|1|name",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -27,6 +28,7 @@ class TestPatternExport(PatternCommon, SavepointCase):
             "Name",
             "Street",
             "Country|Country Code",
+            "Tags|1|Tag Name",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -68,15 +70,21 @@ class TestPatternExport(PatternCommon, SavepointCase):
         expected_header = [
             ".id",
             "name",
-            "user_ids|1|.id",
-            "user_ids|1|name",
-            "user_ids|1|company_ids|1|name",
-            "user_ids|2|.id",
-            "user_ids|2|name",
-            "user_ids|2|company_ids|1|name",
-            "user_ids|3|.id",
-            "user_ids|3|name",
-            "user_ids|3|company_ids|1|name",
+            "child_ids|1|.id",
+            "child_ids|1|name",
+            "child_ids|1|street",
+            "child_ids|1|country_id|code",
+            "child_ids|1|category_id|1|name",
+            "child_ids|2|.id",
+            "child_ids|2|name",
+            "child_ids|2|street",
+            "child_ids|2|country_id|code",
+            "child_ids|2|category_id|1|name",
+            "child_ids|3|.id",
+            "child_ids|3|name",
+            "child_ids|3|street",
+            "child_ids|3|country_id|code",
+            "child_ids|3|category_id|1|name",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -87,33 +95,39 @@ class TestPatternExport(PatternCommon, SavepointCase):
         than 1 occurrence
         @return:
         """
-        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
+        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_line_5")
         export_fields_m2m.write({"number_occurence": 5})
         headers = self.pattern_config_o2m._get_header()
         expected_header = [
             ".id",
             "name",
-            "user_ids|1|.id",
-            "user_ids|1|name",
-            "user_ids|1|company_ids|1|name",
-            "user_ids|1|company_ids|2|name",
-            "user_ids|1|company_ids|3|name",
-            "user_ids|1|company_ids|4|name",
-            "user_ids|1|company_ids|5|name",
-            "user_ids|2|.id",
-            "user_ids|2|name",
-            "user_ids|2|company_ids|1|name",
-            "user_ids|2|company_ids|2|name",
-            "user_ids|2|company_ids|3|name",
-            "user_ids|2|company_ids|4|name",
-            "user_ids|2|company_ids|5|name",
-            "user_ids|3|.id",
-            "user_ids|3|name",
-            "user_ids|3|company_ids|1|name",
-            "user_ids|3|company_ids|2|name",
-            "user_ids|3|company_ids|3|name",
-            "user_ids|3|company_ids|4|name",
-            "user_ids|3|company_ids|5|name",
+            "child_ids|1|.id",
+            "child_ids|1|name",
+            "child_ids|1|street",
+            "child_ids|1|country_id|code",
+            "child_ids|1|category_id|1|name",
+            "child_ids|1|category_id|2|name",
+            "child_ids|1|category_id|3|name",
+            "child_ids|1|category_id|4|name",
+            "child_ids|1|category_id|5|name",
+            "child_ids|2|.id",
+            "child_ids|2|name",
+            "child_ids|2|street",
+            "child_ids|2|country_id|code",
+            "child_ids|2|category_id|1|name",
+            "child_ids|2|category_id|2|name",
+            "child_ids|2|category_id|3|name",
+            "child_ids|2|category_id|4|name",
+            "child_ids|2|category_id|5|name",
+            "child_ids|3|.id",
+            "child_ids|3|name",
+            "child_ids|3|street",
+            "child_ids|3|country_id|code",
+            "child_ids|3|category_id|1|name",
+            "child_ids|3|category_id|2|name",
+            "child_ids|3|category_id|3|name",
+            "child_ids|3|category_id|4|name",
+            "child_ids|3|category_id|5|name",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -128,18 +142,21 @@ class TestPatternExport(PatternCommon, SavepointCase):
                 "name": "Wood Corner",
                 "street": "1839 Arbor Way",
                 "country_id|code": "US",
+                "category_id|1|name": "Desk Manufacturers",
             },
             {
                 ".id": self.partner_2.id,
                 "name": "Deco Addict",
                 "street": "77 Santa Barbara Rd",
                 "country_id|code": "US",
+                "category_id|1|name": "Desk Manufacturers",
             },
             {
                 ".id": self.partner_3.id,
                 "name": "Gemini Furniture",
                 "street": "317 Fairchild Dr",
                 "country_id|code": "US",
+                "category_id|1|name": "Consulting Services",
             },
         ]
         results = self.pattern_config._get_data_to_export(self.partners)
@@ -192,45 +209,66 @@ class TestPatternExport(PatternCommon, SavepointCase):
         M2M who contains only 1 occurrence.
         @return:
         """
+        p1c = self.partner_1.child_ids
+        p2c = self.partner_2.child_ids
+        p3c = self.partner_3.child_ids
         expected_results = [
             {
                 ".id": self.partner_1.id,
                 "name": "Wood Corner",
-                "user_ids|1|.id": self.user2.id,
-                "user_ids|1|name": "Wood Corner",
-                "user_ids|1|company_ids|1|name": "Awesome company",
-                "user_ids|2|.id": self.user1.id,
-                "user_ids|2|name": "Wood Corner",
-                "user_ids|2|company_ids|1|name": "Awesome company",
-                "user_ids|3|.id": None,
-                "user_ids|3|name": None,
-                "user_ids|3|company_ids|1|name": None,
+                "child_ids|1|.id": p1c[0].id,
+                "child_ids|1|name": "Ron Gibson",
+                "child_ids|1|street": "1839 Arbor Way",
+                "child_ids|1|country_id|code": "US",
+                "child_ids|1|category_id|1|name": None,
+                "child_ids|2|.id": p1c[1].id,
+                "child_ids|2|name": "Tom Ruiz",
+                "child_ids|2|street": "1839 Arbor Way",
+                "child_ids|2|country_id|code": "US",
+                "child_ids|2|category_id|1|name": None,
+                "child_ids|3|.id": p1c[2].id,
+                "child_ids|3|name": "Willie Burke",
+                "child_ids|3|street": "1839 Arbor Way",
+                "child_ids|3|country_id|code": "US",
+                "child_ids|3|category_id|1|name": None,
             },
             {
                 ".id": self.partner_2.id,
                 "name": "Deco Addict",
-                "user_ids|1|.id": self.user3.id,
-                "user_ids|1|name": "Deco Addict",
-                "user_ids|1|company_ids|1|name": "YourCompany",
-                "user_ids|2|.id": None,
-                "user_ids|2|name": None,
-                "user_ids|2|company_ids|1|name": None,
-                "user_ids|3|.id": None,
-                "user_ids|3|name": None,
-                "user_ids|3|company_ids|1|name": None,
+                "child_ids|1|.id": p2c[0].id,
+                "child_ids|1|name": "Addison Olson",
+                "child_ids|1|street": "77 Santa Barbara Rd",
+                "child_ids|1|country_id|code": "US",
+                "child_ids|1|category_id|1|name": None,
+                "child_ids|2|.id": p2c[1].id,
+                "child_ids|2|name": "Douglas Fletcher",
+                "child_ids|2|street": "77 Santa Barbara Rd",
+                "child_ids|2|country_id|code": "US",
+                "child_ids|2|category_id|1|name": None,
+                "child_ids|3|.id": p2c[2].id,
+                "child_ids|3|name": "Floyd Steward",
+                "child_ids|3|street": "77 Santa Barbara Rd",
+                "child_ids|3|country_id|code": "US",
+                "child_ids|3|category_id|1|name": None,
             },
             {
                 ".id": self.partner_3.id,
                 "name": "Gemini Furniture",
-                "user_ids|1|.id": None,
-                "user_ids|1|name": None,
-                "user_ids|1|company_ids|1|name": None,
-                "user_ids|2|.id": None,
-                "user_ids|2|name": None,
-                "user_ids|2|company_ids|1|name": None,
-                "user_ids|3|.id": None,
-                "user_ids|3|name": None,
-                "user_ids|3|company_ids|1|name": None,
+                "child_ids|1|.id": p3c[0].id,
+                "child_ids|1|name": "Edwin Hansen",
+                "child_ids|1|street": "317 Fairchild Dr",
+                "child_ids|1|country_id|code": "US",
+                "child_ids|1|category_id|1|name": None,
+                "child_ids|2|.id": p3c[1].id,
+                "child_ids|2|name": "Jesse Brown",
+                "child_ids|2|street": "317 Fairchild Dr",
+                "child_ids|2|country_id|code": "US",
+                "child_ids|2|category_id|1|name": None,
+                "child_ids|3|.id": p3c[2].id,
+                "child_ids|3|name": "Oscar Morgan",
+                "child_ids|3|street": "317 Fairchild Dr",
+                "child_ids|3|country_id|code": "US",
+                "child_ids|3|category_id|1|name": None,
             },
         ]
         results = self.pattern_config_o2m._get_data_to_export(self.partners)
@@ -243,54 +281,70 @@ class TestPatternExport(PatternCommon, SavepointCase):
         M2M who contains more than 1 occurrence.
         @return:
         """
-        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
+        export_fields_m2m = self.env.ref("pattern_import_export.demo_export_line_5")
         export_fields_m2m.write({"number_occurence": 3})
         export_fields_o2m = self.env.ref("pattern_import_export.demo_export_o2m_line_3")
         export_fields_o2m.write({"number_occurence": 2})
+        p1c = self.partner_1.child_ids
+        p2c = self.partner_2.child_ids
+        p3c = self.partner_3.child_ids
         expected_results = [
             {
                 ".id": self.partner_1.id,
                 "name": "Wood Corner",
-                "user_ids|1|.id": self.user2.id,
-                "user_ids|1|name": "Wood Corner",
-                "user_ids|1|company_ids|1|name": "Awesome company",
-                "user_ids|1|company_ids|2|name": "YourCompany",
-                "user_ids|1|company_ids|3|name": None,
-                "user_ids|2|.id": self.user1.id,
-                "user_ids|2|name": "Wood Corner",
-                "user_ids|2|company_ids|1|name": "Awesome company",
-                "user_ids|2|company_ids|2|name": "Bad company",
-                "user_ids|2|company_ids|3|name": "YourCompany",
+                "child_ids|1|.id": p1c[0].id,
+                "child_ids|1|name": "Ron Gibson",
+                "child_ids|1|street": "1839 Arbor Way",
+                "child_ids|1|country_id|code": "US",
+                "child_ids|1|category_id|1|name": None,
+                "child_ids|1|category_id|2|name": None,
+                "child_ids|1|category_id|3|name": None,
+                "child_ids|2|.id": p1c[1].id,
+                "child_ids|2|name": "Tom Ruiz",
+                "child_ids|2|street": "1839 Arbor Way",
+                "child_ids|2|country_id|code": "US",
+                "child_ids|2|category_id|1|name": None,
+                "child_ids|2|category_id|2|name": None,
+                "child_ids|2|category_id|3|name": None,
             },
             {
                 ".id": self.partner_2.id,
                 "name": "Deco Addict",
-                "user_ids|1|.id": self.user3.id,
-                "user_ids|1|name": "Deco Addict",
-                "user_ids|1|company_ids|1|name": "YourCompany",
-                "user_ids|1|company_ids|2|name": None,
-                "user_ids|1|company_ids|3|name": None,
-                "user_ids|2|.id": None,
-                "user_ids|2|name": None,
-                "user_ids|2|company_ids|1|name": None,
-                "user_ids|2|company_ids|2|name": None,
-                "user_ids|2|company_ids|3|name": None,
+                "child_ids|1|.id": p2c[0].id,
+                "child_ids|1|name": "Addison Olson",
+                "child_ids|1|street": "77 Santa Barbara Rd",
+                "child_ids|1|country_id|code": "US",
+                "child_ids|1|category_id|1|name": None,
+                "child_ids|1|category_id|2|name": None,
+                "child_ids|1|category_id|3|name": None,
+                "child_ids|2|.id": p2c[1].id,
+                "child_ids|2|name": "Douglas Fletcher",
+                "child_ids|2|street": "77 Santa Barbara Rd",
+                "child_ids|2|country_id|code": "US",
+                "child_ids|2|category_id|1|name": None,
+                "child_ids|2|category_id|2|name": None,
+                "child_ids|2|category_id|3|name": None,
             },
             {
                 ".id": self.partner_3.id,
                 "name": "Gemini Furniture",
-                "user_ids|1|.id": None,
-                "user_ids|1|name": None,
-                "user_ids|1|company_ids|1|name": None,
-                "user_ids|1|company_ids|2|name": None,
-                "user_ids|1|company_ids|3|name": None,
-                "user_ids|2|.id": None,
-                "user_ids|2|name": None,
-                "user_ids|2|company_ids|1|name": None,
-                "user_ids|2|company_ids|2|name": None,
-                "user_ids|2|company_ids|3|name": None,
+                "child_ids|1|.id": p3c[0].id,
+                "child_ids|1|name": "Edwin Hansen",
+                "child_ids|1|street": "317 Fairchild Dr",
+                "child_ids|1|country_id|code": "US",
+                "child_ids|1|category_id|1|name": None,
+                "child_ids|1|category_id|2|name": None,
+                "child_ids|1|category_id|3|name": None,
+                "child_ids|2|.id": p3c[1].id,
+                "child_ids|2|name": "Jesse Brown",
+                "child_ids|2|street": "317 Fairchild Dr",
+                "child_ids|2|country_id|code": "US",
+                "child_ids|2|category_id|1|name": None,
+                "child_ids|2|category_id|2|name": None,
+                "child_ids|2|category_id|3|name": None,
             },
         ]
+
         results = self.pattern_config_o2m._get_data_to_export(self.partners)
         for result, expected_result in zip(results, expected_results):
             self.assertDictEqual(expected_result, result)
@@ -301,28 +355,10 @@ class TestPatternExport(PatternCommon, SavepointCase):
         when export line are considered as key
         @return:
         """
-        expected_results = [
-            {
-                ".id": self.partner_1.id,
-                "name#key": "Wood Corner",
-                "street": "1839 Arbor Way",
-                "country_id#key|code": "US",
-            },
-            {
-                ".id": self.partner_2.id,
-                "name#key": "Deco Addict",
-                "street": "77 Santa Barbara Rd",
-                "country_id#key|code": "US",
-            },
-            {
-                ".id": self.partner_3.id,
-                "name#key": "Gemini Furniture",
-                "street": "317 Fairchild Dr",
-                "country_id#key|code": "US",
-            },
-        ]
         self.env.ref("pattern_import_export.demo_export_line_2").write({"is_key": True})
         self.env.ref("pattern_import_export.demo_export_line_4").write({"is_key": True})
-        results = self.pattern_config._get_data_to_export(self.partners)
-        for result, expected_result in zip(results, expected_results):
-            self.assertDictEqual(expected_result, result)
+        for result in self.pattern_config._get_data_to_export(self.partners):
+            self.assertNotIn("name", result)
+            self.assertIn("name#key", result)
+            self.assertNotIn("country_id|code", result)
+            self.assertIn("country_id#key|code", result)

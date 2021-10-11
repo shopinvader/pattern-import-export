@@ -64,6 +64,11 @@
             <field name="tab_filter_id" ref="demo_filter_countries_1" />
             <field name="add_select_tab" eval="True" />
         </record>
+        <record id="demo_export_line_5" model="ir.exports.line">
+            <field name="name">category_id/name</field>
+            <field name="export_id" ref="pattern_import_export.demo_export" />
+            <field name="add_select_tab" eval="True" />
+        </record>
         <record id="demo_export_m2m_line_1" model="ir.exports.line">
             <field name="name">id</field>
             <field name="export_id" ref="pattern_import_export.demo_export_m2m" />
@@ -88,10 +93,10 @@
             <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
         </record>
         <record id="demo_export_o2m_line_3" model="ir.exports.line">
-            <field name="name">user_ids</field>
+            <field name="name">child_ids</field>
             <field name="number_occurence">3</field>
             <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
-            <field name="sub_pattern_config_id" ref="demo_pattern_config_m2m" />
+            <field name="sub_pattern_config_id" ref="demo_pattern_config" />
         </record>
     </data>
 </odoo>
