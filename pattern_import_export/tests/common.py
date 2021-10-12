@@ -96,6 +96,7 @@ class PatternCommon(JobMixin):
         cls.filter_countries_2 = cls.env.ref(
             "pattern_import_export.demo_filter_countries_2"
         )
+        cls.maxDiff = None
 
     def create_pattern(self, config, kind, data):
         return self.env["pattern.file"].create(

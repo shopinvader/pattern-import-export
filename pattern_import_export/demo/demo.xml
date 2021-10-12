@@ -24,7 +24,7 @@
 
         <!--Exports-->
         <record id="demo_export" model="ir.exports">
-            <field name="name">Partner list</field>
+            <field name="name">Partner</field>
             <field name="resource">res.partner</field>
         </record>
         <record id="demo_export_m2m" model="ir.exports">
@@ -32,7 +32,7 @@
             <field name="resource">res.users</field>
         </record>
         <record id="demo_export_o2m" model="ir.exports">
-            <field name="name">Partner - O2M</field>
+            <field name="name">Partner with contact</field>
             <field name="resource">res.partner</field>
         </record>
         <record id="demo_pattern_config" model="pattern.config">
@@ -65,9 +65,8 @@
             <field name="add_select_tab" eval="True" />
         </record>
         <record id="demo_export_line_5" model="ir.exports.line">
-            <field name="name">parent_id/country_id/code</field>
+            <field name="name">category_id/name</field>
             <field name="export_id" ref="pattern_import_export.demo_export" />
-            <field name="tab_filter_id" ref="demo_filter_countries_2" />
             <field name="add_select_tab" eval="True" />
         </record>
         <record id="demo_export_m2m_line_1" model="ir.exports.line">
@@ -94,10 +93,16 @@
             <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
         </record>
         <record id="demo_export_o2m_line_3" model="ir.exports.line">
-            <field name="name">user_ids</field>
+            <field name="name">child_ids</field>
             <field name="number_occurence">3</field>
             <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
-            <field name="sub_pattern_config_id" ref="demo_pattern_config_m2m" />
+            <field name="sub_pattern_config_id" ref="demo_pattern_config" />
+        </record>
+        <record id="demo_export_o2m_line_4" model="ir.exports.line">
+            <field name="name">country_id/code</field>
+            <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
+            <field name="tab_filter_id" ref="demo_filter_countries_1" />
+            <field name="add_select_tab" eval="True" />
         </record>
     </data>
 </odoo>

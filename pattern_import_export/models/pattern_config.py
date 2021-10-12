@@ -1,5 +1,6 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+import ast
 import base64
 
 from odoo import _, api, fields, models
@@ -222,3 +223,69 @@ class PatternConfig(models.Model):
                 "pattern_config_id": self.id,
             }
         )
+
+    def _add_update_tabs(self, result, tab_name, tab_vals):
+        if tab_name in result["tabs"]:
+            result["tabs"][tab_name]["idx_col_validator"] += tab_vals[
+                "idx_col_validator"
+            ]
+        else:
+            result["tabs"][tab_name] = tab_vals
+
+    def _get_metadata(self):
+        """
+        :return: an dict with {"tabs": {}, "total_columns": X}
+        tabs have the following fields
+        name: sheet name
+        headers: list of strings, each element mapping to one header cell
+        data: list of lists, each element mapping to one row/cells
+        idx_col_validator: position of the column on the main sheet
+        """
+        result = {
+            "tabs": {},
+            "total_columns": 0,
+        }
+        offset = 0
+        for rec in self.export_fields:
+            if rec.sub_pattern_config_id:
+                metadata = rec.sub_pattern_config_id._get_metadata()
+                for tab_name, tab_vals in metadata["tabs"].items():
+                    idx_col_validator = []
+                    for idx in range(rec.number_occurence or 1):
+                        for idx_col in tab_vals["idx_col_validator"]:
+                            idx_col_validator.append(
+                                idx_col + offset + idx * metadata["total_columns"]
+                            )
+                    tab_vals["idx_col_validator"] = idx_col_validator
+                    self._add_update_tabs(result, tab_name, tab_vals)
+                offset += metadata["total_columns"] * rec.number_occurence
+                continue
+            elif not rec.add_select_tab:
+                offset += rec.number_occurence or 1
+                continue
+
+            permitted_records = []
+            model_name = rec.related_model_id.model
+            domain = (
+                rec.tab_filter_id and ast.literal_eval(rec.tab_filter_id.domain)
+            ) or []
+            records_matching_constraint = self.env[model_name].search(domain)
+            permitted_records += records_matching_constraint
+            data = rec._format_tab_records(permitted_records)
+            headers = rec._get_tab_headers()
+            tab_name = rec._get_tab_name()
+            idx_col_validator = []
+            for __ in range(rec.number_occurence or 1):
+                offset += 1
+                idx_col_validator += [offset]
+            self._add_update_tabs(
+                result,
+                tab_name,
+                {
+                    "headers": headers,
+                    "data": data,
+                    "idx_col_validator": idx_col_validator,
+                },
+            )
+        result["total_columns"] = offset
+        return result
