@@ -24,9 +24,9 @@ class PatternConfig(models.Model):
         book = openpyxl.Workbook()
         main_sheet = self._build_main_sheet_structure(book)
         self._populate_main_sheet_rows(main_sheet, records)
-        tab_data = self.export_fields._get_tab_data()
-        self._create_tabs(book, tab_data)
-        self._create_validators(main_sheet, records, tab_data)
+        tabs = self._get_metadata()["tabs"]
+        self._create_tabs(book, tabs)
+        self._create_validators(main_sheet, records, tabs)
         book.close()
         xlsx_file = BytesIO()
         book.save(xlsx_file)
@@ -61,34 +61,34 @@ class PatternConfig(models.Model):
             for col, header in enumerate(headers, start=1):
                 main_sheet.cell(row=row, column=col, value=values.get(header, ""))
 
-    def _create_tabs(self, book, tab_data):
+    def _create_tabs(self, book, tabs):
         """Create additional sheets for export lines with create tab option
         and write all valid choices"""
-        for name, headers, data, __ in tab_data:
-            new_sheet = book.create_sheet(name)
-            for col_number, header in enumerate(headers, start=1):
+        for tab in tabs:
+            new_sheet = book.create_sheet(tab["name"])
+            for col_number, header in enumerate(tab["headers"], start=1):
                 new_sheet.cell(row=1, column=col_number, value=header)
-            for row_number, row_data in enumerate(data, start=2):
+            for row_number, row_data in enumerate(tab["data"], start=2):
                 for col_number, cell_data in enumerate(row_data, start=1):
                     new_sheet.cell(row=row_number, column=col_number, value=cell_data)
 
-    def _create_validators(self, main_sheet, records, tab_data):
+    def _create_validators(self, main_sheet, records, tabs):
         """Add validators: source permitted records from tab sheets,
         apply validation to main sheet"""
         if len(records.ids) < 1000:
             main_sheet_length = 1000
         else:
             main_sheet_length = len(records.ids) + 2
-        for tab_name, _, data, cols_dst in tab_data:
+        for tab in tabs:
             # TODO support arbitrary columns/attributes instead of
             #  only name
             col_letter_src = get_column_letter(1)
             range_src = "${}$2:${}${}".format(
-                col_letter_src, col_letter_src, str(1 + len(data))
+                col_letter_src, col_letter_src, str(1 + len(tab["data"]))
             )
-            formula_range_src = "=" + quote_sheetname(tab_name) + "!" + range_src
+            formula_range_src = "=" + quote_sheetname(tab["name"]) + "!" + range_src
             validation = DataValidation(type="list", formula1=formula_range_src)
-            for idx_col in cols_dst:
+            for idx_col in tab["idx_col_validator"]:
                 col_letter_dst = get_column_letter(idx_col)
                 range_dst = "${}${}:${}${}".format(
                     col_letter_dst,

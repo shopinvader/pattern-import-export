@@ -1,6 +1,5 @@
 # Copyright 2020 Akretion France (http://www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-import ast
 
 # pylint: disable=missing-manifest-dependency
 from _collections import OrderedDict
@@ -249,39 +248,6 @@ class IrExportsLine(models.Model):
         if len(name) > 31:
             name = name[0:28] + "..."
         return name
-
-    def _get_tab_data(self):
-        """
-        :return: iterable of 4-tuples of format:
-        (name, headers, data, idx_col_validator)
-        one tuple for each tab
-        name: sheet name
-        headers: list of strings, each element mapping to one header cell
-        data: list of lists, each element mapping to one row/cells
-        idx_col_validator: position of the column on the main sheet
-        """
-        result = []
-        offset = 0
-        for rec in self:
-            if not rec.add_select_tab:
-                offset += rec.number_occurence or 1
-                continue
-            permitted_records = []
-            model_name = rec.related_model_id.model
-            domain = (
-                rec.tab_filter_id and ast.literal_eval(rec.tab_filter_id.domain)
-            ) or []
-            records_matching_constraint = self.env[model_name].search(domain)
-            permitted_records += records_matching_constraint
-            data = rec._format_tab_records(permitted_records)
-            headers = rec._get_tab_headers()
-            tab_name = rec._get_tab_name()
-            idx_col_validator = []
-            for __ in range(rec.number_occurence or 1):
-                offset += 1
-                idx_col_validator += [offset]
-            result.append((tab_name, headers, data, idx_col_validator))
-        return result
 
     def _get_json_parser_for_pattern(self):
         parser = {}
