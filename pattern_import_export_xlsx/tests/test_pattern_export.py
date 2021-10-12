@@ -126,6 +126,29 @@ class TestPatternExportExcel(PatternCaseExport, PatternCommon, SavepointCase):
         )
         self.assertTrue(wb[expected_tab_name])
 
+    def test_export_tabs_with_subpattern(self):
+        wb = self._helper_get_resulting_wb(self.pattern_config_o2m, self.partners)
+        sheets_name = [x.title for x in wb.worksheets]
+        self.assertEqual(len(sheets_name), 3)
+        sheet_tab_2 = wb[self.tab_name_countries_1]
+        sheet_tab_3 = wb["Tags"]
+        self.assertEqual(
+            sheets_name, ["Partner with contact", self.tab_name_countries_1, "Tags"]
+        )
+        expected_values_tab_2 = [["BE"], ["FR"], ["US"], [CELL_VALUE_EMPTY]]
+        expected_values_tab_3 = [
+            ["Consulting Services"],
+            ["Desk Manufacturers"],
+            ["Employees"],
+            ["Office Supplies"],
+            ["Prospects"],
+            ["Services"],
+            ["Vendor"],
+            [CELL_VALUE_EMPTY],
+        ]
+        self._helper_check_cell_values(sheet_tab_2, expected_values_tab_2)
+        self._helper_check_cell_values(sheet_tab_3, expected_values_tab_3)
+
     def test_export_validators_simple(self):
         wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheet_base = wb["Partner"]
@@ -142,6 +165,26 @@ class TestPatternExportExcel(PatternCaseExport, PatternCommon, SavepointCase):
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1000"
+        )
+
+    def test_export_validators_simple_with_subpattern(self):
+        wb = self._helper_get_resulting_wb(self.pattern_config_o2m, self.partners)
+        sheet_base = wb["Partner with contact"]
+        self.assertEqual(
+            sheet_base.data_validations.dataValidation[0].formula1,
+            "='{}'!$A$2:$A$4".format(self.tab_name_countries_1),
+        )
+        self.assertEqual(
+            str(sheet_base.data_validations.dataValidation[0].cells),
+            "F2:F1000 K2:K1000 P2:P1000 R2:R1000",
+        )
+        self.assertEqual(
+            sheet_base.data_validations.dataValidation[1].formula1,
+            "='Tags'!$A$2:$A$8",
+        )
+        self.assertEqual(
+            str(sheet_base.data_validations.dataValidation[1].cells),
+            "G2:G1000 L2:L1000 Q2:Q1000",
         )
 
     def test_export_validators_many2many(self):

@@ -91,6 +91,7 @@ class PatternCaseExport:
             "child_ids|3|street",
             "child_ids|3|country_id|code",
             "child_ids|3|category_id|1|name",
+            "country_id|code",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -134,6 +135,7 @@ class PatternCaseExport:
             "child_ids|3|category_id|3|name",
             "child_ids|3|category_id|4|name",
             "child_ids|3|category_id|5|name",
+            "country_id|code",
         ]
         self.assertEqual(expected_header, headers)
 
@@ -237,6 +239,7 @@ class PatternCaseExport:
                 "child_ids|3|street": "1839 Arbor Way",
                 "child_ids|3|country_id|code": "US",
                 "child_ids|3|category_id|1|name": None,
+                "country_id|code": "US",
             },
             {
                 ".id": self.partner_2.id,
@@ -256,6 +259,7 @@ class PatternCaseExport:
                 "child_ids|3|street": "77 Santa Barbara Rd",
                 "child_ids|3|country_id|code": "US",
                 "child_ids|3|category_id|1|name": None,
+                "country_id|code": "US",
             },
             {
                 ".id": self.partner_3.id,
@@ -275,6 +279,7 @@ class PatternCaseExport:
                 "child_ids|3|street": "317 Fairchild Dr",
                 "child_ids|3|country_id|code": "US",
                 "child_ids|3|category_id|1|name": None,
+                "country_id|code": "US",
             },
         ]
         results = self._get_data(self.pattern_config_o2m, self.partners)
@@ -312,6 +317,7 @@ class PatternCaseExport:
                 "child_ids|2|category_id|1|name": None,
                 "child_ids|2|category_id|2|name": None,
                 "child_ids|2|category_id|3|name": None,
+                "country_id|code": "US",
             },
             {
                 ".id": self.partner_2.id,
@@ -330,6 +336,7 @@ class PatternCaseExport:
                 "child_ids|2|category_id|1|name": None,
                 "child_ids|2|category_id|2|name": None,
                 "child_ids|2|category_id|3|name": None,
+                "country_id|code": "US",
             },
             {
                 ".id": self.partner_3.id,
@@ -348,6 +355,7 @@ class PatternCaseExport:
                 "child_ids|2|category_id|1|name": None,
                 "child_ids|2|category_id|2|name": None,
                 "child_ids|2|category_id|3|name": None,
+                "country_id|code": "US",
             },
         ]
 
@@ -377,3 +385,36 @@ class PatternTestExport(PatternCommon, SavepointCase, PatternCaseExport):
 
     def _get_data(self, pattern_config, records):
         return pattern_config._get_data_to_export(records)
+
+    def test_get_metadata(self):
+        result = self.pattern_config_o2m._get_metadata()
+        self.assertEqual(len(result["tabs"]), 2)
+        tabs = result["tabs"]
+        tab_country_name = (
+            f"({self.filter_countries_1.id}) {self.filter_countries_1.name}"
+        )
+        self.assertEqual(list(tabs.keys()), [tab_country_name, "Tags"])
+        self.assertEqual(
+            tabs[tab_country_name],
+            {
+                "headers": ["code"],
+                "data": [["BE"], ["FR"], ["US"]],
+                "idx_col_validator": [6, 11, 16, 18],
+            },
+        )
+        self.assertEqual(
+            tabs["Tags"],
+            {
+                "headers": ["name"],
+                "data": [
+                    ["Consulting Services"],
+                    ["Desk Manufacturers"],
+                    ["Employees"],
+                    ["Office Supplies"],
+                    ["Prospects"],
+                    ["Services"],
+                    ["Vendor"],
+                ],
+                "idx_col_validator": [7, 12, 17],
+            },
+        )

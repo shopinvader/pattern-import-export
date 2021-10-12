@@ -64,8 +64,8 @@ class PatternConfig(models.Model):
     def _create_tabs(self, book, tabs):
         """Create additional sheets for export lines with create tab option
         and write all valid choices"""
-        for tab in tabs:
-            new_sheet = book.create_sheet(tab["name"])
+        for tab_name, tab in tabs.items():
+            new_sheet = book.create_sheet(tab_name)
             for col_number, header in enumerate(tab["headers"], start=1):
                 new_sheet.cell(row=1, column=col_number, value=header)
             for row_number, row_data in enumerate(tab["data"], start=2):
@@ -79,14 +79,14 @@ class PatternConfig(models.Model):
             main_sheet_length = 1000
         else:
             main_sheet_length = len(records.ids) + 2
-        for tab in tabs:
+        for tab_name, tab in tabs.items():
             # TODO support arbitrary columns/attributes instead of
             #  only name
             col_letter_src = get_column_letter(1)
             range_src = "${}$2:${}${}".format(
                 col_letter_src, col_letter_src, str(1 + len(tab["data"]))
             )
-            formula_range_src = "=" + quote_sheetname(tab["name"]) + "!" + range_src
+            formula_range_src = "=" + quote_sheetname(tab_name) + "!" + range_src
             validation = DataValidation(type="list", formula1=formula_range_src)
             for idx_col in tab["idx_col_validator"]:
                 col_letter_dst = get_column_letter(idx_col)

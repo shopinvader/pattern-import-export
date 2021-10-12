@@ -98,5 +98,11 @@
             <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
             <field name="sub_pattern_config_id" ref="demo_pattern_config" />
         </record>
+        <record id="demo_export_o2m_line_4" model="ir.exports.line">
+            <field name="name">country_id/code</field>
+            <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
+            <field name="tab_filter_id" ref="demo_filter_countries_1" />
+            <field name="add_select_tab" eval="True" />
+        </record>
     </data>
 </odoo>
