@@ -154,17 +154,17 @@ class TestPatternExportExcel(PatternCaseExport, PatternCommon, SavepointCase):
         sheet_base = wb["Partner"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='{}'!$A$2:$A$4".format(self.tab_name_countries_1),
+            "='{}'!$A$2:$A$1003".format(self.tab_name_countries_1),
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[0].cells), "D2:D1000"
+            str(sheet_base.data_validations.dataValidation[0].cells), "D2:D1003"
         )
         self.assertEqual(
             sheet_base.data_validations.dataValidation[1].formula1,
-            "='Tags'!$A$2:$A$8",
+            "='Tags'!$A$2:$A$1007",
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1000"
+            str(sheet_base.data_validations.dataValidation[1].cells), "E2:E1003"
         )
 
     def test_export_validators_simple_with_subpattern(self):
@@ -172,19 +172,19 @@ class TestPatternExportExcel(PatternCaseExport, PatternCommon, SavepointCase):
         sheet_base = wb["Partner with contact"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='{}'!$A$2:$A$4".format(self.tab_name_countries_1),
+            "='{}'!$A$2:$A$1003".format(self.tab_name_countries_1),
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[0].cells),
-            "F2:F1000 K2:K1000 P2:P1000 R2:R1000",
+            "F2:F1003 K2:K1003 P2:P1003 R2:R1003",
         )
         self.assertEqual(
             sheet_base.data_validations.dataValidation[1].formula1,
-            "='Tags'!$A$2:$A$8",
+            "='Tags'!$A$2:$A$1007",
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[1].cells),
-            "G2:G1000 L2:L1000 Q2:Q1000",
+            "G2:G1003 L2:L1003 Q2:Q1003",
         )
 
     def test_export_validators_many2many(self):
@@ -193,12 +193,12 @@ class TestPatternExportExcel(PatternCaseExport, PatternCommon, SavepointCase):
         sheet_base = wb["Users list - M2M"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='{}'!$A$2:$A$4".format(self.tab_name_ignore_one),
+            "='{}'!$A$2:$A$1003".format(self.tab_name_ignore_one),
         )
         for idx, col_letter in enumerate(("C", "D", "E")):
             self.assertEqual(
                 str(sheet_base.data_validations.dataValidation[0].cells.ranges[idx]),
-                "{0}2:{0}1000".format(col_letter),
+                "{0}2:{0}1003".format(col_letter),
             )
 
     def test_export_m2m_tabs(self):
@@ -217,8 +217,8 @@ class TestPatternExportExcel(PatternCaseExport, PatternCommon, SavepointCase):
         sheet_base = wb["Users list - M2M"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='{}'!$A$2:$A$4".format(self.tab_name_ignore_one),
+            "='{}'!$A$2:$A$1003".format(self.tab_name_ignore_one),
         )
         self.assertEqual(
-            str(sheet_base.data_validations.dataValidation[0].cells), "C2:C1000"
+            str(sheet_base.data_validations.dataValidation[0].cells), "C2:C1003"
         )

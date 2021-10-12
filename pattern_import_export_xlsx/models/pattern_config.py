@@ -9,6 +9,8 @@ from openpyxl.worksheet.datavalidation import DataValidation
 
 from odoo import fields, models
 
+EXTRA_LINE_NUMBER = 1000
+
 
 class PatternConfig(models.Model):
     _inherit = "pattern.config"
@@ -75,16 +77,15 @@ class PatternConfig(models.Model):
     def _create_validators(self, main_sheet, records, tabs):
         """Add validators: source permitted records from tab sheets,
         apply validation to main sheet"""
-        if len(records.ids) < 1000:
-            main_sheet_length = 1000
-        else:
-            main_sheet_length = len(records.ids) + 2
+        main_sheet_length = len(records.ids) + EXTRA_LINE_NUMBER
         for tab_name, tab in tabs.items():
             # TODO support arbitrary columns/attributes instead of
             #  only name
             col_letter_src = get_column_letter(1)
             range_src = "${}$2:${}${}".format(
-                col_letter_src, col_letter_src, str(1 + len(tab["data"]))
+                col_letter_src,
+                col_letter_src,
+                str(EXTRA_LINE_NUMBER + len(tab["data"])),
             )
             formula_range_src = "=" + quote_sheetname(tab_name) + "!" + range_src
             validation = DataValidation(type="list", formula1=formula_range_src)
