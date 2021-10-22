@@ -2,6 +2,8 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import ast
+
 from odoo import _, api, models
 from odoo.osv import expression
 
@@ -55,11 +57,15 @@ class IrFieldsConverter(models.AbstractModel):
             return super().db_id_for(model, field, subfield, value)
         else:
             if value:
-                # Only list domain are supported as they can be apply on server-side
+                # Only list domain and server-side evaluable are supported
+                # as they can be apply on server-side
                 if isinstance(field.domain, list):
                     domain = field.domain
                 else:
-                    domain = []
+                    try:
+                        domain = ast.literal_eval(field.domain)
+                    except ValueError:
+                        domain = []
                 domain = expression.AND([domain, [(subfield, "=", value)]])
                 if (
                     self.env.context.get("pattern_config", {}).get("model")
