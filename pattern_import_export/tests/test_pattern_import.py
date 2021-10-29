@@ -23,6 +23,14 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file.split_in_chunk()
         return model.search([("id", "not in", records.ids)])
 
+    def test_update_inactive(self):
+        unique_name = str(uuid4())
+        partner = self.env["res.partner"].create({"name": unique_name, "active": False})
+        data = [{"name#key": unique_name, "street": "foo"}]
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        self.run_pattern_file(pattern_file)
+        self.assertEqual(partner.street, "foo")
+
     def test_update_with_external_id(self):
         """
         For this test, simulate the case of an update of existing record
