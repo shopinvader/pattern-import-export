@@ -44,27 +44,33 @@
                         </group>
                         <group>
                             <field name="create_date" readonly="1" />
-                            <field name="date_done" readonly="1" />
-                            <field name="nbr_error" />
-                            <field name="nbr_success" />
                         </group>
                     </group>
-                    <div>
-                        <label for="progress" />
-                        <field name="progress" readonly="1" widget="progressbar" />
-                        <button
-                            name="refresh"
-                            class="fa fa-refresh"
-                            title="Refresh"
-                            type="object"
-                        />
-                    </div>
                     <notebook>
                         <page
                             name="chunk"
                             string="Chunk"
                             attrs="{'invisible': [('kind', '!=', 'import')]}"
                         >
+                            <div>
+                                <label for="progress" />
+                                <field
+                                    name="progress"
+                                    readonly="1"
+                                    widget="progressbar"
+                                />
+                                <button
+                                    name="refresh"
+                                    class="fa fa-refresh"
+                                    title="Refresh"
+                                    type="object"
+                                />
+                            </div>
+                            <group>
+                                <field name="date_done" readonly="1" />
+                                <field name="nbr_error" />
+                                <field name="nbr_success" />
+                            </group>
                             <field
                                 name="info"
                                 readonly="1"
