@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export",
     "summary": "Pattern for import or export",
-    "version": "14.0.2.1.0",
+    "version": "14.0.2.1.1",
     "category": "Extra Tools",
     "author": "Akretion",
     "website": "https://github.com/shopinvader/pattern-import-export",
