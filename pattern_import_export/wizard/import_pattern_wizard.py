@@ -1,7 +1,7 @@
 # Copyright 2020 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import fields, models
+from odoo import fields, models, api
 
 
 class ImportPatternWizard(models.TransientModel):
@@ -14,6 +14,15 @@ class ImportPatternWizard(models.TransientModel):
     _name = "import.pattern.wizard"
     _description = "Import pattern wizard"
 
+    def _get_model(self):
+        model_name = self.env.context.get('active_model')
+        active_id = self.env.context.get('active_id')
+        if model_name == "pattern.config":
+            pattern_config = self.env[model_name].browse(active_id)
+            model_name = pattern_config.resource
+        return model_name
+
+
     pattern_config_id = fields.Many2one(
         comodel_name="pattern.config",
         string="Import pattern",
@@ -23,7 +32,15 @@ class ImportPatternWizard(models.TransientModel):
     )
     import_file = fields.Binary(string="File to import", required=True)
     filename = fields.Char()
+    model = fields.Char(default=_get_model)
+    no_import_pattern = fields.Boolean(compute="_compute_no_import_pattern")
 
+    @api.depends("model")
+    def _compute_no_import_pattern(self):
+        for wiz in self:
+            wiz.no_import_pattern = not wiz.env["pattern.config"].search_count(
+                [("resource", "=", wiz.model)]
+            )
     def action_launch_import(self):
         """
 
