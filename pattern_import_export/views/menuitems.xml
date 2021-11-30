@@ -4,6 +4,7 @@
     <menuitem
         id="import_export_menu_root"
         name="Import/Export"
+        web_icon="pattern_import_export,static/description/icon.png"
         active="True"
         sequence="100"
         groups="base.group_user"
