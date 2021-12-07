@@ -17,18 +17,18 @@ Import Export Xlsx or csv file easily
 
 Available addons
 ----------------
-addon | version | summary
---- | --- | ---
-[pattern_import_export](pattern_import_export/) | 14.0.2.2.0 | Pattern for import or export
-[pattern_import_export_csv](pattern_import_export_csv/) | 14.0.1.0.0 | Pattern for import or export from to CSV files
-[pattern_import_export_xlsx](pattern_import_export_xlsx/) | 14.0.2.0.0 | Pattern for import or export from to XLSX files
+addon | version | maintainers | summary
+--- | --- | --- | ---
+[pattern_import_export](pattern_import_export/) | 14.0.2.2.0 |  | Pattern for import or export
+[pattern_import_export_csv](pattern_import_export_csv/) | 14.0.1.0.0 |  | Pattern for import or export from to CSV files
+[pattern_import_export_xlsx](pattern_import_export_xlsx/) | 14.0.2.0.0 |  | Pattern for import or export from to XLSX files
 
 
 Unported addons
 ---------------
-addon | version | summary
---- | --- | ---
-[pattern_import_export_synchronize](pattern_import_export_synchronize/) | 12.0.4.2.0 (unported) | Attachment Synchronize using patterns
+addon | version | maintainers | summary
+--- | --- | --- | ---
+[pattern_import_export_synchronize](pattern_import_export_synchronize/) | 12.0.4.2.0 (unported) | [![kevinkhao](https://github.com/kevinkhao.png?size=30px)](https://github.com/kevinkhao) [![sebastienbeau](https://github.com/sebastienbeau.png?size=30px)](https://github.com/sebastienbeau) | Attachment Synchronize using patterns
 
 [//]: # (end addons)
 
