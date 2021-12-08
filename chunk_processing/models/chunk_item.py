@@ -5,14 +5,15 @@
 from odoo import fields, models
 
 
-class PatternChunk(models.Model):
-    _name = "pattern.chunk"
-    _description = "Pattern Chunk"
+class ChunkItem(models.Model):
+    _inherit = "collection.base"
+    _name = "chunk.item"
+    _description = "Chunk Item"
     _order = "start_idx"
     _rec_name = "start_idx"
 
-    pattern_file_id = fields.Many2one(
-        "pattern.file", "Pattern File", required=True, ondelete="cascade"
+    group_id = fields.Many2one(
+        "chunk.group", "Chunk Group", required=True, ondelete="cascade"
     )
     start_idx = fields.Integer()
     stop_idx = fields.Integer()
@@ -32,33 +33,31 @@ class PatternChunk(models.Model):
         ]
     )
 
-    def run_import(self):
-        model = self.pattern_file_id.pattern_config_id.model_id.model
-        res = (
-            self.with_context(pattern_config={"model": model, "record_ids": []})
-            .env[model]
-            .load([], self.data)
-        )
-        self.write(self._prepare_chunk_result(res))
-        config = self.pattern_file_id.pattern_config_id
-        priority = config.job_priority
-        if not config.process_multi:
+    def manual_run(self):
+        """ Run the import without try/except, easier for debug """
+        return self._run()
+
+    def _run(self):
+        with self.work_on(self.group_id.apply_on_model) as work:
+            processor = work.component(usage=self.group_id.usage)
+            processor.run()
+        if not self.group_id.process_multi:
             next_chunk = self.get_next_chunk()
             if next_chunk:
-                next_chunk.with_delay(priority=priority).run()
+                next_chunk.with_delay(priority=self.group_id.job_priority).run()
             else:
                 self.with_delay(priority=5).check_last()
         else:
             self.with_delay(priority=5).check_last()
 
     def run(self):
-        """Process Import of Pattern Chunk"""
+        """Process Chunk Item in a savepoint"""
         cr = self.env.cr
         try:
             self.state = "started"
             cr.commit()  # pylint: disable=invalid-commit
             with cr.savepoint():
-                self.run_import()
+                self._run()
         except Exception as e:
             self.write(
                 {
@@ -70,6 +69,7 @@ class PatternChunk(models.Model):
             self.with_delay().check_last()
         return "OK"
 
+    # TODO move this in pattern-import
     def _prepare_chunk_result(self, res):
         # TODO rework this part and add specific test case
         nbr_error = len(res["messages"])
@@ -98,23 +98,19 @@ class PatternChunk(models.Model):
         }
 
     def get_next_chunk(self):
-        return self.search(
-            [
-                ("pattern_file_id", "=", self.pattern_file_id.id),
-                ("state", "=", "pending"),
-            ],
-            limit=1,
+        return fields.first(
+            self.group_id.item_ids.filtered(lambda s: s.state == "pending")
         )
 
     def is_last_job(self):
-        return not self.pattern_file_id.chunk_ids.filtered(
+        return not self.group_id.item_ids.filtered(
             lambda s: s.state in ("pending", "started")
         )
 
     def check_last(self):
         """Check if all chunk have been processed"""
         if self.is_last_job():
-            self.pattern_file_id.set_import_done()
-            return "Pattern file is done"
+            self.group_id.set_done()
+            return "Chunk group is done"
         else:
             return "There is still some running chunk"

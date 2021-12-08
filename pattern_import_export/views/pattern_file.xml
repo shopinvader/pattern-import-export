@@ -12,9 +12,9 @@
                 <field name="state" />
                 <field name="date_done" readonly="1" />
                 <field name="kind" />
-                <field name="nbr_error" />
+                <!--<field name="nbr_error" />
                 <field name="nbr_success" />
-                <field name="info" />
+                <field name="info" />-->
             </tree>
         </field>
     </record>
@@ -76,7 +76,7 @@
                                 readonly="1"
                                 attrs="{'invisible': [('info', '=', False)]}"
                             />
-                            <field name="chunk_ids" nolabel="1" />
+                        <field name="chunk_item_ids" nolabel="1" />
                         </page>
                     </notebook>
                 </sheet>
