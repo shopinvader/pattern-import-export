@@ -23,6 +23,7 @@
             </header>
             <sheet>
                 <group>
+                    <field name="data" />
                     <field name="start_idx" />
                     <field name="stop_idx" />
                     <field name="nbr_error" />

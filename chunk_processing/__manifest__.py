@@ -23,6 +23,7 @@
     ],
     "data": [
         "views/chunk_item_view.xml",
+        "views/chunk_group_view.xml",
     ],
     "demo": [],
 }

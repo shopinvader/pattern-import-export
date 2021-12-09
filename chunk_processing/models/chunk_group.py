@@ -22,6 +22,7 @@ class ChunkGroup(models.Model):
             ("xml", "XML"),
         ]
     )
+    xml_split_xpath = fields.Char()
     state = fields.Selection(
         [("pending", "Pending"), ("failed", "Failed"), ("done", "Done")],
         default="pending",

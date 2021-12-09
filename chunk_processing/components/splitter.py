@@ -2,6 +2,8 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import base64
+
 from odoo.addons.component.core import AbstractComponent
 
 
@@ -12,12 +14,15 @@ class ChunkSplitter(AbstractComponent):
     def _parse_data(self, data):
         raise NotImplementedError
 
-    def _prepare_chunk(self, start_idx, stop_idx, data):
+    def _convert_items_to_data(self, items):
+        raise NotImplementedError
+
+    def _prepare_chunk(self, start_idx, stop_idx, items):
         return {
             "start_idx": start_idx,
             "stop_idx": stop_idx,
-            "data": data,
-            "nbr_item": len(data),
+            "data": base64.b64encode(self._convert_items_to_data(items)),
+            "nbr_item": len(items),
             "state": "pending",
             "group_id": self.collection.id,
         }

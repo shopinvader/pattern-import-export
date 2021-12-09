@@ -16,7 +16,7 @@ class PatternFile(models.Model):
     pattern_config_id = fields.Many2one(
         "pattern.config", required=True, string="Export pattern"
     )
-    chunk_group_id = fields.Many2one("chunk.group")
+    chunk_group_id = fields.Many2one("chunk.group", string="Chunk Group")
     chunk_item_ids = fields.One2many("chunk.item", related="chunk_group_id.item_ids")
     state = fields.Selection(
         [("pending", "Pending"), ("failed", "Failed"), ("done", "Done")],
@@ -29,7 +29,7 @@ class PatternFile(models.Model):
     info = fields.Char(related="chunk_group_id.info")
 
     _sql_constraints = [
-        ("uniq_group_id", "unique(group_id)", "The Group must be unique!")
+        ("uniq_chunk_group_id", "unique(chunk_group_id)", "The Group must be unique!")
     ]
 
     def _add_chunk_group(self):

@@ -17,7 +17,7 @@ class ChunkItem(models.Model):
     )
     start_idx = fields.Integer()
     stop_idx = fields.Integer()
-    data = fields.Serialized()
+    data = fields.Binary()
     record_ids = fields.Serialized()
     messages = fields.Serialized()
     result_info = fields.Html()

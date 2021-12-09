@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+<record id="chunk_group_view_tree" model="ir.ui.view">
+    <field name="model">chunk.group</field>
+    <field name="arch" type="xml">
+        <tree string="Chunk Group">
+            <field name="data_format" />
+            <field name="date_done" />
+        </tree>
+    </field>
+</record>
+
+<record id="chunk_group_view_form" model="ir.ui.view">
+    <field name="model">chunk.group</field>
+    <field name="arch" type="xml">
+        <form string="Chunk Group" create="false">
+            <header>
+                <button
+                        name="split_in_chunk"
+                        string="Re-launch Import"
+                        type="object"
+                        confirm="Are you sure to re-split the current file?"
+                    />
+                <field name="state" widget="statusbar" />
+            </header>
+            <sheet>
+                <group>
+                    <group name="config" string="Config">
+                        <field name="process_multi" readonly="1" />
+                        <field name="chunk_size" readonly="1" />
+                        <field name="job_priority" readonly="1" />
+                        <field name="data_format" readonly="1" />
+                        <field name="apply_on_model" readonly="1" />
+                        <field name="usage" readonly="1" />
+                    </group>
+                    <group>
+                        <field name="create_date" readonly="1" />
+                        <field name="date_done" readonly="1" />
+                    </group>
+                </group>
+                <notebook>
+                    <page name="chunk" string="Chunk">
+                        <div>
+                            <label for="progress" />
+                            <field name="progress" readonly="1" widget="progressbar" />
+                        </div>
+                        <group>
+                            <field name="nbr_error" />
+                            <field name="nbr_success" />
+                        </group>
+                        <field
+                                name="info"
+                                readonly="1"
+                                attrs="{'invisible': [('info', '=', False)]}"
+                            />
+                    <field name="item_ids" nolabel="1" />
+                    </page>
+                </notebook>
+            </sheet>
+        </form>
+    </field>
+    </record>
+</odoo>
