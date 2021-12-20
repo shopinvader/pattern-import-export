@@ -68,3 +68,10 @@ class ChunkGroup(models.Model):
             else:
                 record.state = "done"
             record.date_done = fields.Datetime.now()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record in records:
+            record.with_delay(priority=self.job_priority).split_in_chunk()
+        return records
