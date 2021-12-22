@@ -22,5 +22,17 @@ class ChunkProcessorXml(AbstractComponent):
         raise NotImplementedError
 
     def run(self):
-        for item in self._parse_data():
-            self._import_item(item)
+        res = {"ids": [], "messages": []}
+        for idx, item in enumerate(self._parse_data()):
+            try:
+                with self.env.cr.savepoint():
+                    res["ids"] += self._import_item(item)
+            except Exception as e:
+                res["messages"].append(
+                    {
+                        "rows": {"from": idx, "to": idx},
+                        "type": type(e).__name__,
+                        "message": str(e),
+                    }
+                )
+        return res

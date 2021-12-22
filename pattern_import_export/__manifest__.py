@@ -25,7 +25,6 @@
         "views/pattern_config.xml",
         "views/pattern_file.xml",
         "views/menuitems.xml",
-        "views/templates.xml",
         "data/queue_job_channel_data.xml",
         # "data/queue_job_function_data.xml",
     ],

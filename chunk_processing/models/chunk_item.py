@@ -40,7 +40,10 @@ class ChunkItem(models.Model):
     def _run(self):
         with self.work_on(self.group_id.apply_on_model) as work:
             processor = work.component(usage=self.group_id.usage)
-            processor.run()
+            res = processor.run()
+            vals = self._prepare_chunk_result(res)
+            self.write(vals)
+
         if not self.group_id.process_multi:
             next_chunk = self.get_next_chunk()
             if next_chunk:
@@ -49,6 +52,7 @@ class ChunkItem(models.Model):
                 self.with_delay(priority=5).check_last()
         else:
             self.with_delay(priority=5).check_last()
+        return True
 
     def run(self):
         """Process Chunk Item in a savepoint"""
@@ -59,22 +63,25 @@ class ChunkItem(models.Model):
             with cr.savepoint():
                 self._run()
         except Exception as e:
-            self.write(
-                {
-                    "result_info": "Fail to process chunk %s" % e,
-                    "nbr_error": self.nbr_item,
-                    "state": "failed",
-                }
-            )
-            self.with_delay().check_last()
+            if self._context.get("chunk_raise_if_exception"):
+                raise
+            else:
+                self.write(
+                    {
+                        "result_info": "Fail to process chunk %s" % e,
+                        "nbr_error": self.nbr_item,
+                        "state": "failed",
+                    }
+                )
+                self.with_delay().check_last()
         return "OK"
 
-    # TODO move this in pattern-import
     def _prepare_chunk_result(self, res):
         # TODO rework this part and add specific test case
         nbr_error = len(res["messages"])
         nbr_success = max(self.nbr_item - nbr_error, 0)
 
+        # TODO move this in pattern-import
         # case where error are not return and record are not imported
         nbr_imported = len(res.get("ids") or [])
         if nbr_success > nbr_imported:
@@ -85,9 +92,7 @@ class ChunkItem(models.Model):
             state = "failed"
         else:
             state = "done"
-        result = self.env["ir.qweb"]._render(
-            "pattern_import_export.format_message", res
-        )
+        result = self.env["ir.qweb"]._render("chunk_processing.format_message", res)
         return {
             "record_ids": res.get("ids"),
             "messages": res.get("messages"),

@@ -57,8 +57,11 @@ class ChunkGroup(models.Model):
                 splitter = work.component(usage=self.data_format)
                 splitter.run(data)
         except Exception as e:
-            self.state = "failed"
-            self.info = _("Failed to create the chunk: %s") % e
+            if self._context.get("chunk_raise_if_exception"):
+                raise
+            else:
+                self.state = "failed"
+                self.info = _("Failed to create the chunk: %s") % e
         return True
 
     def set_done(self):
