@@ -28,6 +28,8 @@ class ChunkProcessorXml(AbstractComponent):
                 with self.env.cr.savepoint():
                     res["ids"] += self._import_item(item)
             except Exception as e:
+                if self.env.context.get("chunk_raise_if_exception"):
+                    raise
                 res["messages"].append(
                     {
                         "rows": {"from": idx, "to": idx},
