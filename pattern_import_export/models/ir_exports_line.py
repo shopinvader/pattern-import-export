@@ -7,11 +7,7 @@ from _collections import OrderedDict
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-from odoo.addons.base_jsonify.models.ir_export import (
-    convert_dict,
-    partition,
-    update_dict,
-)
+from odoo.addons.base_jsonify.models.ir_export import convert_dict, update_dict
 
 from .common import COLUMN_X2M_SEPARATOR, IDENTIFIER_SUFFIX
 
@@ -249,26 +245,26 @@ class IrExportsLine(models.Model):
             name = name[0:28] + "..."
         return name
 
-    def _get_json_parser_for_pattern(self):
-        parser = {}
-        lang_to_lines = partition(self, lambda l: l.lang_id.code)
-        lang_parsers = {}
-        for lang in lang_to_lines:
-            dict_parser = OrderedDict()
-            for line in lang_to_lines[lang]:
-                names = line.name.split("/")
-                if line.target:
-                    names = line.target.split("/")
-                function = line.instance_method_name
-                options = {"resolver": line.resolver_id, "function": function}
-                update_dict(dict_parser, names, options)
-            lang_parsers[lang] = convert_dict(dict_parser)
-        if list(lang_parsers.keys()) == [False]:
-            parser["fields"] = lang_parsers[False]
-        else:
-            parser["langs"] = lang_parsers
-        if self.export_id.global_resolver_id:
-            parser["resolver"] = self.global_resolver_id
-        if self.export_id.language_agnostic:
-            parser["language_agnostic"] = self.language_agnostic
+    def _get_dict_parser_for_pattern(self):
+        parser = OrderedDict()
+        for rec in self:
+            names = rec.name.split("/")
+            options = {
+                "resolver": rec.resolver_id,
+                "function": rec.instance_method_name,
+            }
+            update_dict(parser, names, options)
+            if rec.sub_pattern_config_id:
+                last_item = parser
+                last_field = names[0]
+                for field in names[:-1]:
+                    last_item = last_item[field]
+                    last_field = field
+                sub_pattern_fields = rec.sub_pattern_config_id.export_fields
+                last_item[
+                    last_field
+                ] = sub_pattern_fields._get_dict_parser_for_pattern()
         return parser
+
+    def _get_json_parser_for_pattern(self):
+        return convert_dict(self._get_dict_parser_for_pattern())
