@@ -7,9 +7,10 @@ import openpyxl
 from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from odoo import fields, models
+from odoo import _, fields, models
 
 EXTRA_LINE_NUMBER = 1000
+OFFSET_FOR_ERROR_COL = 1
 
 
 class PatternConfig(models.Model):
@@ -40,15 +41,23 @@ class PatternConfig(models.Model):
         """
         main_sheet = book["Sheet"]
         main_sheet.title = self.name
+        # create error column here instead of
+        # pattern.file.xlsx_refresh_error_col for perf
+        # (only 1 cell affected)
+        main_sheet.cell(row=1, column=1, value=_("#Error"))
         if self.use_description:
             for col, header in enumerate(
-                self._get_header(use_description=True), start=1
+                self._get_header(use_description=True), start=1 + OFFSET_FOR_ERROR_COL
             ):
                 main_sheet.cell(row=1, column=col, value=header)
-            for col, header in enumerate(self._get_header(), start=1):
+            for col, header in enumerate(
+                self._get_header(), start=1 + OFFSET_FOR_ERROR_COL
+            ):
                 main_sheet.cell(row=2, column=col, value=header)
         else:
-            for col, header in enumerate(self._get_header(), start=1):
+            for col, header in enumerate(
+                self._get_header(), start=1 + OFFSET_FOR_ERROR_COL
+            ):
                 main_sheet.cell(row=1, column=col, value=header)
         return main_sheet
 
@@ -60,7 +69,7 @@ class PatternConfig(models.Model):
         for row, values in enumerate(
             self._get_data_to_export(records), start=self.row_start_records
         ):
-            for col, header in enumerate(headers, start=1):
+            for col, header in enumerate(headers, start=1 + OFFSET_FOR_ERROR_COL):
                 main_sheet.cell(row=row, column=col, value=values.get(header, ""))
 
     def _create_tabs(self, book, tabs):
@@ -79,8 +88,6 @@ class PatternConfig(models.Model):
         apply validation to main sheet"""
         main_sheet_length = len(records.ids) + EXTRA_LINE_NUMBER
         for tab_name, tab in tabs.items():
-            # TODO support arbitrary columns/attributes instead of
-            #  only name
             col_letter_src = get_column_letter(1)
             range_src = "${}$2:${}${}".format(
                 col_letter_src,
@@ -90,7 +97,7 @@ class PatternConfig(models.Model):
             formula_range_src = "=" + quote_sheetname(tab_name) + "!" + range_src
             validation = DataValidation(type="list", formula1=formula_range_src)
             for idx_col in tab["idx_col_validator"]:
-                col_letter_dst = get_column_letter(idx_col)
+                col_letter_dst = get_column_letter(idx_col + OFFSET_FOR_ERROR_COL)
                 range_dst = "${}${}:${}${}".format(
                     col_letter_dst,
                     str(self.row_start_records),
