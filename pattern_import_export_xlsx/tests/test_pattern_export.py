@@ -84,11 +84,6 @@ class TestPatternExportExcel(PatternCaseExport, PatternCommon, SavepointCase):
                 cell_value = sheet.cell(row=itr_row, column=itr_col).value
                 self.assertEqual(cell_value, expected_cell_value)
 
-    def _helper_check_headers(self, sheet, expected_headers):
-        for itr_col, expected_cell_value in enumerate(expected_headers, start=1):
-            cell_value = sheet.cell(row=1, column=itr_col).value
-            self.assertEqual(cell_value, expected_cell_value)
-
     def test_export_tabs(self):
         wb = self._helper_get_resulting_wb(self.pattern_config, self.partners)
         sheets_name = [x.title for x in wb.worksheets]
