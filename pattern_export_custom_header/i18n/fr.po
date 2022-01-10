@@ -1,0 +1,117 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* pattern_export_custom_header
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 14.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-01-10 17:01+0000\n"
+"PO-Revision-Date: 2022-01-10 17:01+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: pattern_export_custom_header
+#: model_terms:ir.ui.view,arch_db:pattern_export_custom_header.pattern_config_form_view
+msgid ""
+"<strong>- Leave blank to keep the initial header value.<br/>- Add a new line"
+" to create empty column.</strong>"
+msgstr "<strong>- Laisser vide pour garder l'entête initial.<br/>- Ajouter une ligne"
+" pour créer une colonne vide.</strong>"
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model_terms:ir.ui.view,arch_db:pattern_export_custom_header.pattern_config_form_view
+msgid "Custom Header"
+msgstr "Entête Personnalisé"
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__custom_name
+msgid "Custom Header Name"
+msgstr "Nom Entête Personnalisé"
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_config__custom_header_field_name_ids
+msgid "Custom Header names"
+msgstr "Noms Entêtes Personnalisés"
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_config__display_name
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model_terms:ir.ui.view,arch_db:pattern_export_custom_header.pattern_config_form_view
+msgid "Export Fields"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model_terms:ir.ui.view,arch_db:pattern_export_custom_header.pattern_config_form_view
+msgid "Generate headers"
+msgstr "Générer Entêtes"
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_config__id
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__id
+msgid "ID"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__initial_header_name
+msgid "Initial Header Name"
+msgstr "Nom Entête Initial"
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_config____last_update
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_custom_header__pattern_id
+msgid "Pattern"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model:ir.model,name:pattern_export_custom_header.model_pattern_config
+msgid "Pattern Config"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model:ir.model,name:pattern_export_custom_header.model_pattern_custom_header
+msgid "Pattern custom header"
+msgstr ""
+
+#. module: pattern_export_custom_header
+#: model_terms:ir.ui.view,arch_db:pattern_export_custom_header.pattern_config_form_view
+msgid "Use Custom Header"
+msgstr "Utiliser Entêtes Personnalisés"
+
+#. module: pattern_export_custom_header
+#: model:ir.model.fields,field_description:pattern_export_custom_header.field_pattern_config__use_custom_header
+msgid "Use custom header names"
+msgstr "Utiliser Noms Entêtes Personnalisés"

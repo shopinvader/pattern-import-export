@@ -91,6 +91,7 @@
                 </div>
 
             </xpath>
+
             <xpath expr="//form/group[1]" position="after">
                 <group name="general_info">
                     <field name="export_format" required="True" />
@@ -104,6 +105,14 @@
                     <field name="use_description" />
                 </group>
             </xpath>
+             <xpath expr="//form/group[@name='general_info']" position="after">
+                <notebook>
+                    <page string="Export Fields">
+                        <xpath expr="//field[@name='export_fields']" position="move" />
+                    </page>
+                </notebook>
+            </xpath>
+
             <xpath expr="//field[@name='field2_id']" position="attributes">
                 <attribute name="attrs">{
                     'readonly': [('hidden_fields', 'ilike', 'field2_id')],

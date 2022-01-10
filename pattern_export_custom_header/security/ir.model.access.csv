@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pattern_custom_header,pattern.custom.header,model_pattern_custom_header,pattern_import_export.group_pattern_user,1,1,1,1
