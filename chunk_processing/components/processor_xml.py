@@ -21,6 +21,13 @@ class ChunkProcessorXml(AbstractComponent):
     def _import_item(self):
         raise NotImplementedError
 
+    def _prepare_error_message(self, idx, item, error):
+        return {
+            "rows": {"from": idx, "to": idx},
+            "type": type(error).__name__,
+            "message": str(error),
+        }
+
     def run(self):
         res = {"ids": [], "messages": []}
         for idx, item in enumerate(self._parse_data()):
@@ -30,11 +37,5 @@ class ChunkProcessorXml(AbstractComponent):
             except Exception as e:
                 if self.env.context.get("chunk_raise_if_exception"):
                     raise
-                res["messages"].append(
-                    {
-                        "rows": {"from": idx, "to": idx},
-                        "type": type(e).__name__,
-                        "message": str(e),
-                    }
-                )
+                res["messages"].append(self._prepare_error_message(idx, item, e))
         return res
