@@ -5,7 +5,7 @@ import functools
 import logging
 
 from odoo import _, api, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import ValidationError
 from odoo.osv import expression
 from odoo.tools.misc import CountingStream
 
@@ -128,6 +128,28 @@ class Base(models.AbstractModel):
                 ident_keys.append(key)
         return domain, ident_keys
 
+    # TODO add test with FakeModel
+    # Case of use
+    # If you try to import a One2many on the product.product model and this
+    # o2m is define on the product.template
+    # in that case we need to found the right left domain
+    #  "product_tmpl_id.product_variant_ids"
+    # So we need to recurcively build this domain
+    # if the o2m is not inherited, we get the left domain by just reading
+    # the inverse_name
+    def _get_subdomain_field(self, field):
+        if field.inherited:
+            inherited_field = field.inherited_field
+            model_name = inherited_field.model_name
+            fieldname = self.env[model_name]._get_subdomain_field(inherited_field)
+            related_field = self._field_inverses[
+                self._fields[self._inherits[model_name]]
+            ][0]
+            return f"{fieldname}.{related_field.name}"
+        else:
+            return field.inverse_name
+        return None
+
     def _post_process_o2m_fields(self, res, parent_do_not_exist):
         if ".id" in res:
             parent_id = res[".id"]
@@ -141,17 +163,7 @@ class Base(models.AbstractModel):
             if field and field.type == "one2many":
                 subdomain = []
                 if parent_id:
-                    if not field.inverse_name:
-                        # TODO this case should not happen
-                        # but it seem that you can have issue with o2m and inherit
-                        # odoo may no have the inverse_name define
-                        # in my case if you try to import fixed_pricelist_item_ids
-                        # (module: product_form_pricelist) from a product product
-                        # the inverse name of fixed_pricelist_item_ids is not define
-                        raise UserError(
-                            f"inverse name is missing on the field {field.name}"
-                        )
-                    subdomain.append((field.inverse_name, "=", parent_id))
+                    subdomain.append((self._get_subdomain_field(field), "=", parent_id))
                 # empty subitem are removed
                 valid_subitems = []
                 for subitem in res[key]:
