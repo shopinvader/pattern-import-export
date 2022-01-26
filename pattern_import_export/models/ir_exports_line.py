@@ -7,7 +7,7 @@ from _collections import OrderedDict
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-from odoo.addons.base_jsonify.models.ir_export import (
+from odoo.addons.base_jsonify.models.ir_exports import (
     convert_dict,
     partition,
     update_dict,
