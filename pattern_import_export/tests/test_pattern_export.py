@@ -12,31 +12,103 @@ class PatternCaseExport:
     def _get_data(self, pattern_config, records):
         raise NotImplementedError
 
+    def _get_expected_results(self):
+        result = {
+            "expected_header_1": [
+                ".id",
+                "name",
+                "street",
+                "country_id|code",
+                "category_id|1|name",
+            ],
+            "expected_header_1_desc": [
+                "ID",
+                "Name",
+                "Street",
+                "Country|Country Code",
+                "Tags|1|Tag Name",
+            ],
+            "expected_header_2": [".id", "name", "company_ids|1|name"],
+            "expected_header_3": [
+                ".id",
+                "name",
+                "company_ids|1|name",
+                "company_ids|2|name",
+                "company_ids|3|name",
+                "company_ids|4|name",
+                "company_ids|5|name",
+            ],
+            "expected_header_4": [
+                ".id",
+                "name",
+                "child_ids|1|.id",
+                "child_ids|1|name",
+                "child_ids|1|street",
+                "child_ids|1|country_id|code",
+                "child_ids|1|category_id|1|name",
+                "child_ids|2|.id",
+                "child_ids|2|name",
+                "child_ids|2|street",
+                "child_ids|2|country_id|code",
+                "child_ids|2|category_id|1|name",
+                "child_ids|3|.id",
+                "child_ids|3|name",
+                "child_ids|3|street",
+                "child_ids|3|country_id|code",
+                "child_ids|3|category_id|1|name",
+                "country_id|code",
+            ],
+            "expected_header_5": [
+                ".id",
+                "name",
+                "child_ids|1|.id",
+                "child_ids|1|name",
+                "child_ids|1|street",
+                "child_ids|1|country_id|code",
+                "child_ids|1|category_id|1|name",
+                "child_ids|1|category_id|2|name",
+                "child_ids|1|category_id|3|name",
+                "child_ids|1|category_id|4|name",
+                "child_ids|1|category_id|5|name",
+                "child_ids|2|.id",
+                "child_ids|2|name",
+                "child_ids|2|street",
+                "child_ids|2|country_id|code",
+                "child_ids|2|category_id|1|name",
+                "child_ids|2|category_id|2|name",
+                "child_ids|2|category_id|3|name",
+                "child_ids|2|category_id|4|name",
+                "child_ids|2|category_id|5|name",
+                "child_ids|3|.id",
+                "child_ids|3|name",
+                "child_ids|3|street",
+                "child_ids|3|country_id|code",
+                "child_ids|3|category_id|1|name",
+                "child_ids|3|category_id|2|name",
+                "child_ids|3|category_id|3|name",
+                "child_ids|3|category_id|4|name",
+                "child_ids|3|category_id|5|name",
+                "country_id|code",
+            ],
+        }
+        return result
+
+    def _assert_result_expected_equal(self, expected, actual):
+        self.assertDictEqual(expected, actual)
+
     def test_get_header1(self):
         """
         Ensure the header is correctly generated
         @return:
         """
         headers = self._get_header(self.pattern_config)
-        expected_header = [
-            ".id",
-            "name",
-            "street",
-            "country_id|code",
-            "category_id|1|name",
-        ]
-        self.assertEqual(expected_header, headers)
+        self.assertEqual(self._get_expected_results()["expected_header_1"], headers)
 
     def test_get_header1_descriptive(self):
         headers = self._get_header(self.pattern_config, use_description=True)
-        expected_header = [
-            "ID",
-            "Name",
-            "Street",
-            "Country|Country Code",
-            "Tags|1|Tag Name",
-        ]
-        self.assertEqual(expected_header, headers)
+        self.assertEqual(
+            self._get_expected_results()["expected_header_1_desc"], headers
+        )
 
     def test_get_header2(self):
         """
@@ -44,8 +116,7 @@ class PatternCaseExport:
         @return:
         """
         headers = self._get_header(self.pattern_config_m2m)
-        expected_header = [".id", "name", "company_ids|1|name"]
-        self.assertEqual(expected_header, headers)
+        self.assertEqual(self._get_expected_results()["expected_header_2"], headers)
 
     def test_get_header3(self):
         """
@@ -55,16 +126,7 @@ class PatternCaseExport:
         export_fields_m2m = self.env.ref("pattern_import_export.demo_export_m2m_line_3")
         export_fields_m2m.write({"number_occurence": 5})
         headers = self._get_header(self.pattern_config_m2m)
-        expected_header = [
-            ".id",
-            "name",
-            "company_ids|1|name",
-            "company_ids|2|name",
-            "company_ids|3|name",
-            "company_ids|4|name",
-            "company_ids|5|name",
-        ]
-        self.assertEqual(expected_header, headers)
+        self.assertEqual(self._get_expected_results()["expected_header_3"], headers)
 
     def test_get_header4(self):
         """
@@ -73,27 +135,7 @@ class PatternCaseExport:
         @return:
         """
         headers = self._get_header(self.pattern_config_o2m)
-        expected_header = [
-            ".id",
-            "name",
-            "child_ids|1|.id",
-            "child_ids|1|name",
-            "child_ids|1|street",
-            "child_ids|1|country_id|code",
-            "child_ids|1|category_id|1|name",
-            "child_ids|2|.id",
-            "child_ids|2|name",
-            "child_ids|2|street",
-            "child_ids|2|country_id|code",
-            "child_ids|2|category_id|1|name",
-            "child_ids|3|.id",
-            "child_ids|3|name",
-            "child_ids|3|street",
-            "child_ids|3|country_id|code",
-            "child_ids|3|category_id|1|name",
-            "country_id|code",
-        ]
-        self.assertEqual(expected_header, headers)
+        self.assertEqual(self._get_expected_results()["expected_header_4"], headers)
 
     def test_get_header5(self):
         """
@@ -105,39 +147,7 @@ class PatternCaseExport:
         export_fields_m2m = self.env.ref("pattern_import_export.demo_export_line_5")
         export_fields_m2m.write({"number_occurence": 5})
         headers = self._get_header(self.pattern_config_o2m)
-        expected_header = [
-            ".id",
-            "name",
-            "child_ids|1|.id",
-            "child_ids|1|name",
-            "child_ids|1|street",
-            "child_ids|1|country_id|code",
-            "child_ids|1|category_id|1|name",
-            "child_ids|1|category_id|2|name",
-            "child_ids|1|category_id|3|name",
-            "child_ids|1|category_id|4|name",
-            "child_ids|1|category_id|5|name",
-            "child_ids|2|.id",
-            "child_ids|2|name",
-            "child_ids|2|street",
-            "child_ids|2|country_id|code",
-            "child_ids|2|category_id|1|name",
-            "child_ids|2|category_id|2|name",
-            "child_ids|2|category_id|3|name",
-            "child_ids|2|category_id|4|name",
-            "child_ids|2|category_id|5|name",
-            "child_ids|3|.id",
-            "child_ids|3|name",
-            "child_ids|3|street",
-            "child_ids|3|country_id|code",
-            "child_ids|3|category_id|1|name",
-            "child_ids|3|category_id|2|name",
-            "child_ids|3|category_id|3|name",
-            "child_ids|3|category_id|4|name",
-            "child_ids|3|category_id|5|name",
-            "country_id|code",
-        ]
-        self.assertEqual(expected_header, headers)
+        self.assertEqual(self._get_expected_results()["expected_header_5"], headers)
 
     def test_get_data_to_export1(self):
         """
@@ -169,7 +179,7 @@ class PatternCaseExport:
             },
         ]
         for result, expected_result in zip(results, expected_results):
-            self.assertDictEqual(expected_result, result)
+            self._assert_result_expected_equal(expected_result, result)
 
     def test_get_data_to_export2(self):
         """
@@ -186,7 +196,7 @@ class PatternCaseExport:
         ]
         results = self._get_data(self.pattern_config_m2m, self.env.user)
         for result, expected_result in zip(results, expected_results):
-            self.assertDictEqual(expected_result, result)
+            self._assert_result_expected_equal(expected_result, result)
 
     def test_get_data_to_export3(self):
         """
@@ -209,7 +219,7 @@ class PatternCaseExport:
         ]
         results = self._get_data(self.pattern_config_m2m, self.env.user)
         for result, expected_result in zip(results, expected_results):
-            self.assertDictEqual(expected_result, result)
+            self._assert_result_expected_equal(expected_result, result)
 
     def test_get_data_to_export4(self):
         """
@@ -284,7 +294,7 @@ class PatternCaseExport:
         ]
         results = self._get_data(self.pattern_config_o2m, self.partners)
         for result, expected_result in zip(results, expected_results):
-            self.assertDictEqual(expected_result, result)
+            self._assert_result_expected_equal(expected_result, result)
 
     def test_get_data_to_export5(self):
         """
@@ -361,7 +371,7 @@ class PatternCaseExport:
 
         results = self._get_data(self.pattern_config_o2m, self.partners)
         for result, expected_result in zip(results, expected_results):
-            self.assertDictEqual(expected_result, result)
+            self._assert_result_expected_equal(expected_result, result)
 
     def test_get_data_to_export_is_key1(self):
         """

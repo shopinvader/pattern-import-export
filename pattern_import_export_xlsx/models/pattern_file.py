@@ -63,19 +63,14 @@ class PatternFile(models.Model):
                 break
         workbook.close()
 
-    def write_error_in_xlsx(self):
-        # TODO writing in an existing big excel file is long with openpyxl
-        # maybe we should try some other tools
-        # https://editpyxl.readthedocs.io
-        infile = BytesIO(base64.b64decode(self.datas))
-        wb = openpyxl.load_workbook(filename=infile)
-        ws = self._get_worksheet(wb)
-
+    def xlsx_refresh_error_col(self, ws):
         # we clear the error col if exist
         if ws["A1"].value == _("#Error"):
             ws.delete_cols(1)
         ws.insert_cols(1)
         ws.cell(1, 1, value=_("#Error"))
+
+    def xlsx_write_errors(self, ws):
         last_row_idx = 0
         for chunk in self.chunk_ids:
             for message in chunk.messages:
@@ -87,16 +82,21 @@ class PatternFile(models.Model):
                     # that should be applied until the end of the chunk
                     for idx in range(last_row_idx, chunk.stop_idx + 1):
                         ws.cell(idx, 1, value=message["message"].strip())
-        output = BytesIO()
-        wb.save(output)
-        self.datas = base64.b64encode(output.getvalue())
 
     def set_import_done(self):
         super().set_import_done()
         for record in self:
-            if (
-                record.state == "failed"
-                and record.pattern_config_id.export_format == "xlsx"
-            ):
-                record.write_error_in_xlsx()
+            if record.pattern_config_id.export_format == "xlsx":
+                # TODO writing in an existing big excel file is long with openpyxl
+                # maybe we should try some other tools
+                # https://editpyxl.readthedocs.io
+                infile = BytesIO(base64.b64decode(self.datas))
+                wb = openpyxl.load_workbook(filename=infile)
+                ws = record._get_worksheet(wb)
+                record.xlsx_refresh_error_col(ws)
+                if record.state == "failed":
+                    record.xlsx_write_errors(ws)
+                output = BytesIO()
+                wb.save(output)
+                record.datas = base64.b64encode(output.getvalue())
         return True
