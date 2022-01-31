@@ -107,12 +107,12 @@
             </xpath>
              <xpath expr="//form/group[@name='general_info']" position="after">
                 <notebook>
-                    <page string="Export Fields">
-                        <xpath expr="//field[@name='export_fields']" position="move" />
-                    </page>
+                    <page string="Export Fields" name="export_fields" />
                 </notebook>
             </xpath>
-
+            <page name="export_fields" position="inside">
+                <xpath expr="//field[@name='export_fields']" position="move" />
+            </page>
             <xpath expr="//field[@name='field2_id']" position="attributes">
                 <attribute name="attrs">{
                     'readonly': [('hidden_fields', 'ilike', 'field2_id')],

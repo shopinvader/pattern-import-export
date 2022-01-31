@@ -53,6 +53,7 @@ class PatternCustomHeader(models.Model):
     _name = "pattern.custom.header"
     _description = "Pattern custom header"
 
+    sequence = fields.Integer()
     custom_name = fields.Char(string="Custom Header Name")
     initial_header_name = fields.Char(string="Initial Header Name")
     pattern_id = fields.Many2one("pattern.config")
