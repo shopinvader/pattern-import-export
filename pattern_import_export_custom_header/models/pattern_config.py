@@ -4,6 +4,11 @@
 
 from odoo import fields, models
 
+from odoo.addons.pattern_import_export.models.common import (
+    COLUMN_X2M_SEPARATOR,
+    IDENTIFIER_SUFFIX,
+)
+
 
 class PatternConfig(models.Model):
     _inherit = "pattern.config"
@@ -32,8 +37,10 @@ class PatternConfig(models.Model):
 
     def generate_custom_header_field(self):
         header_field_name_ids = []
-        for rec in self.with_context(get_initial_headers=True)._get_header(
-            self.use_description
+        for _idx, rec in enumerate(
+            self.with_context(get_initial_headers=True)._get_header(
+                self.use_description
+            )
         ):
             values = {}
             values["initial_header_name"] = rec
@@ -48,10 +55,44 @@ class PatternConfig(models.Model):
         self.write({"custom_header_field_name_ids": header_field_name_ids})
         return
 
+    def json2pattern_format(self, data):
+        if self.use_custom_header:
+            res = {}
+            sorted_headers = self.custom_header_field_name_ids.sorted(
+                key=lambda h: h.sequence
+            )
+            headers = dict(
+                zip(
+                    sorted_headers.mapped("initial_header_name"),
+                    sorted_headers.mapped("custom_name"),
+                )
+            )
+            for header, custom_header in headers.items():
+                if header:
+                    try:
+                        val = data
+                        for key in header.split(COLUMN_X2M_SEPARATOR):
+                            if key.isdigit():
+                                key = int(key) - 1
+                            elif IDENTIFIER_SUFFIX in key:
+                                key = key.replace(IDENTIFIER_SUFFIX, "")
+                            if key == ".id":
+                                key = "id"
+                            val = val[key]
+                            if val is None:
+                                break
+                    except IndexError:
+                        val = None
+                    res[custom_header] = val
+            return res
+        else:
+            return super().json2pattern_format(data)
+
 
 class PatternCustomHeader(models.Model):
     _name = "pattern.custom.header"
     _description = "Pattern custom header"
+    _order = "sequence"
 
     sequence = fields.Integer()
     custom_name = fields.Char(string="Custom Header Name")

@@ -137,7 +137,7 @@ class PatternConfig(models.Model):
 
     def json2pattern_format(self, data):
         res = {}
-        for header in self._get_header():
+        for header in self.with_context(get_initial_headers=True)._get_header():
             try:
                 val = data
                 for key in header.split(COLUMN_X2M_SEPARATOR):

@@ -8,6 +8,9 @@ from odoo.addons.pattern_import_export.tests.common import PatternCommon
 
 
 class TestCustomHeader(PatternCommon, SavepointCase):
+    def _get_data(self, pattern_config, records):
+        return pattern_config._get_data_to_export(records)
+
     def test_1_all_custom_headers(self):
         expected_header = [
             ".id",
@@ -138,3 +141,101 @@ class TestCustomHeader(PatternCommon, SavepointCase):
         self.assertEqual(
             self.pattern_config.custom_header_field_name_ids[1].custom_name, "custom_1"
         )
+
+    def test_6_data_export_with_custom_header(self):
+        new_custom_names = [
+            "custom_1",
+            "custom_2",
+            "custom_3",
+            "custom_4",
+            "custom_5",
+        ]
+        self.pattern_config.use_custom_header = True
+        self.pattern_config.generate_custom_header_field()
+        for count, _enum in enumerate(new_custom_names):
+            self.pattern_config.custom_header_field_name_ids[
+                count
+            ].custom_name = new_custom_names[count]
+
+        self.pattern_config.custom_header_field_name_ids.create(
+            {"custom_name": "addition 1", "pattern_id": self.pattern_config.id}
+        )
+        new_custom_names.append("addition 1")
+        headers = self.pattern_config._get_header()
+        self.assertEqual(new_custom_names, headers)
+
+        results = self._get_data(self.pattern_config, self.partners)
+        expected_results = [
+            {
+                "custom_1": self.partner_1.id,
+                "custom_2": "Wood Corner",
+                "custom_3": "1839 Arbor Way",
+                "custom_4": "US",
+                "custom_5": "Desk Manufacturers",
+            },
+            {
+                "custom_1": self.partner_2.id,
+                "custom_2": "Deco Addict",
+                "custom_3": "77 Santa Barbara Rd",
+                "custom_4": "US",
+                "custom_5": "Desk Manufacturers",
+            },
+            {
+                "custom_1": self.partner_3.id,
+                "custom_2": "Gemini Furniture",
+                "custom_3": "317 Fairchild Dr",
+                "custom_4": "US",
+                "custom_5": "Consulting Services",
+            },
+        ]
+        for result, expected_result in zip(results, expected_results):
+            self.assertDictEqual(expected_result, result)
+
+    def test_7_data_export_custom_header_in_different_order(self):
+        new_custom_names = [
+            "custom_0",
+            "custom_1",
+            "custom_2",
+            "custom_3",
+            "custom_4",
+        ]
+        self.pattern_config.use_custom_header = True
+        self.pattern_config.generate_custom_header_field()
+        for count, _enum in enumerate(new_custom_names):
+            self.pattern_config.custom_header_field_name_ids[
+                count
+            ].custom_name = new_custom_names[count]
+
+        header = self.pattern_config.custom_header_field_name_ids
+        header[0].write({"sequence": 0})
+        header[1].write({"sequence": 4})
+        header[2].write({"sequence": 3})
+        header[3].write({"sequence": 2})
+        header[4].write({"sequence": 1})
+
+        results = self._get_data(self.pattern_config, self.partners)
+        expected_results = [
+            {
+                "custom_0": self.partner_1.id,
+                "custom_4": "Desk Manufacturers",
+                "custom_3": "US",
+                "custom_2": "1839 Arbor Way",
+                "custom_1": "Wood Corner",
+            },
+            {
+                "custom_0": self.partner_2.id,
+                "custom_4": "Desk Manufacturers",
+                "custom_3": "US",
+                "custom_2": "77 Santa Barbara Rd",
+                "custom_1": "Deco Addict",
+            },
+            {
+                "custom_0": self.partner_3.id,
+                "custom_4": "Consulting Services",
+                "custom_3": "US",
+                "custom_2": "317 Fairchild Dr",
+                "custom_1": "Gemini Furniture",
+            },
+        ]
+        for result, expected_result in zip(results, expected_results):
+            self.assertDictEqual(expected_result, result)

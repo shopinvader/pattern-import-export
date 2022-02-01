@@ -31,7 +31,10 @@
                         <tree editable="bottom">
                             <field name="sequence" widget="handle" />
                             <field name="initial_header_name" readonly="1" />
-                            <field name="custom_name" />
+                            <field
+                                name="custom_name"
+                                attrs="{'required': [('initial_header_name', '=', False)]}"
+                            />
                         </tree>
                     </field>
                 </page>
