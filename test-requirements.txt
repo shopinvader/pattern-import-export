@@ -1,0 +1,2 @@
+odoo14-addon-attachment_synchronize @ git+https://github.com/oca/server-tools@refs/pull/2001/head#subdirectory=setup/attachment_synchronize
+odoo14-addon-attachment_queue @ git+https://github.com/oca/server-tools@refs/pull/2001/head#subdirectory=setup/attachment_queue

@@ -7,8 +7,6 @@ import ast
 from odoo import _, fields, models
 from odoo.osv import expression
 
-from odoo.addons.queue_job.job import job
-
 
 class PatternExportTask(models.Model):
     _name = "pattern.export.task"
@@ -86,11 +84,10 @@ class PatternExportTask(models.Model):
             domain = []
         return self.env[self.pattern_config_id.resource].search(domain)
 
-    @job(default_channel="root.pattern.export")
     def _run(self):
         self.ensure_one()
         records = self._get_records_to_export()
-        pattern_file = records._generate_export_with_pattern_job(self.pattern_config_id)
+        pattern_file = records.generate_export_with_pattern_job(self.pattern_config_id)
         pattern_file.export_task_id = self
         self.env["attachment.queue"].create(
             {
