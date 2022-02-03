@@ -12,7 +12,14 @@
                 <field
                     name="pattern_config_id"
                     attrs="{'invisible': [('file_type', '!=', 'import_pattern')]}"
+                    invisible="context.get('from_pattern')"
                 />
+            </field>
+            <field name="file_type" position="attributes">
+                <attribute name="invisible">context.get('from_pattern')</attribute>
+            </field>
+            <field name="method_type" position="attributes">
+                <attribute name="invisible">context.get('from_pattern')</attribute>
             </field>
         </field>
     </record>

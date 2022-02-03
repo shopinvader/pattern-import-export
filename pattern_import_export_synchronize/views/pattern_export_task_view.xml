@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
 
-<record id="pattern_export_task_view_form" model="ir.ui.view">
+<record id="pattern_export_task_view_tree" model="ir.ui.view">
     <field name="model">pattern.export.task</field>
     <field name="arch" type="xml">
         <tree
@@ -10,8 +10,12 @@
                 decoration-muted="active == False"
             >
             <field name="name" />
-            <field name="filter_id" />
-            <field name="pattern_config_id" />
+            <field name="model_name" invisible="1" />
+            <field name="filter_id" domain="[('model_id', '=', model_name)]" />
+            <field
+                    name="pattern_config_id"
+                    invisible="context.get('base_model_name') == 'pattern.config'"
+                />
             <field name="sync_task_id" />
             <button name="run" icon="fa-play-circle" string="Run" type="object" />
             <field name="count_failed_job" string=" " />
@@ -35,20 +39,107 @@
                     icon="fa-thumbs-o-up"
                     context="{'search_default_done': 1}"
                 />
-            <button
-                    name="button_duplicate_record"
-                    type="object"
-                    string="Copy"
-                    icon="fa-clone"
-                />
-            <field name="active" invisible="1" />
-            <button
-                    name="toggle_active"
-                    type="object"
-                    string="Active/Inactive"
-                    icon="fa-archive"
-                />
+            <field name="active" widget="boolean_toggle" />
+            <button name="button_duplicate_record" type="object" icon="fa-clone" />
         </tree>
+    </field>
+</record>
+
+<record id="pattern_export_task_view_form" model="ir.ui.view">
+    <field name="model">pattern.export.task</field>
+    <field name="arch" type="xml">
+        <form>
+            <header>
+                <button
+                        name="run"
+                        type="object"
+                        string="Run"
+                        class="oe_read_only oe_highlight"
+                        icon="fa-play-circle"
+                        attrs="{'invisible': [('active','=', False)]}"
+                    />
+            </header>
+            <sheet>
+                <field name="active" invisible="1" />
+                <widget
+                        name="web_ribbon"
+                        title="Archived"
+                        bg_color="bg-danger"
+                        attrs="{'invisible': [('active', '=', True)]}"
+                    />
+                <div class="oe_button_box" name="button_box">
+                    <button
+                            name="open_failed_job"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-thumbs-o-down"
+                            context="{'search_default_failed': 1}"
+                        >
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field
+                                        name="count_failed_job"
+                                        widget="statinfo"
+                                        nolabel="1"
+                                    />
+                            </span>
+                            <span class="o_stat_text">Fail</span>
+                        </div>
+                    </button>
+                    <button
+                            name="open_pending_job"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-spinner"
+                            context="{'search_default_pending': 1}"
+                        >
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field
+                                        name="count_pending_job"
+                                        widget="statinfo"
+                                        nolabel="1"
+                                    />
+                            </span>
+                            <span class="o_stat_text">Pending</span>
+                        </div>
+                    </button>
+                    <button
+                            name="open_generated_file"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-thumbs-o-up"
+                            context="{'search_default_done': 1}"
+                        >
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field
+                                        name="count_generated_file"
+                                        widget="statinfo"
+                                        nolabel="1"
+                                    />
+                            </span>
+                            <span class="o_stat_text">Success</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="oe_title">
+                    <label class="oe_edit_only" for="name" string="Name" />
+                    <h1>
+                        <field name="name" class="oe_inline" />
+                    </h1>
+                </div>
+                <group>
+                    <field name="model_name" invisible="1" />
+                    <field name="filter_id" domain="[('model_id', '=', model_name)]" />
+                    <field
+                            name="pattern_config_id"
+                            invisible="context.get('base_model_name') == 'pattern.config'"
+                        />
+                    <field name="sync_task_id" />
+                </group>
+            </sheet>
+        </form>
     </field>
 </record>
 

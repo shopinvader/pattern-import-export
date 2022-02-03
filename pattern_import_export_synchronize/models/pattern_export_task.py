@@ -19,6 +19,7 @@ class PatternExportTask(models.Model):
     _description = "Pattern Export Task"
 
     name = fields.Char(required=True)
+    model_name = fields.Char(related="pattern_config_id.resource")
     filter_id = fields.Many2one("ir.filters")
     pattern_config_id = fields.Many2one(
         "pattern.config", string="Pattern Config", required=True
