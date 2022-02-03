@@ -68,7 +68,7 @@ class TestPatternExportCsv(ExportPatternCsvCommon):
         self.assertEqual(csv_file_lines[0], expected_content)
 
     def test_export_headers_descriptive(self):
-        self.pattern_config.use_description = True
+        self.pattern_config.header_format = "description_and_tech"
         csv_file_lines = self._helper_get_resulting_csv(
             self.pattern_config, self.partners
         )

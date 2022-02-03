@@ -22,8 +22,13 @@ class PatternConfig(models.Model):
     _description = "Pattern Config"
 
     export_id = fields.Many2one("ir.exports", required=True, ondelete="cascade")
-    use_description = fields.Boolean(
-        string="Use descriptive in addition to technical headers"
+    header_format = fields.Selection(
+        selection=[
+            ("technical", "Technical"),
+            ("description_and_tech", "Description + Technical"),
+        ],
+        default="technical",
+        required=True,
     )
     pattern_file = fields.Binary(string="Pattern file", readonly=True)
     pattern_file_name = fields.Char(readonly=True)
@@ -90,13 +95,16 @@ class PatternConfig(models.Model):
 
     @property
     def nr_of_header_rows(self):
-        return 1 + int(self.use_description)
+        if self.header_format == "description_and_tech":
+            return 2
+        else:
+            return 1
 
     def _get_output_headers(self):
         """Return one or multiheader with key:value"""
         tech_header = self._get_header()
         headers = []
-        if self.use_description:
+        if self.header_format == "description_and_tech":
             headers.append(
                 dict(zip(tech_header, self._get_header(use_description=True)))
             )

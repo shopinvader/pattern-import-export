@@ -8,7 +8,9 @@ from odoo import fields, models
 class PatternConfig(models.Model):
     _inherit = "pattern.config"
 
-    use_custom_header = fields.Boolean(string="Use custom header names")
+    header_format = fields.Selection(
+        selection_add=[("custom", "Custom")], ondelete={"custom": "set default"}
+    )
     custom_header_ids = fields.One2many(
         comodel_name="pattern.custom.header",
         inverse_name="pattern_id",
@@ -23,13 +25,13 @@ class PatternConfig(models.Model):
 
     def _get_data_to_export_by_record(self, record, parser):
         data = super()._get_data_to_export_by_record(record, parser)
-        if self.use_custom_header:
+        if self.header_format == "custom":
             return self._map_with_custom_header(data)
         else:
             return data
 
     def _get_output_headers(self):
-        if self.use_custom_header:
+        if self.header_format == "custom":
             return [{item.name: item.name for item in self.custom_header_ids}]
         else:
             return super()._get_output_headers()

@@ -175,7 +175,7 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         * Lookup by DB ID
         * Simple update
         """
-        self.pattern_config_users.use_description = True
+        self.pattern_config_users.header_format = "description_and_tech"
         self._load_file("example.users.descriptive.ok.csv", self.pattern_config_users)
         self.assertEqual(self.user_admin.name, "Mitchell Admin Updated")
         self.assertEqual(self.user_demo.name, "Marc Demo Updated")

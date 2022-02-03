@@ -102,7 +102,7 @@
                     <field name="chunk_size" />
                     <field name="job_priority" />
                     <field name="process_multi" />
-                    <field name="use_description" />
+                    <field name="header_format" />
                 </group>
             </xpath>
              <xpath expr="//form/group[@name='general_info']" position="after">

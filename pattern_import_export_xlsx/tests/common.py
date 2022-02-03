@@ -43,8 +43,8 @@ class CommonPatternExportExcel(PatternCommon, SavepointCase):
             yield idx, row
 
     def _get_header(self, pattern_config, use_description=False, sheet_name=None):
-        if use_description is not None:
-            self.pattern_config.use_description = use_description
+        if use_description:
+            self.pattern_config.header_format = "description_and_tech"
         for _idx, row in self._read_worksheet(pattern_config, sheet_name=sheet_name):
             return [x.value for x in row]
 

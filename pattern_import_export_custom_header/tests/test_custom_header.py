@@ -23,7 +23,7 @@ class TestCustomHeader(PatternCommon, SavepointCase):
         headers = self.pattern_config._get_header()
         self.assertEqual(expected_header, headers)
 
-        self.pattern_config.use_custom_header = True
+        self.pattern_config.header_format = "custom"
         self.pattern_config.generate_custom_header_field()
         self.assertEqual(
             len(expected_header), len(self.pattern_config.custom_header_ids)
@@ -58,7 +58,7 @@ class TestCustomHeader(PatternCommon, SavepointCase):
         headers = self.pattern_config_m2m._get_header()
         self.assertEqual(expected_header, headers)
 
-        self.pattern_config_m2m.use_custom_header = True
+        self.pattern_config_m2m.header_format = "custom"
         self.pattern_config_m2m.generate_custom_header_field()
         self.assertEqual(
             len(expected_header),
@@ -87,7 +87,7 @@ class TestCustomHeader(PatternCommon, SavepointCase):
         self.assertEqual(headers, expected_new_header)
 
     def test_3_o2m_custom_headers(self):
-        self.pattern_config_o2m.use_custom_header = True
+        self.pattern_config_o2m.header_format = "custom"
         self.pattern_config_o2m.generate_custom_header_field()
         headers = list(self.pattern_config_o2m._get_output_headers()[0].keys())
         self.assertEqual(len(headers), len(self.pattern_config_o2m.custom_header_ids))
@@ -102,7 +102,7 @@ class TestCustomHeader(PatternCommon, SavepointCase):
             "addition 1",
             "addition 2",
         ]
-        self.pattern_config.use_custom_header = True
+        self.pattern_config.header_format = "custom"
         self.pattern_config.generate_custom_header_field()
         self.pattern_config.custom_header_ids.create(
             {"custom_name": "addition 1", "pattern_id": self.pattern_config.id}
@@ -116,7 +116,7 @@ class TestCustomHeader(PatternCommon, SavepointCase):
 
     def test_5_add_new_initial_headers(self):
         headers = self.pattern_config._get_header()
-        self.pattern_config.use_custom_header = True
+        self.pattern_config.header_format = "custom"
         self.pattern_config.generate_custom_header_field()
         self.pattern_config.custom_header_ids.create(
             {"custom_name": "addition 1", "pattern_id": self.pattern_config.id}
@@ -140,7 +140,7 @@ class TestCustomHeader(PatternCommon, SavepointCase):
             "custom_4",
             "custom_5",
         ]
-        self.pattern_config.use_custom_header = True
+        self.pattern_config.header_format = "custom"
         self.pattern_config.generate_custom_header_field()
         for count, _enum in enumerate(new_custom_names):
             self.pattern_config.custom_header_ids[count].custom_name = new_custom_names[
@@ -192,7 +192,7 @@ class TestCustomHeader(PatternCommon, SavepointCase):
             "custom_3",
             "custom_4",
         ]
-        self.pattern_config.use_custom_header = True
+        self.pattern_config.header_format = "custom"
         self.pattern_config.generate_custom_header_field()
         for count, _enum in enumerate(new_custom_names):
             self.pattern_config.custom_header_ids[count].custom_name = new_custom_names[
