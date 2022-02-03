@@ -4,89 +4,60 @@
 
 from odoo import fields, models
 
-from odoo.addons.pattern_import_export.models.common import (
-    COLUMN_X2M_SEPARATOR,
-    IDENTIFIER_SUFFIX,
-)
-
 
 class PatternConfig(models.Model):
     _inherit = "pattern.config"
 
     use_custom_header = fields.Boolean(string="Use custom header names")
-    custom_header_field_name_ids = fields.One2many(
+    custom_header_ids = fields.One2many(
         comodel_name="pattern.custom.header",
         inverse_name="pattern_id",
         string="Custom Header names",
     )
 
-    def _get_header(self, use_description=False):
-        res = super()._get_header()
-        if self.use_custom_header and "get_initial_headers" not in self._context:
-            for rec in self.custom_header_field_name_ids:
-                if rec.initial_header_name:
-                    res = [
-                        rec.custom_name
-                        if (header == rec.initial_header_name and rec.custom_name)
-                        else header
-                        for header in res
-                    ]
-                elif rec.custom_name and not rec.initial_header_name:
-                    res.append(rec.custom_name)
-        return res
+    def _map_with_custom_header(self, data):
+        return {
+            item.name: data.get(item.initial_header_name)
+            for item in self.custom_header_ids
+        }
+
+    def _get_data_to_export_by_record(self, record, parser):
+        data = super()._get_data_to_export_by_record(record, parser)
+        if self.use_custom_header:
+            return self._map_with_custom_header(data)
+        else:
+            return data
+
+    def _get_output_headers(self):
+        if self.use_custom_header:
+            return [{item.name: item.name for item in self.custom_header_ids}]
+        else:
+            return super()._get_output_headers()
 
     def generate_custom_header_field(self):
-        header_field_name_ids = []
-        for _idx, rec in enumerate(
-            self.with_context(get_initial_headers=True)._get_header(
-                self.use_description
-            )
-        ):
-            values = {}
-            values["initial_header_name"] = rec
-            values["pattern_id"] = self.id
-            if self.custom_header_field_name_ids:
-                custom_header = self.env["pattern.custom.header"].search(
-                    [("pattern_id", "=", self.id), ("initial_header_name", "=", rec)]
-                )
-                values["custom_name"] = custom_header.custom_name or ""
-            header_field_name_ids.append((0, 0, values))
-        self.custom_header_field_name_ids = [(6, 0, [])]
-        self.write({"custom_header_field_name_ids": header_field_name_ids})
-        return
-
-    def json2pattern_format(self, data):
-        if self.use_custom_header:
-            res = {}
-            sorted_headers = self.custom_header_field_name_ids.sorted(
-                key=lambda h: h.sequence
-            )
-            headers = dict(
-                zip(
-                    sorted_headers.mapped("initial_header_name"),
-                    sorted_headers.mapped("custom_name"),
-                )
-            )
-            for header, custom_header in headers.items():
-                if header:
-                    try:
-                        val = data
-                        for key in header.split(COLUMN_X2M_SEPARATOR):
-                            if key.isdigit():
-                                key = int(key) - 1
-                            elif IDENTIFIER_SUFFIX in key:
-                                key = key.replace(IDENTIFIER_SUFFIX, "")
-                            if key == ".id":
-                                key = "id"
-                            val = val[key]
-                            if val is None:
-                                break
-                    except IndexError:
-                        val = None
-                    res[custom_header] = val
-            return res
-        else:
-            return super().json2pattern_format(data)
+        header = self._get_header()
+        for item in self.custom_header_ids:
+            if item.initial_header_name:
+                if item.initial_header_name not in header:
+                    item.unlink()
+                else:
+                    header.remove(item.initial_header_name)
+        start = max([0] + self.custom_header_ids.mapped("sequence")) + 1
+        self.write(
+            {
+                "custom_header_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "sequence": seq,
+                            "initial_header_name": name,
+                        },
+                    )
+                    for seq, name in enumerate(header, start=start)
+                ]
+            }
+        )
 
 
 class PatternCustomHeader(models.Model):
@@ -95,6 +66,11 @@ class PatternCustomHeader(models.Model):
     _order = "sequence"
 
     sequence = fields.Integer()
+    name = fields.Char(compute="_compute_name")
     custom_name = fields.Char(string="Custom Header Name")
     initial_header_name = fields.Char(string="Initial Header Name")
     pattern_id = fields.Many2one("pattern.config")
+
+    def _compute_name(self):
+        for record in self:
+            record.name = record.custom_name or record.initial_header_name

@@ -92,6 +92,17 @@ class PatternConfig(models.Model):
     def nr_of_header_rows(self):
         return 1 + int(self.use_description)
 
+    def _get_output_headers(self):
+        """Return one or multiheader with key:value"""
+        tech_header = self._get_header()
+        headers = []
+        if self.use_description:
+            headers.append(
+                dict(zip(tech_header, self._get_header(use_description=True)))
+            )
+        headers.append(dict(zip(tech_header, tech_header)))
+        return headers
+
     def _get_header(self, use_description=False):
         """
         Build header of data-structure.
@@ -137,7 +148,7 @@ class PatternConfig(models.Model):
 
     def json2pattern_format(self, data):
         res = {}
-        for header in self.with_context(get_initial_headers=True)._get_header():
+        for header in self._get_header():
             try:
                 val = data
                 for key in header.split(COLUMN_X2M_SEPARATOR):

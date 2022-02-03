@@ -40,16 +40,9 @@ class PatternConfig(models.Model):
         """
         main_sheet = book["Sheet"]
         main_sheet.title = self.name
-        if self.use_description:
-            for col, header in enumerate(
-                self._get_header(use_description=True), start=1
-            ):
-                main_sheet.cell(row=1, column=col, value=header)
-            for col, header in enumerate(self._get_header(), start=1):
-                main_sheet.cell(row=2, column=col, value=header)
-        else:
-            for col, header in enumerate(self._get_header(), start=1):
-                main_sheet.cell(row=1, column=col, value=header)
+        for row, lines in enumerate(self._get_output_headers(), start=1):
+            for col, header in enumerate(lines.values(), start=1):
+                main_sheet.cell(row=row, column=col, value=header)
         return main_sheet
 
     def _populate_main_sheet_rows(self, main_sheet, records):
