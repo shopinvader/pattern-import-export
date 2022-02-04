@@ -71,7 +71,7 @@ class PatternCustomHeader(models.Model):
     name = fields.Char(compute="_compute_name")
     custom_name = fields.Char(string="Custom Header Name")
     initial_header_name = fields.Char(string="Initial Header Name")
-    pattern_id = fields.Many2one("pattern.config")
+    pattern_id = fields.Many2one("pattern.config", required=True)
 
     def _compute_name(self):
         for record in self:
