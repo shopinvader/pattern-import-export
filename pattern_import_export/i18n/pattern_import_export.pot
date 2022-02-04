@@ -193,6 +193,11 @@ msgid "Description"
 msgstr ""
 
 #. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_config__header_format__description_and_tech
+msgid "Description + Technical"
+msgstr ""
+
+#. module: pattern_import_export
 #: model:ir.model.fields,help:pattern_import_export.field_ir_exports_line__is_key
 msgid ""
 "Determine if this field is considered as key to update existing record.\n"
@@ -236,6 +241,11 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:pattern_import_export.view_export_with_pattern_wizard
 #, python-format
 msgid "Export"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "Export Fields"
 msgstr ""
 
 #. module: pattern_import_export
@@ -357,6 +367,11 @@ msgstr ""
 msgid ""
 "Generate export '{model}' with export pattern '{export_name}' using format "
 "{format}"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__header_format
+msgid "Header Format"
 msgstr ""
 
 #. module: pattern_import_export
@@ -807,6 +822,11 @@ msgid "Tab Filter"
 msgstr ""
 
 #. module: pattern_import_export
+#: model:ir.model.fields.selection,name:pattern_import_export.selection__pattern_config__header_format__technical
+msgid "Technical"
+msgstr ""
+
+#. module: pattern_import_export
 #: model:ir.model.fields,help:pattern_import_export.field_pattern_file__res_model
 msgid "The database object this attachment will be attached to."
 msgstr ""
@@ -847,11 +867,6 @@ msgstr ""
 #. module: pattern_import_export
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__url
 msgid "Url"
-msgstr ""
-
-#. module: pattern_import_export
-#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__use_description
-msgid "Use descriptive in addition to technical headers"
 msgstr ""
 
 #. module: pattern_import_export
