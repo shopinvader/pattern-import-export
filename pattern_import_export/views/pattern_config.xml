@@ -91,6 +91,7 @@
                 </div>
 
             </xpath>
+
             <xpath expr="//form/group[1]" position="after">
                 <group name="general_info">
                     <field name="export_format" required="True" />
@@ -101,9 +102,17 @@
                     <field name="chunk_size" />
                     <field name="job_priority" />
                     <field name="process_multi" />
-                    <field name="use_description" />
+                    <field name="header_format" />
                 </group>
             </xpath>
+             <xpath expr="//form/group[@name='general_info']" position="after">
+                <notebook>
+                    <page string="Export Fields" name="export_fields" />
+                </notebook>
+            </xpath>
+            <page name="export_fields" position="inside">
+                <xpath expr="//field[@name='export_fields']" position="move" />
+            </page>
             <xpath expr="//field[@name='field2_id']" position="attributes">
                 <attribute name="attrs">{
                     'readonly': [('hidden_fields', 'ilike', 'field2_id')],

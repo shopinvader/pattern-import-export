@@ -14,7 +14,7 @@ class PatternFile(models.Model):
     def _parse_data_csv(self, datafile):
         in_file = io.StringIO(datafile.decode("utf-8"))
         config = self.pattern_config_id
-        if config.use_description:
+        if config.header_format == "description_and_tech":
             # read the first line to skip it
             in_file.readline()
         reader = csv.DictReader(
