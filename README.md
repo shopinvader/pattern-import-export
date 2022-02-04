@@ -21,6 +21,7 @@ addon | version | maintainers | summary
 --- | --- | --- | ---
 [pattern_import_export](pattern_import_export/) | 14.0.2.2.0 |  | Pattern for import or export
 [pattern_import_export_csv](pattern_import_export_csv/) | 14.0.1.0.0 |  | Pattern for import or export from to CSV files
+[pattern_import_export_custom_header](pattern_import_export_custom_header/) | 14.0.1.0.0 |  | Allow to use custom headers names in export files
 [pattern_import_export_xlsx](pattern_import_export_xlsx/) | 14.0.2.0.0 |  | Pattern for import or export from to XLSX files
 
 
