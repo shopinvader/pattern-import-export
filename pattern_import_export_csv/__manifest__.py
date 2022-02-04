@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export CSV",
     "summary": "Pattern for import or export from to CSV files",
-    "version": "14.0.1.0.0",
+    "version": "14.0.1.0.1",
     "category": "Extra Tools",
     "author": "Akretion",
     "website": "https://github.com/shopinvader/pattern-import-export",
