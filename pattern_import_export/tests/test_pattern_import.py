@@ -2,13 +2,14 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from uuid import uuid4
 
-from odoo.tests.common import SavepointCase
 from odoo.tools import mute_logger
+
+from odoo.addons.component.tests.common import SavepointComponentCase
 
 from .common import PatternCommon
 
 
-class TestPatternImport(PatternCommon, SavepointCase):
+class TestPatternImport(PatternCommon, SavepointComponentCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -58,7 +59,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(pattern_file.state, "failed")
         # TODO it will be better to retour a better exception
         # but it's not that easy
-        chunk = pattern_file.chunk_ids
+        chunk = pattern_file.chunk_item_ids
         self.assertEqual(
             chunk.result_info,
             "<p>Fail to process chunk 'int' object has no attribute 'split'</p>",
@@ -76,7 +77,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
         self.assertEqual(pattern_file.state, "failed")
-        chunk = pattern_file.chunk_ids
+        chunk = pattern_file.chunk_item_ids
         self.assertIn("Invalid database identifier", chunk.result_info)
 
     def test_create_new_record(self):
@@ -254,7 +255,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.run_pattern_file(pattern_file)
         self.assertEqual(pattern_file.state, "failed")
         self.assertEqual(pattern_file.nbr_error, 1)
-        self.assertIn("res_partner_check_name", pattern_file.chunk_ids.result_info)
+        self.assertIn("res_partner_check_name", pattern_file.chunk_item_ids.result_info)
 
     def test_m2m_with_empty_columns(self):
         unique_name = str(uuid4())
@@ -334,7 +335,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
                 "No value found for model 'Country' with the field 'code' "
                 "and the value 'Fake'"
             ),
-            pattern_file.chunk_ids.result_info,
+            pattern_file.chunk_item_ids.result_info,
         )
 
     def test_import_m2o_key(self):
@@ -415,5 +416,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(len(records), 2)
         self.assertEqual(pattern_file.state, "failed")
         self.assertEqual(pattern_file.nbr_error, 16)
-        self.assertIn("Contacts require a name", pattern_file.chunk_ids.result_info)
-        self.assertIn("Found more than 10 errors", pattern_file.chunk_ids.result_info)
+        self.assertIn(
+            "Contacts require a name", pattern_file.chunk_item_ids.result_info
+        )
+        self.assertIn(
+            "Found more than 10 errors", pattern_file.chunk_item_ids.result_info
+        )

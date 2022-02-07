@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
 
-<record id="pattern_chunk_view_tree" model="ir.ui.view">
-    <field name="model">pattern.chunk</field>
+<record id="chunk_item_view_tree" model="ir.ui.view">
+    <field name="model">chunk.item</field>
     <field name="arch" type="xml">
         <tree string="Chunk">
             <field name="start_idx" />
@@ -14,15 +14,16 @@
     </field>
 </record>
 
-<record id="pattern_chunk_view_form" model="ir.ui.view">
-    <field name="model">pattern.chunk</field>
+<record id="chunk_item_view_form" model="ir.ui.view">
+    <field name="model">chunk.item</field>
     <field name="arch" type="xml">
         <form string="Chunk">
             <header>
-                <button name="run_import" type="object" string="Force manual run" />
+                <button name="manual_run" type="object" string="Force manual run" />
             </header>
             <sheet>
                 <group>
+                    <field name="data" />
                     <field name="start_idx" />
                     <field name="stop_idx" />
                     <field name="nbr_error" />
