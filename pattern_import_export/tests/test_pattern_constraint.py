@@ -70,5 +70,5 @@ class TestPatternConstraint(SavepointCase):
                 {"export_id": self.pattern_config.export_id.id, "name": "category_id"}
             )
         self.assertEqual(
-            em.exception.name, u"The field field2_id is empty for the line category_id"
+            em.exception.name, "The field field2_id is empty for the line category_id"
         )

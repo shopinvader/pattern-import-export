@@ -9,3 +9,6 @@ class AttachmentSynchronizeTask(models.Model):
     _inherit = "attachment.synchronize.task"
 
     pattern_config_id = fields.Many2one("pattern.config", string="Pattern Config")
+    file_type = fields.Selection(
+        selection_add=[("import_pattern", "Import using pattern")]
+    )

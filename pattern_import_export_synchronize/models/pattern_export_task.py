@@ -4,17 +4,22 @@
 
 import ast
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 from odoo.osv import expression
-
-from odoo.addons.queue_job.job import job
 
 
 class PatternExportTask(models.Model):
+    """
+    Use to configure the export from DB records to attachment.queue objs
+    The attachment.queue -> file storage export can then be managed
+    by attachment.synchronize.task
+    """
+
     _name = "pattern.export.task"
     _description = "Pattern Export Task"
 
     name = fields.Char(required=True)
+    model_name = fields.Char(related="pattern_config_id.resource")
     filter_id = fields.Many2one("ir.filters")
     pattern_config_id = fields.Many2one(
         "pattern.config", string="Pattern Config", required=True
@@ -35,7 +40,7 @@ class PatternExportTask(models.Model):
         return [
             ("model_name", "=", self._name),
             ("method_name", "=", "_run"),
-            ("record_ids", "ilike", "[{}]".format(self.id)),
+            ("records", "ilike", "[{}]".format(self.id)),
         ]
 
     def _compute_count_job(self):
@@ -86,11 +91,10 @@ class PatternExportTask(models.Model):
             domain = []
         return self.env[self.pattern_config_id.resource].search(domain)
 
-    @job(default_channel="root.pattern.export")
     def _run(self):
         self.ensure_one()
         records = self._get_records_to_export()
-        pattern_file = records._generate_export_with_pattern_job(self.pattern_config_id)
+        pattern_file = records.generate_export_with_pattern_job(self.pattern_config_id)
         pattern_file.export_task_id = self
         self.env["attachment.queue"].create(
             {
@@ -117,3 +121,8 @@ class PatternExportTask(models.Model):
         if "active" not in default:
             default["active"] = False
         return super().copy(default=default)
+
+    @api.model
+    def run_pattern_export_scheduler(self):
+        for task in self.search([]):
+            task.run()
