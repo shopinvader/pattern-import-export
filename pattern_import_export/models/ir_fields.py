@@ -143,3 +143,16 @@ class IrFieldsConverter(models.AbstractModel):
         elif value is None:
             return False, []
         return super()._str_to_boolean(model, field, value)
+
+    @api.model
+    def _str_to_one2many(self, model, field, records):
+        if len(records) == 1 and list(records[0].keys()) == [".id"]:
+            # In case of import if the len is 1 and there is no
+            # other field then id, .id
+            # Odoo will considers that the field is a string with
+            # a list of ids like "1,3,5"
+            # so we have to convert it to a string to avoid
+            # raising an error with the split
+            # see original method called by super
+            records[0][".id"] = str(records[0][".id"])
+        return super()._str_to_one2many(model, field, records)

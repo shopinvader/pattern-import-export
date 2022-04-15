@@ -247,6 +247,24 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEquals(contact_1_name, contact_1.name)
         self.assertEquals(contact_2_name, contact_2.name)
 
+    def test_update_o2m_with_key_only_one_record(self):
+        unique_name = str(uuid4())
+        self.partner_1.ref = "o2m_main"
+        contact_1 = self.env.ref("base.res_partner_address_1")
+        contact_2 = self.env.ref("base.res_partner_address_2")
+        contact_1.ref = "o2m_child_1"
+        contact_2.ref = "o2m_child_2"
+        data = [
+            {
+                "ref#key": self.partner_1.ref,
+                "name": unique_name,
+                "child_ids|1|ref#key": contact_1.ref,
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        self.run_pattern_file(pattern_file)
+        self.assertEquals(unique_name, self.partner_1.name)
+
     @mute_logger("odoo.sql_db")
     def test_wrong_import(self):
         data = [{"login#key": self.user3.login, "name": ""}]
