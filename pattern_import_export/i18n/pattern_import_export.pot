@@ -638,6 +638,7 @@ msgid "Pattern Config"
 msgstr ""
 
 #. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_attachment_queue__pattern_file_ids
 #: model:ir.model.fields,field_description:pattern_import_export.field_ir_attachment__pattern_file_ids
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_chunk__pattern_file_id
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__pattern_file_ids
