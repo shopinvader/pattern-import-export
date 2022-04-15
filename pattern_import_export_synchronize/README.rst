@@ -14,34 +14,14 @@ Attachment Synchronize using patterns
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-shopinvader%2Fpattern--import--export-lightgray.png?logo=github
-    :target: https://github.com/shopinvader/pattern-import-export/tree/12.0/pattern_import_export_synchronize
+    :target: https://github.com/shopinvader/pattern-import-export/tree/14.0/pattern_import_export_synchronize
     :alt: shopinvader/pattern-import-export
 
 |badge1| |badge2| |badge3| 
 
 This module uses the pattern_import_export and attachment_synchronize modules to automate imports and exports.
-
-The flows work as follows :
-
-Imports
-=======
-
-1. A cron calls run_task_import_pattimpex_scheduler() on all synchronization tasks
-
-2. attachment.queue of the appropriate type is generated, file is imported
-
-3. attachment.queue is executed -> pattern.file is generated
-
-4. A job is generated that actually imports the synced file into Odoo, using the appropriate pattern file
-
-Exports
-=======
-
-1. A cron triggers service_trigger_exports() for a specific task
-
-2. pattern.import.export is created, exporting records using domain specified in task -> xlsx
-
-3. Another cron triggers run() on the same task (i.e the export of the xlsx to the storage space)
+Different functionalities that are not self-explanatory are used, so you can check the depending modules for
+more context about this module's usage and configuration.
 
 **Table of contents**
 
@@ -51,7 +31,43 @@ Exports
 Usage
 =====
 
-todo
+Here is the full workflow for imports and exports in this module. In italics are the modules relevant
+to that particular functionality.
+
+Exports
+=======
+
+1. Create a filter and a pattern.config for the model to export (*pattern_import_export*)
+
+2. Create an attachment.synchronize.task of type "export" and configure it (*attachment_synchronize*)
+
+3. Create and configure a pattern.export.task using elements of steps 1. and 2.
+
+4. Call pattern.export.task.run_pattern_export_scheduler()
+
+5. Observe the following:
+
+  - A pattern.file is created from the filter and pattern configuration from step 1.
+  - The result of that export is in the storage that you configured in step 2.
+
+This is to be used with a cron to call run_pattern_export_scheduler() for automation.
+
+
+Imports
+=======
+
+1. Create a pattern.config (*pattern_import_export*)
+
+2. Create an attachment.synchronize.task of type "Import using pattern" and configure it (*attachment_synchronize*)
+
+3. Call pattern.synchronize.task.run_import_scheduler()
+
+4. Observe the following:
+
+  - Files that match the configuration of attachment_synchronize_task are run through the import procedure
+  - For every file, once imported, the patterned import is executed
+
+This is to be used with a cron to call run_import_scheduler() for automation.
 
 Bug Tracker
 ===========
@@ -59,7 +75,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/shopinvader/pattern-import-export/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us smashing it by providing a detailed and welcomed
-`feedback <https://github.com/shopinvader/pattern-import-export/issues/new?body=module:%20pattern_import_export_synchronize%0Aversion:%2012.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/shopinvader/pattern-import-export/issues/new?body=module:%20pattern_import_export_synchronize%0Aversion:%2014.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -93,6 +109,6 @@ Current maintainers:
 
 |maintainer-kevinkhao| |maintainer-sebastienbeau| 
 
-This module is part of the `shopinvader/pattern-import-export <https://github.com/shopinvader/pattern-import-export/tree/12.0/pattern_import_export_synchronize>`_ project on GitHub.
+This module is part of the `shopinvader/pattern-import-export <https://github.com/shopinvader/pattern-import-export/tree/14.0/pattern_import_export_synchronize>`_ project on GitHub.
 
 You are welcome to contribute.
