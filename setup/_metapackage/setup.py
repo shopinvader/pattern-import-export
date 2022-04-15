@@ -11,6 +11,7 @@ setuptools.setup(
         'odoo14-addon-pattern_import_export',
         'odoo14-addon-pattern_import_export_csv',
         'odoo14-addon-pattern_import_export_custom_header',
+        'odoo14-addon-pattern_import_export_synchronize',
         'odoo14-addon-pattern_import_export_xlsx',
     ],
     classifiers=[
