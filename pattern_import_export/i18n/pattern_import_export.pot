@@ -469,7 +469,7 @@ msgid "Info"
 msgstr ""
 
 #. module: pattern_import_export
-#: code:addons/pattern_import_export/models/base.py:0
+#: code:addons/pattern_import_export/models/patch.py:0
 #, python-format
 msgid "Invalid database identifier '%s'"
 msgstr ""
@@ -860,7 +860,7 @@ msgid "US, FR, BE"
 msgstr ""
 
 #. module: pattern_import_export
-#: code:addons/pattern_import_export/models/base.py:0
+#: code:addons/pattern_import_export/models/patch.py:0
 #, python-format
 msgid "Unknown database identifier '%s'"
 msgstr ""
