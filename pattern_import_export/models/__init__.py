@@ -1,3 +1,4 @@
+from . import patch
 from . import pattern_config
 from . import ir_exports_line
 from . import ir_exports

@@ -343,8 +343,8 @@ class TestPatternImport(PatternCommon, SavepointCase):
     def test_missing_record(self):
         data = [{"name": str(uuid4()), "country_id|code": "Fake"}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
-        self.run_pattern_file(pattern_file)
-
+        partner = self.run_pattern_file(pattern_file)
+        self.assertEqual(len(partner), 0)
         self.assertEqual(pattern_file.state, "failed")
         self.assertIn(
             (
