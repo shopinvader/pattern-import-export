@@ -233,3 +233,16 @@ class Base(models.AbstractModel):
                     self._cr.execute("SAVEPOINT model_load")
         else:
             yield from super()._extract_records(fields_, data, log=log, limit=limit)
+
+    @api.model
+    def _convert_records(self, records, log=lambda a: None):
+        for dbid, xid, record, info in super()._convert_records(records, log=log):
+            # Note the log method is equal to messages.append
+            # so log.__self__ return the messages list
+            messages = log.__self__
+            if messages and messages[-1]["rows"] == info["rows"]:
+                # we have a message for this item so we skip it from conversion
+                # so the record will be not imported
+                continue
+            else:
+                yield dbid, xid, record, info
