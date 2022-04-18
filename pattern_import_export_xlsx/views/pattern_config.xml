@@ -4,7 +4,7 @@
         <field name="model">pattern.config</field>
         <field name="inherit_id" ref="pattern_import_export.pattern_config_form_view" />
         <field name="arch" type="xml">
-            <field name="export_format" position="after">
+            <field name="purge_one2many" position="after">
                 <field
                     name="tab_to_import"
                     attrs="{'invisible': [('export_format', '!=', 'xlsx')], 'required': [('export_format', '=', 'xlsx')]}"

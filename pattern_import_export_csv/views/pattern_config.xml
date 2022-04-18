@@ -4,7 +4,7 @@
         <field name="model">pattern.config</field>
         <field name="inherit_id" ref="pattern_import_export.pattern_config_form_view" />
         <field name="arch" type="xml">
-            <xpath expr="//group[@name='general_info']" position="after">
+            <xpath expr="//group[@name='import']" position="after">
                 <group
                     name="csv_params"
                     attrs="{'invisible': [('export_format', '!=', 'csv')]}"

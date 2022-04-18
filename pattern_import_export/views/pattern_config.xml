@@ -97,18 +97,28 @@
                     <field name="export_format" required="True" />
                     <field name="pattern_file" filename="pattern_file_name" />
                     <field name="pattern_file_name" invisible="1" />
-                    <field name="pattern_last_generation_date" />
                     <field name="id" invisible="1" />
-                    <field name="chunk_size" />
-                    <field name="job_priority" />
-                    <field name="process_multi" />
                     <field name="header_format" />
-                    <field name="purge_one2many" />
                 </group>
             </xpath>
              <xpath expr="//form/group[@name='general_info']" position="after">
                 <notebook>
                     <page string="Export Fields" name="export_fields" />
+                    <page string="Configuration" name="config">
+                        <group>
+                            <group name="chunk" string="Chunk Config">
+                                <field name="chunk_size" />
+                                <field name="job_priority" />
+                                <field name="process_multi" />
+                            </group>
+                            <group name="import" string="Import Option">
+                                <field name="purge_one2many" />
+                            </group>
+                            <group name="info" string="Info">
+                                <field name="pattern_last_generation_date" />
+                            </group>
+                        </group>
+                    </page>
                 </notebook>
             </xpath>
             <page name="export_fields" position="inside">
