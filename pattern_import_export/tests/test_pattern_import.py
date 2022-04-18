@@ -23,6 +23,13 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file.split_in_chunk()
         return model.search([("id", "not in", records.ids)])
 
+    def assertPatternDone(self, pattern_file):
+        self.assertEqual(
+            pattern_file.state,
+            "done",
+            "\n".join(pattern_file.mapped("chunk_ids.result_info")),
+        )
+
     def test_update_inactive(self):
         unique_name = str(uuid4())
         partner = self.env["res.partner"].create({"name": unique_name, "active": False})
@@ -99,7 +106,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"name": unique_name, "login": unique_login, "id": None}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(records), 1)
         self.assertEqual(records.name, unique_name)
 
@@ -109,7 +116,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"name": unique_name, "login": unique_login, ".id": None}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(records), 1)
         self.assertEqual(records.name, unique_name)
 
@@ -286,7 +293,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         ]
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.name, unique_name)
         self.assertEquals(self.partner_cat1, partner.category_id)
@@ -310,7 +317,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partners = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partners), 2)
         self.assertEqual(partners[0].name, unique_name)
         self.assertEqual(partners[0].child_ids, partners[1])
@@ -331,7 +338,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partners = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partners), 2)
         self.assertEqual(partners[0].name, unique_name)
         self.assertEqual(partners[1].name, partner2_name)
@@ -362,7 +369,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.ref, ref)
         self.assertEqual(partner.name, name)
@@ -376,7 +383,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.name, name)
         self.assertEqual(partner.country_id.code, "FR")
