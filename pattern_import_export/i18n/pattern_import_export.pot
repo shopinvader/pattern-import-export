@@ -115,6 +115,11 @@ msgid "Chunk"
 msgstr ""
 
 #. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "Chunk Config"
+msgstr ""
+
+#. module: pattern_import_export
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__chunk_size
 msgid "Chunk Size"
 msgstr ""
@@ -122,6 +127,11 @@ msgstr ""
 #. module: pattern_import_export
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__company_id
 msgid "Company"
+msgstr ""
+
+#. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "Configuration"
 msgstr ""
 
 #. module: pattern_import_export
@@ -434,6 +444,11 @@ msgid "Import"
 msgstr ""
 
 #. module: pattern_import_export
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
+msgid "Import Option"
+msgstr ""
+
+#. module: pattern_import_export
 #: model:ir.model.fields,field_description:pattern_import_export.field_import_pattern_wizard__pattern_config_id
 msgid "Import pattern"
 msgstr ""
@@ -465,6 +480,7 @@ msgstr ""
 
 #. module: pattern_import_export
 #: model:ir.model.fields,field_description:pattern_import_export.field_pattern_file__info
+#: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_config_form_view
 msgid "Info"
 msgstr ""
 
@@ -727,6 +743,11 @@ msgid "Progress"
 msgstr ""
 
 #. module: pattern_import_export
+#: model:ir.model.fields,field_description:pattern_import_export.field_pattern_config__purge_one2many
+msgid "Purge One2Many"
+msgstr ""
+
+#. module: pattern_import_export
 #: model_terms:ir.ui.view,arch_db:pattern_import_export.pattern_file_view_form
 msgid "Re-launch Import"
 msgstr ""
@@ -874,6 +895,14 @@ msgstr ""
 #: code:addons/pattern_import_export/models/pattern_file.py:0
 #, python-format
 msgid "View Job"
+msgstr ""
+
+#. module: pattern_import_export
+#: model:ir.model.fields,help:pattern_import_export.field_pattern_config__purge_one2many
+msgid ""
+"When importing One2many relation like the line of 'sale order line'\n"
+"or contacts of partner. Tick this option if you want to remove\n"
+"record that are not present in you file"
 msgstr ""
 
 #. module: pattern_import_export
