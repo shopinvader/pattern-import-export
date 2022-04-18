@@ -30,6 +30,13 @@ class PatternConfig(models.Model):
         default="technical",
         required=True,
     )
+    purge_one2many = fields.Boolean(
+        help=(
+            "When importing One2many relation like the line of 'sale order line'\n"
+            "or contacts of partner. Tick this option if you want to remove\n"
+            "record that are not present in you file"
+        )
+    )
     pattern_file = fields.Binary(string="Pattern file", readonly=True)
     pattern_file_name = fields.Char(readonly=True)
     pattern_last_generation_date = fields.Datetime(

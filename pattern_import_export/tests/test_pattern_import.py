@@ -23,6 +23,13 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file.split_in_chunk()
         return model.search([("id", "not in", records.ids)])
 
+    def assertPatternDone(self, pattern_file):
+        self.assertEqual(
+            pattern_file.state,
+            "done",
+            "\n".join(pattern_file.mapped("chunk_ids.result_info")),
+        )
+
     def test_update_inactive(self):
         unique_name = str(uuid4())
         partner = self.env["res.partner"].create({"name": unique_name, "active": False})
@@ -99,7 +106,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"name": unique_name, "login": unique_login, "id": None}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(records), 1)
         self.assertEqual(records.name, unique_name)
 
@@ -109,7 +116,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"name": unique_name, "login": unique_login, ".id": None}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(records), 1)
         self.assertEqual(records.name, unique_name)
 
@@ -243,6 +250,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         ]
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         self.run_pattern_file(pattern_file)
+        self.assertPatternDone(pattern_file)
         self.assertEquals(unique_name, self.partner_1.name)
         self.assertEquals(contact_1_name, contact_1.name)
         self.assertEquals(contact_2_name, contact_2.name)
@@ -286,12 +294,20 @@ class TestPatternImport(PatternCommon, SavepointCase):
         ]
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.name, unique_name)
         self.assertEquals(self.partner_cat1, partner.category_id)
 
-    def test_empty_o2m(self):
+    def test_m2m_update(self):
+        self.partner_1.category_id = self.partner_cat2
+        item = {".id": self.partner_1.id, "category_id|1|name": self.partner_cat1.name}
+        pattern_file = self.create_pattern(self.pattern_config, "import", [item])
+        self.run_pattern_file(pattern_file)
+        self.assertPatternDone(pattern_file)
+        self.assertEquals(self.partner_cat1, self.partner_1.category_id)
+
+    def test_o2m_with_empty_value(self):
         unique_name = str(uuid4())
         partner2_name = str(uuid4())
         data = [
@@ -310,10 +326,52 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partners = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partners), 2)
         self.assertEqual(partners[0].name, unique_name)
         self.assertEqual(partners[0].child_ids, partners[1])
+
+    def _helper_o2m_update(self):
+        unique_name = str(uuid4())
+        partner = self.env["res.partner"].create(
+            {
+                "name": unique_name,
+                "child_ids": [
+                    (0, 0, {"name": f"{unique_name}-c1", "email": "c1@example.org"}),
+                    (0, 0, {"name": f"{unique_name}-c2", "email": "c2@example.org"}),
+                ],
+            }
+        )
+        child_1, child_2 = partner.child_ids
+        data = [
+            {
+                ".id": partner.id,
+                "child_ids|1|name": f"{unique_name}-c1-renamed",
+                "child_ids|1|email#key": "c1@example.org",
+                "child_ids|2|name": f"{unique_name}-d2",
+                "child_ids|2|email#key": "d2@example.org",
+                "child_ids|3|name": f"{unique_name}-d3",
+                "child_ids|3|email#key": "d3@example.org",
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config, "import", data)
+        self.run_pattern_file(pattern_file)
+        self.assertPatternDone(pattern_file)
+        return partner, child_1, child_2
+
+    def test_o2m_update_with_purge(self):
+        self.pattern_config.purge_one2many = True
+        partner, child_1, child_2 = self._helper_o2m_update()
+        self.assertEqual(len(partner.child_ids), 3)
+        self.assertIn(child_1, partner.child_ids)
+        self.assertNotIn(child_2, partner.child_ids)
+
+    def test_o2m_update_without_purge(self):
+        self.pattern_config.purge_one2many = False
+        partner, child_1, child_2 = self._helper_o2m_update()
+        self.assertEqual(len(partner.child_ids), 4)
+        self.assertIn(child_1, partner.child_ids)
+        self.assertIn(child_2, partner.child_ids)
 
     def test_empty_m2m_with_o2m(self):
         unique_name = str(uuid4())
@@ -331,7 +389,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partners = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partners), 2)
         self.assertEqual(partners[0].name, unique_name)
         self.assertEqual(partners[1].name, partner2_name)
@@ -362,7 +420,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.ref, ref)
         self.assertEqual(partner.name, name)
@@ -376,7 +434,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         partner = self.run_pattern_file(pattern_file)
 
-        self.assertEqual(pattern_file.state, "done")
+        self.assertPatternDone(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.name, name)
         self.assertEqual(partner.country_id.code, "FR")

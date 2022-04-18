@@ -149,6 +149,10 @@ class Base(models.AbstractModel):
         return None
 
     def _post_process_o2m_fields(self, res, parent_do_not_exist):
+        """Post process one2many field
+        - remove all empty item
+        - post process key on each valid item (with the parent_id in domain)
+        """
         if ".id" in res:
             parent_id = res[".id"]
         elif "id" in res:
@@ -187,6 +191,10 @@ class Base(models.AbstractModel):
                 res.pop(key)
 
     def _post_process_key(self, res, domain=None, parent_do_not_exist=False):
+        """Process identifier key
+        - search existing record and inject id
+        - remove #key for dict key
+        """
         if domain is None:
             domain = []
         domain_key, ident_keys = self._get_domain_from_identifier_key(res)
