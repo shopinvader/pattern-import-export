@@ -103,6 +103,7 @@
                     <field name="job_priority" />
                     <field name="process_multi" />
                     <field name="header_format" />
+                    <field name="purge_one2many" />
                 </group>
             </xpath>
              <xpath expr="//form/group[@name='general_info']" position="after">

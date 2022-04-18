@@ -35,7 +35,13 @@ class PatternChunk(models.Model):
     def run_import(self):
         model = self.pattern_file_id.pattern_config_id.model_id.model
         res = (
-            self.with_context(pattern_config={"model": model, "record_ids": []})
+            self.with_context(
+                pattern_config={
+                    "model": model,
+                    "record_ids": [],
+                    "purge_one2many": self.pattern_file_id.pattern_config_id.purge_one2many,
+                }
+            )
             .env[model]
             .load([], self.data)
         )
