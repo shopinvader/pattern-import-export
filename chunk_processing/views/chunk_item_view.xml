@@ -23,7 +23,8 @@
             </header>
             <sheet>
                 <group>
-                    <field name="data" />
+                    <field name="data" filename="filename" />
+                    <field name="filename" invisible="1" />
                     <field name="start_idx" />
                     <field name="stop_idx" />
                     <field name="nbr_error" />

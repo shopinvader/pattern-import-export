@@ -32,6 +32,13 @@ class ChunkItem(models.Model):
             ("failed", "Failed"),
         ]
     )
+    filename = fields.Char(compute="_compute_filename")
+
+    def _compute_filename(self):
+        for record in self:
+            record.filename = (
+                f"{record.start_idx}-{record.stop_idx}.{record.group_id.data_format}"
+            )
 
     def manual_run(self):
         """ Run the import without try/except, easier for debug """

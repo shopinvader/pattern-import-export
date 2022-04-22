@@ -12,6 +12,9 @@ class ChunkSplitterJson(Component):
     _name = "chunk.splitter.json"
     _usage = "json"
 
+    def _convert_items_to_data(self, items):
+        return json.dumps(items, indent=2).encode("utf-8")
+
     def _parse_data(self, data):
         items = json.loads(data.decode("utf-8"))
         for idx, item in enumerate(items):
