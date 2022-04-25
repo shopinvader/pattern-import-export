@@ -9,7 +9,7 @@
     "website": "https://github.com/shopinvader/pattern-import-export",
     "license": "AGPL-3",
     "depends": [
-        "base_jsonify",
+        "jsonifier",
         "queue_job",
         "base_export_manager",
         "web_notify",
