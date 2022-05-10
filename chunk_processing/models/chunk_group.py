@@ -20,6 +20,7 @@ class ChunkGroup(models.Model):
         [
             ("json", "Json"),
             ("xml", "XML"),
+            ("txt", "Txt"),
         ]
     )
     xml_split_xpath = fields.Char()
