@@ -94,12 +94,27 @@
 
             <xpath expr="//form/group[1]" position="after">
                 <group name="general_info">
-                    <field name="export_format" required="True" />
-                    <field name="pattern_file" filename="pattern_file_name" />
-                    <field name="pattern_file_name" invisible="1" />
-                    <field name="id" invisible="1" />
-                    <field name="header_format" />
+                    <group name="general_info_data">
+                        <field name="name" />
+                        <field name="model_id" options="{'no_create': True}" />
+                        <field name="export_format" required="True" />
+                        <field name="pattern_file" filename="pattern_file_name" />
+                        <field name="pattern_file_name" invisible="1" />
+                        <field name="id" invisible="1" />
+                        <field name="header_format" />
+                    </group>
+                    <group name="general_info_alert">
+                        <field name="alert_display" invisible="1" />
+                        <field
+                            name="alert_msg"
+                            attrs="{
+                        'invisible': [('alert_display', '=', False)]}"
+                        />
+                    </group>
                 </group>
+            </xpath>
+            <xpath expr="//form/group[1]" position="replace">
+                <!-- replaced group is added above -->
             </xpath>
              <xpath expr="//form/group[@name='general_info']" position="after">
                 <notebook>

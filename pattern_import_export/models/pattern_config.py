@@ -3,6 +3,8 @@
 import ast
 import base64
 
+from lxml import etree as ET
+
 from odoo import _, api, fields, models
 from odoo.osv import expression
 
@@ -50,6 +52,98 @@ class PatternConfig(models.Model):
     pattern_file_ids = fields.One2many("pattern.file", "pattern_config_id")
     process_multi = fields.Boolean()
     job_priority = fields.Integer(default=20)
+    alert_display = fields.Boolean(compute="_compute_display_alert")
+    alert_msg = fields.Html(compute="_compute_display_alert")
+
+    @api.depends(
+        "export_fields.is_key", "export_fields.field1_id", "export_fields.field2_id"
+    )
+    def _compute_display_alert(self):
+        default_msg_tmpl = """
+            <div id="##msg_kind##_alert">
+                <div id="##msg_kind##_alert_title" class="font-weight-bold">
+                ##title##
+                </div>
+                <div id="##msg_kind##_alert_msg" class="alert alert-warning" role="alert">
+                ##alert_msg##
+                </div>
+            </div>
+            """
+        for rec in self:
+            rec.alert_display = False
+            rec.alert_msg = False
+            for key_field in rec.export_fields.filtered(lambda x: x.is_key).sorted(
+                "sequence"
+            ):
+                is_unique = False
+                is_translatable = False
+                if key_field.field2_id:
+                    is_unique = rec._is_field_unique(key_field.field2_id)
+                    is_translatable = key_field.field2_id.translate
+                else:
+                    is_unique = rec._is_field_unique(key_field.field1_id)
+                    is_translatable = key_field.field2_id.translate
+                rec.alert_display = not is_unique or is_translatable
+                if rec.alert_display:
+                    if not rec.alert_msg:
+                        rec.alert_msg = """
+                            <div id="warning_msg">
+                                <div id="key_warning_msg">
+                                </div>
+                            </div>
+                            """
+                    if is_translatable:
+                        msg_root = ET.fromstring(rec.alert_msg)
+                        unique_snippet = default_msg_tmpl.replace(
+                            "##msg_kind##", "translatable" + key_field.name
+                        )
+                        unique_snippet = unique_snippet.replace(
+                            "##title##", _("translatable Key alert")
+                        )
+                        unique_snippet = unique_snippet.replace(
+                            "##alert_msg##",
+                            _(
+                                'The field "%s" used as key is translatable. '
+                                "You can got somme errors or los data by updating wrong record. "
+                                "Make sur you log with the right language"
+                            )
+                            % key_field.name,
+                        )
+                        unique_snippet = unique_snippet.replace(
+                            "alert alert-warning", "alert alert-info"
+                        )
+                        msg_root.insert(1, ET.fromstring(unique_snippet))
+                        rec.alert_msg = ET.tostring(msg_root)
+                    if not is_unique:
+                        msg_root = ET.fromstring(rec.alert_msg)
+                        unique_snippet = default_msg_tmpl.replace(
+                            "##msg_kind##", "unique" + key_field.name
+                        )
+                        unique_snippet = unique_snippet.replace(
+                            "##title##", _("Unique Key alert")
+                        )
+                        unique_snippet = unique_snippet.replace(
+                            "##alert_msg##",
+                            _(
+                                'The field "%s" used as key is not unique. '
+                                "You can got somme errors or los data by updating wrong record. "
+                            )
+                            % key_field.name,
+                        )
+                        msg_root.insert(1, ET.fromstring(unique_snippet))
+                        rec.alert_msg = ET.tostring(msg_root)
+
+    def _is_field_unique(self, field):
+        is_unique = False
+        if not is_unique:
+            sql_constraints = self.env[field.model]._sql_constraints
+            for sql_constraint in sql_constraints:
+                sql_constraint_str = sql_constraint[1]
+                if "unique" in sql_constraint_str:
+                    is_unique = field.name in sql_constraint_str
+                    break
+
+        return is_unique
 
     # we redefine previous onchanges since delegation inheritance breaks
     # onchanges on ir.exports
