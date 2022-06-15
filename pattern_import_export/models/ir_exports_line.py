@@ -61,7 +61,7 @@ class IrExportsLine(models.Model):
         if path:
             next_model = self.env[model]._fields[field]._related_comodel_name
             next_field = path.split("/", 1)[0]
-            if self.env[next_model]._fields[next_field]._related_comodel_name:
+            if next_model and self.env[next_model]._fields[next_field]._related_comodel_name:
                 return self._get_last_relation_field(next_model, path, level=level + 1)
         return field, model, level
 
