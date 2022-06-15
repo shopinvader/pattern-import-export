@@ -87,6 +87,8 @@ class IrExportsLine(models.Model):
                 if ftype in ["many2one", "many2many"]:
                     level += 1
                     hidden_fields.remove("add_select_tab")
+                if ftype in ["selection"]:
+                    hidden_fields.remove("add_select_tab")
                 for idx in range(2, level + 1):
                     required.append("field{}_id".format(idx))
                 if ftype in ["one2many", "many2many"]:
@@ -94,7 +96,7 @@ class IrExportsLine(models.Model):
                 if ftype in "one2many":
                     required.append("sub_pattern_config_id")
                 record.required_fields = ",".join(required)
-                if record.add_select_tab:
+                if record.add_select_tab and ftype != "selection":
                     # this field is optionnal
                     required.append("tab_filter_id")
                 hidden_fields = list(set(hidden_fields) - set(required))
