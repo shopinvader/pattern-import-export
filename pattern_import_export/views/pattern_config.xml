@@ -159,6 +159,7 @@
                     'required': [('required_fields', 'ilike', 'sub_pattern_config_id')],
                     'readonly': [('hidden_fields', 'ilike', 'sub_pattern_config_id')],
                     'invisible': [('hidden_fields', 'ilike', 'sub_pattern_config_id')]}"
+                    domain="[('model_id', '=', related_model_id)]"
                 />
                 <field name="related_model_id" invisible="1" />
                 <field name="last_field_id" invisible="1" />
