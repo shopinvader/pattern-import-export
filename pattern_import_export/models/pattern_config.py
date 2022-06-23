@@ -128,6 +128,7 @@ class PatternConfig(models.Model):
         header = []
         for export_line in self.export_fields:
             header.extend(export_line._get_header(use_description))
+        header.insert(0, "#Error")
         return header
 
     def generate_pattern(self):
@@ -173,7 +174,10 @@ class PatternConfig(models.Model):
                         key = key.replace(IDENTIFIER_SUFFIX, "")
                     if key == ".id":
                         key = "id"
-                    val = val[key]
+                    if key == "#Error":
+                        val = None
+                    else:
+                        val = val[key]
                     if val is None:
                         break
             except IndexError:
