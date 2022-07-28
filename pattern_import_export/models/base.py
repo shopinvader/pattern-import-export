@@ -214,11 +214,17 @@ class Base(models.AbstractModel):
             elif key.startswith("#"):
                 row.pop(key)
 
+    def _strip_string(self, row):
+        for key in row:
+            if isinstance(row[key], str):
+                row[key] = row[key].strip()
+
     @api.model
     def _extract_records(self, fields_, data, log=lambda a: None, limit=FLOAT_INF):
         pattern_config = self._context.get("pattern_config")
         if pattern_config:
             for idx, row in data:
+                self._strip_string(row)
                 self._remove_commented_and_empty_columns(row)
                 if not any(row.values()):
                     continue
