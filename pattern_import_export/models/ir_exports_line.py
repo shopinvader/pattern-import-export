@@ -137,9 +137,9 @@ class IrExportsLine(models.Model):
     @api.depends("name")
     def _compute_related_level_field(self):
         for export_line in self:
-            if export_line.name and export_line.export_id.model_id.model:
+            if export_line.field1_id.relation:
                 field, model, level = export_line._get_last_relation_field(
-                    export_line.export_id.model_id.model, export_line.name
+                    export_line.field1_id.model_id.model, export_line.name
                 )
                 related_comodel = self.env[model]._fields[field]._related_comodel_name
                 if related_comodel:
