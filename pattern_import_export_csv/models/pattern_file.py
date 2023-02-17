@@ -12,7 +12,7 @@ class PatternFile(models.Model):
     _inherit = "pattern.file"
 
     def _parse_data_csv(self, datafile):
-        in_file = io.StringIO(datafile.decode("utf-8"))
+        in_file = io.StringIO(datafile.decode("utf-8-sig"))
         config = self.pattern_config_id
         if config.header_format == "description_and_tech":
             # read the first line to skip it
