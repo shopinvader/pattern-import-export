@@ -5,7 +5,7 @@
     "name": "Attachment Synchronize using patterns",
     "version": "14.0.1.0.0",
     "author": "Akretion",
-    "website": "https://github.com/shopinvader/pattern-import-export",
+    "website": "https://github.com/Shopinvader/pattern-import-export",
     "maintainers": ["kevinkhao", "sebastienbeau"],
     "license": "AGPL-3",
     "category": "Generic Modules",
