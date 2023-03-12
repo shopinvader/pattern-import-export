@@ -6,7 +6,7 @@
     "version": "14.0.2.1.0",
     "category": "Extra Tools",
     "author": "Akretion",
-    "website": "https://github.com/shopinvader/pattern-import-export",
+    "website": "https://github.com/Shopinvader/pattern-import-export",
     "license": "AGPL-3",
     "depends": ["pattern_import_export"],
     "external_dependencies": {"python": ["openpyxl"]},

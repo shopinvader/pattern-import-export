@@ -116,15 +116,15 @@ class TestPatternExportExcel(CommonPatternExportExcel, PatternCaseExport):
         self.pattern_config_m2m.export_fields[2].number_occurence = 3
         wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
         sheet_base = wb["Users list - M2M"]
+        validation = sheet_base.data_validations.dataValidation
+        self.assertEqual(len(validation), 1)
+        validation = validation[0]
         self.assertEqual(
-            sheet_base.data_validations.dataValidation[0].formula1,
+            validation.formula1,
             "='{}'!$A$2:$A$1003".format(self.tab_name_ignore_one),
         )
-        for idx, col_letter in enumerate(("C", "D", "E")):
-            self.assertEqual(
-                str(sheet_base.data_validations.dataValidation[0].cells.ranges[idx]),
-                "{0}2:{0}1003".format(col_letter),
-            )
+        cells_validated = {str(x) for x in validation.cells.ranges}
+        self.assertEqual(cells_validated, {"C2:C1003", "D2:D1003", "E2:E1003"})
 
     def test_export_m2m_tabs(self):
         wb = self._helper_get_resulting_wb(self.pattern_config_m2m, self.users)
