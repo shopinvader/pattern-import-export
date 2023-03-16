@@ -65,10 +65,10 @@ class TestPatternConstraint(SavepointCase):
         )
 
     def test_create_wrong_pattern(self):
-        with self.assertRaises(exceptions.ValidationError) as em:
+        with self.assertRaisesRegex(
+            exceptions.ValidationError,
+            "The field field2_id is empty for the line category_id"
+        ):
             self.env["ir.exports.line"].with_context(skip_check=False).create(
                 {"export_id": self.pattern_config.export_id.id, "name": "category_id"}
             )
-        self.assertEqual(
-            em.exception.name, "The field field2_id is empty for the line category_id"
-        )
