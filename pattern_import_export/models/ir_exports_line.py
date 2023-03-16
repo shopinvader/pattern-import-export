@@ -58,9 +58,12 @@ class IrExportsLine(models.Model):
         if "/" not in path:
             path = path + "/"
         field, path = path.split("/", 1)
+        # in standard export odoo use `.id` for internal pgsql id and `id` for
+        # external id, here we want the id as present in pgsql table
+        field = field.replace(".id", "id")
         if path:
             next_model = self.env[model]._fields[field]._related_comodel_name
-            next_field = path.split("/", 1)[0]
+            next_field = path.split("/", 1)[0].replace(".id", "id")
             if self.env[next_model]._fields[next_field]._related_comodel_name:
                 return self._get_last_relation_field(next_model, path, level=level + 1)
         return field, model, level
