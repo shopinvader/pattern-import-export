@@ -170,6 +170,11 @@ class PatternFile(models.Model):
                 previous_idx = idx
             if items:
                 self._create_chunk(start_idx, idx, items)
+            else:
+                # document has an header and no data lines
+                # valid document. So create a dummy chunk
+                # to have progression and status
+                self._create_chunk(-1, -1, [])
         except Exception as e:
             self.state = "failed"
             self.info = _("Failed to create the chunk: %s") % e
