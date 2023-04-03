@@ -12,6 +12,7 @@ class PatternFile(models.Model):
     _name = "pattern.file"
     _inherits = {"ir.attachment": "attachment_id"}
     _description = "Attachment with pattern file metadata"
+    _order = "id desc"
 
     attachment_id = fields.Many2one("ir.attachment", required=True, ondelete="cascade")
     state = fields.Selection(
