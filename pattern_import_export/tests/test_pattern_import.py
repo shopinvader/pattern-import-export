@@ -49,7 +49,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
-        self.assertEquals(unique_name, self.user3.name)
+        self.assertEqual(unique_name, self.user3.name)
 
     def test_update_with_external_id_bad_data_1(self):
         """
@@ -96,9 +96,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         data = [{"name": unique_name, "login": unique_login}]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
-        self.assertEquals(len(records), 1)
-        self.assertEquals(unique_name, records.name)
-        self.assertEquals(unique_login, records.login)
+        self.assertEqual(len(records), 1)
+        self.assertEqual(unique_name, records.name)
+        self.assertEqual(unique_login, records.login)
 
     def test_empty_external_id(self):
         unique_name = str(uuid4())
@@ -146,9 +146,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         # Special case: as the name comes from the related res.partner and
         # we link these 3 users together, the name will be the one
         # set in last position
-        self.assertEquals(unique_name, self.partner_1.name)
-        self.assertEquals(partner2_name, self.partner_2.name)
-        self.assertEquals(partner3_name, self.partner_3.name)
+        self.assertEqual(unique_name, self.partner_1.name)
+        self.assertEqual(partner2_name, self.partner_2.name)
+        self.assertEqual(partner3_name, self.partner_3.name)
         self.assertIn(self.partner_2, self.partner_1.child_ids)
         self.assertIn(self.partner_3, self.partner_1.child_ids)
 
@@ -203,23 +203,23 @@ class TestPatternImport(PatternCommon, SavepointCase):
         records = self.run_pattern_file(pattern_file)
 
         self.assertFalse(records)
-        self.assertEquals(unique_name, self.partner_1.name)
+        self.assertEqual(unique_name, self.partner_1.name)
         self.assertIn(self.partner_cat1, self.partner_1.category_id)
         self.assertIn(self.partner_cat2, self.partner_1.category_id)
-        self.assertEquals(self.country_be, self.partner_1.country_id)
+        self.assertEqual(self.country_be, self.partner_1.country_id)
         self.assertIn(self.partner_2, self.partner_1.child_ids)
         self.assertIn(self.partner_3, self.partner_1.child_ids)
-        self.assertEquals(user1_name, self.partner_2.name)
-        self.assertEquals(self.industry1, self.partner_2.industry_id)
-        self.assertEquals(self.country_be, self.partner_2.country_id)
+        self.assertEqual(user1_name, self.partner_2.name)
+        self.assertEqual(self.industry1, self.partner_2.industry_id)
+        self.assertEqual(self.country_be, self.partner_2.country_id)
         self.assertIn(self.partner_cat1, self.partner_2.category_id)
         self.assertIn(self.partner_cat2, self.partner_2.category_id)
-        self.assertEquals(user2_name, self.partner_3.name)
-        self.assertEquals(self.industry2, self.partner_3.industry_id)
+        self.assertEqual(user2_name, self.partner_3.name)
+        self.assertEqual(self.industry2, self.partner_3.industry_id)
         # Because if the country is edited on the parent,
         # so the country is updated automatically on children.
-        self.assertEquals(self.country_be, self.partner_3.country_id)
-        self.assertEquals(self.partner_cat2, self.partner_3.category_id)
+        self.assertEqual(self.country_be, self.partner_3.country_id)
+        self.assertEqual(self.partner_cat2, self.partner_3.category_id)
 
     def test_update_with_key(self):
         unique_name = str(uuid4())
@@ -227,7 +227,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
-        self.assertEquals(unique_name, self.user3.name)
+        self.assertEqual(unique_name, self.user3.name)
 
     def test_update_o2m_with_key(self):
         unique_name = str(uuid4())
@@ -251,9 +251,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         self.run_pattern_file(pattern_file)
         self.assertPatternDone(pattern_file)
-        self.assertEquals(unique_name, self.partner_1.name)
-        self.assertEquals(contact_1_name, contact_1.name)
-        self.assertEquals(contact_2_name, contact_2.name)
+        self.assertEqual(unique_name, self.partner_1.name)
+        self.assertEqual(contact_1_name, contact_1.name)
+        self.assertEqual(contact_2_name, contact_2.name)
 
     def test_update_o2m_with_key_only_one_record(self):
         unique_name = str(uuid4())
@@ -271,7 +271,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         ]
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         self.run_pattern_file(pattern_file)
-        self.assertEquals(unique_name, self.partner_1.name)
+        self.assertEqual(unique_name, self.partner_1.name)
 
     @mute_logger("odoo.sql_db")
     def test_wrong_import(self):
@@ -297,7 +297,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertPatternDone(pattern_file)
         self.assertEqual(len(partner), 1)
         self.assertEqual(partner.name, unique_name)
-        self.assertEquals(self.partner_cat1, partner.category_id)
+        self.assertEqual(self.partner_cat1, partner.category_id)
 
     def test_m2m_update(self):
         self.partner_1.category_id = self.partner_cat2
@@ -305,7 +305,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", [item])
         self.run_pattern_file(pattern_file)
         self.assertPatternDone(pattern_file)
-        self.assertEquals(self.partner_cat1, self.partner_1.category_id)
+        self.assertEqual(self.partner_cat1, self.partner_1.category_id)
 
     def test_o2m_with_empty_value(self):
         unique_name = str(uuid4())
