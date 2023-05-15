@@ -8,7 +8,9 @@ class IrExports(models.Model):
     _inherit = "ir.exports"
 
     pattern_config_id = fields.Many2one(
-        "pattern.config", compute="_compute_pattern_config_id"
+        "pattern.config",
+        compute="_compute_pattern_config_id",
+        compute_sudo=True,
     )
 
     def _compute_pattern_config_id(self):
