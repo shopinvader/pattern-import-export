@@ -290,14 +290,24 @@ class PatternConfig(models.Model):
                 offset += rec.number_occurence or 1
                 continue
 
-            permitted_records = []
-            model_name = rec.related_model_id.model
-            domain = (
-                rec.tab_filter_id and ast.literal_eval(rec.tab_filter_id.domain)
-            ) or []
-            records_matching_constraint = self.env[model_name].search(domain)
-            permitted_records += records_matching_constraint
-            data = rec._format_tab_records(permitted_records)
+            selection = (
+                self.env["ir.model.fields"].browse(rec.last_field_id.id).selection
+            )
+            if selection:
+                selection_list = ast.literal_eval(selection)
+                data = []
+                for option in selection_list:
+                    data.append([option[0]])
+            if rec.related_model_id.model:
+                permitted_records = []
+
+                model_name = rec.related_model_id.model
+                domain = (
+                    rec.tab_filter_id and ast.literal_eval(rec.tab_filter_id.domain)
+                ) or []
+                records_matching_constraint = self.env[model_name].search(domain)
+                permitted_records += records_matching_constraint
+                data = rec._format_tab_records(permitted_records)
             headers = rec._get_tab_headers()
             tab_name = rec._get_tab_name()
             idx_col_validator = []

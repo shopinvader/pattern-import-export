@@ -418,3 +418,30 @@ class PatternTestExport(PatternCommon, SavepointCase, PatternCaseExport):
                 "idx_col_validator": [7, 12, 17],
             },
         )
+
+    def test_get_metadata_with_selection_field(self):
+        self.env["ir.exports.line"].create(
+            {
+                "name": "type",
+                "export_id": self.env.ref("pattern_import_export.demo_export").id,
+                "add_select_tab": True,
+            }
+        )
+        result = self.pattern_config._get_metadata()
+        self.assertEqual(len(result["tabs"]), 3)
+        tabs = result["tabs"]
+
+        self.assertEqual(
+            tabs["Address Type"],
+            {
+                "headers": ["type"],
+                "data": [
+                    ["contact"],
+                    ["invoice"],
+                    ["delivery"],
+                    ["other"],
+                    ["private"],
+                ],
+                "idx_col_validator": [6],
+            },
+        )
