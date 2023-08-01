@@ -30,5 +30,5 @@
         "data/queue_job_function_data.xml",
     ],
     "demo": ["demo/demo.xml"],
-    "installable": True,
+    "installable": False,
 }

@@ -12,5 +12,5 @@
     "external_dependencies": {"python": ["openpyxl"]},
     "demo": ["demo/demo.xml"],
     "data": ["views/pattern_config.xml"],
-    "installable": True,
+    "installable": False,
 }
