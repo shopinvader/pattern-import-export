@@ -64,11 +64,19 @@ class TestPatternConstraint(SavepointCase):
             CASE, "field2_id,field3_id,number_occurence,sub_pattern_config_id"
         )
 
+    def test_field_id(self):
+        CASE = [".id"]
+        self._check_case(CASE, "")
+
+    def test_field_x2m_id(self):
+        CASE = ["bank_ids/.id"]
+        self._check_case(CASE, "number_occurence,sub_pattern_config_id")
+
     def test_create_wrong_pattern(self):
-        with self.assertRaises(exceptions.ValidationError) as em:
+        with self.assertRaisesRegex(
+            exceptions.ValidationError,
+            "The field field2_id is empty for the line category_id",
+        ):
             self.env["ir.exports.line"].with_context(skip_check=False).create(
                 {"export_id": self.pattern_config.export_id.id, "name": "category_id"}
             )
-        self.assertEqual(
-            em.exception.name, "The field field2_id is empty for the line category_id"
-        )
