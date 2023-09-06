@@ -36,6 +36,7 @@ class ImportPatternWizard(models.TransientModel):
                 "datas": self.import_file,
                 "kind": "import",
                 "pattern_config_id": self.pattern_config_id.id,
+                "company_id": self.env.company.id,
             }
         )
         pattern_file_import.with_delay(
