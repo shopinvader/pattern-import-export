@@ -26,6 +26,13 @@
             <form string="pattern_file_form" create="false">
                 <header>
                     <button
+                        name="%(import_pattern_wizard_action)d"
+                        string="New Import"
+                        class="oe_highlight"
+                        type="action"
+                        context="{'default_pattern_config_id': pattern_config_id, 'hide_pattern_config_id': True}"
+                    />
+                    <button
                         name="split_in_chunk"
                         string="Re-launch Import"
                         type="object"
