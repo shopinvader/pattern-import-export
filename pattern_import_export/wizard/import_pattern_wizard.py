@@ -23,6 +23,13 @@ class ImportPatternWizard(models.TransientModel):
     )
     import_file = fields.Binary(string="File to import", required=True)
     filename = fields.Char()
+    company_id = fields.Many2one(
+        string="Company",
+        comodel_name="res.company",
+        help="If set, import data in the context of the specified company.\n"
+        "Allow to set company dependent fields in the right company\n"
+        "Default company is the active one.",
+    )
 
     def action_launch_import(self):
         """
@@ -38,7 +45,8 @@ class ImportPatternWizard(models.TransientModel):
                 "pattern_config_id": self.pattern_config_id.id,
             }
         )
-        pattern_file_import.with_delay(
+        company = self.company_id or self.env.company
+        pattern_file_import.with_company(company.id).with_delay(
             priority=self.pattern_config_id.job_priority
         ).split_in_chunk()
         return pattern_file_import
