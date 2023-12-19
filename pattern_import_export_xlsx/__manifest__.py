@@ -3,7 +3,7 @@
 {
     "name": "Pattern Import Export XLSX",
     "summary": "Pattern for import or export from to XLSX files",
-    "version": "14.0.2.1.0",
+    "version": "16.0.1.0.0",
     "category": "Extra Tools",
     "author": "Akretion",
     "website": "https://github.com/Shopinvader/pattern-import-export",
@@ -12,5 +12,5 @@
     "external_dependencies": {"python": ["openpyxl"]},
     "demo": ["demo/demo.xml"],
     "data": ["views/pattern_config.xml"],
-    "installable": False,
+    "installable": True,
 }

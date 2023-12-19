@@ -4,7 +4,7 @@
 
 import ast
 
-from odoo import _, api, models
+from odoo import _, api, Command, models
 from odoo.osv import expression
 
 from odoo.addons.base.models import ir_fields
@@ -110,9 +110,9 @@ class IrFieldsConverter(models.AbstractModel):
                 warnings.extend(ws)
 
         if self._context.get("update_many2many"):
-            return [ir_fields.LINK_TO(id) for id in ids], warnings
+            return [Command.link(id) for id in ids], warnings
         else:
-            return [ir_fields.REPLACE_WITH(ids)], warnings
+            return [Command.set(ids)], warnings
 
     @api.model
     def _str_to_many2many(self, model, field, value):

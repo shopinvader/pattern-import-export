@@ -22,7 +22,7 @@ class PatternCommon(JobMixin):
             context=dict(
                 cls.env.context,
                 tracking_disable=True,
-                test_queue_job_no_delay=True,
+                queue_job__no_delay=True,
             )
         )
         cls.partner_1 = cls.env.ref("base.res_partner_1")
