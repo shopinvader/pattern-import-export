@@ -237,6 +237,12 @@ class Base(models.AbstractModel):
                 yield self._pattern_format2json(row), {"rows": {"from": idx, "to": idx}}
 
                 # WARNING: complex code
+                # This feature has been inactivated for v16
+                # it's not something easy to do
+                # and need to be carefully done
+                #
+                # it's about allowing to import working lines
+                # and reporting lines in error
                 # As we are in an generator the following code is executed
                 # after the "for id, xid, record, info in converted:" in model.py:1090
                 # the idea is to call the flush manually for the last line
@@ -248,8 +254,9 @@ class Base(models.AbstractModel):
                 # in V15 we should propose a refactor of load method
                 if data[-1][0] == idx:
                     self._context["import_flush"]()
-                    self._cr.execute("RELEASE SAVEPOINT model_load")
-                    self._cr.execute("SAVEPOINT model_load")
+                    # https://github.com/odoo/odoo/pull/76243
+                    # self._cr.execute("RELEASE SAVEPOINT model_load")
+                    # self._cr.execute("SAVEPOINT model_load")
         else:
             yield from super()._extract_records(fields_, data, log=log, limit=limit)
 
