@@ -4,12 +4,12 @@
 import base64
 from io import BytesIO
 from os import path
+from unittest.mock import Mock
 
 # TODO FIXME somehow Travis complains that openpyxl isn't there,
 # the warning shows only here and not in any other import of openpyxl?
 # pylint: disable=missing-manifest-dependency
 import openpyxl
-from mock import Mock
 
 from odoo.tests import SavepointCase
 from odoo.tools import mute_logger
@@ -27,7 +27,8 @@ class TestPatternImportExcel(SavepointCase):
         super().setUpClass()
         cls.env = cls.env(
             context=dict(
-                cls.env.context, test_queue_job_no_delay=True  # no jobs thanks
+                cls.env.context,
+                queue_job__no_delay=True,  # no jobs thanks
             )
         )
         cls.pattern_config_partner = cls.env["pattern.config"].create(

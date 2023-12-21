@@ -79,7 +79,7 @@ class TestPatternExportExcel(CommonPatternExportExcel, PatternCaseExport):
         sheet_base = wb["Partner"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='{}'!$A$2:$A$1003".format(self.tab_name_countries_1),
+            f"='{self.tab_name_countries_1}'!$A$2:$A$1003",
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[0].cells), "D2:D1003"
@@ -97,7 +97,7 @@ class TestPatternExportExcel(CommonPatternExportExcel, PatternCaseExport):
         sheet_base = wb["Partner with contact"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='{}'!$A$2:$A$1003".format(self.tab_name_countries_1),
+            f"='{self.tab_name_countries_1}'!$A$2:$A$1003",
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[0].cells),
@@ -121,7 +121,7 @@ class TestPatternExportExcel(CommonPatternExportExcel, PatternCaseExport):
         validation = validation[0]
         self.assertEqual(
             validation.formula1,
-            "='{}'!$A$2:$A$1003".format(self.tab_name_ignore_one),
+            f"='{self.tab_name_ignore_one}'!$A$2:$A$1003",
         )
         cells_validated = {str(x) for x in validation.cells.ranges}
         self.assertEqual(cells_validated, {"C2:C1003", "D2:D1003", "E2:E1003"})
@@ -142,7 +142,7 @@ class TestPatternExportExcel(CommonPatternExportExcel, PatternCaseExport):
         sheet_base = wb["Users list - M2M"]
         self.assertEqual(
             sheet_base.data_validations.dataValidation[0].formula1,
-            "='{}'!$A$2:$A$1003".format(self.tab_name_ignore_one),
+            f"='{self.tab_name_ignore_one}'!$A$2:$A$1003",
         )
         self.assertEqual(
             str(sheet_base.data_validations.dataValidation[0].cells), "C2:C1003"

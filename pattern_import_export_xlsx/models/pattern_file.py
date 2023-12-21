@@ -51,7 +51,7 @@ class PatternFile(models.Model):
                 vals = [x.value for x in row]
                 if any(vals):
                     count_empty = 0
-                    item = dict(zip(headers, vals))
+                    item = dict(zip(headers, vals, strict=True))
                     # we remove column without header
                     item.pop(None, "")
                     # the position return is the row number

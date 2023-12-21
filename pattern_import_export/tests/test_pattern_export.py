@@ -168,7 +168,7 @@ class PatternCaseExport:
                 "category_id|1|name": "Consulting Services",
             },
         ]
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export2(self):
@@ -185,7 +185,7 @@ class PatternCaseExport:
             }
         ]
         results = self._get_data(self.pattern_config_m2m, self.env.user)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export3(self):
@@ -208,7 +208,7 @@ class PatternCaseExport:
             }
         ]
         results = self._get_data(self.pattern_config_m2m, self.env.user)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export4(self):
@@ -283,7 +283,7 @@ class PatternCaseExport:
             },
         ]
         results = self._get_data(self.pattern_config_o2m, self.partners)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export5(self):
@@ -360,7 +360,7 @@ class PatternCaseExport:
         ]
 
         results = self._get_data(self.pattern_config_o2m, self.partners)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export_is_key1(self):

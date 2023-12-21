@@ -88,7 +88,7 @@ class IrExportsLine(models.Model):
                     level += 1
                     hidden_fields.remove("add_select_tab")
                 for idx in range(2, level + 1):
-                    required.append("field{}_id".format(idx))
+                    required.append(f"field{idx}_id")
                 if ftype in ["one2many", "many2many"]:
                     required.append("number_occurence")
                 if ftype in "one2many":
@@ -162,7 +162,7 @@ class IrExportsLine(models.Model):
     def _build_header(self, level, use_description):
         base_header = []
         for idx in range(1, level + 1):
-            field = self["field{}_id".format(idx)]
+            field = self[f"field{idx}_id"]
             if use_description:
                 base_header.append(field.field_description)
             else:
@@ -191,7 +191,7 @@ class IrExportsLine(models.Model):
                     header += IDENTIFIER_SUFFIX
                 headers.append(header)
             else:
-                last_relation_field = record["field{}_id".format(record.level)]
+                last_relation_field = record[f"field{record.level}_id"]
                 if last_relation_field.ttype == "many2one":
                     headers.append(
                         record._build_header(record.level + 1, use_description)
@@ -213,7 +213,7 @@ class IrExportsLine(models.Model):
                                 ]
                             )
                     else:
-                        field = record["field{}_id".format(record.level + 1)]
+                        field = record[f"field{record.level + 1}_id"]
                         if use_description:
                             field_name = field.field_description
                         else:
@@ -238,7 +238,7 @@ class IrExportsLine(models.Model):
     def _get_tab_name(self):
         tab_filter = self.tab_filter_id
         if tab_filter:
-            name = "({}) {}".format(str(tab_filter.id), tab_filter.name)
+            name = f"({str(tab_filter.id)}) {tab_filter.name}"
         else:
             name = self.field1_id.field_description
         if len(name) > 31:
