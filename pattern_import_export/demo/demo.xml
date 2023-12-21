@@ -8,6 +8,7 @@
             <field name="name">US, FR, BE</field>
             <field name="domain">[("code", "in", ["US", "FR", "BE"])]</field>
             <field name="model_id">res.country</field>
+            <field name="user_id" />
         </record>
         <record id="demo_filter_countries_2" model="ir.filters">
             <field name="name">European countries</field>
@@ -15,11 +16,13 @@
                 name="domain"
             >[("code", "in", ["UK", "FR", "BE", "ES", "DE"])]</field>
             <field name="model_id">res.country</field>
+            <field name="user_id" />
         </record>
         <record id="demo_filter_companies" model="ir.filters">
             <field name="name">Ignore one</field>
             <field name="domain">[("name", "!=", "Ignored company")]</field>
             <field name="model_id">res.company</field>
+            <field name="user_id" />
         </record>
 
         <!--Exports-->
