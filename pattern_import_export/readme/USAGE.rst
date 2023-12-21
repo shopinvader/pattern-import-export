@@ -23,15 +23,28 @@ You have two options:
 
 * Open the tree view of any model and tick some record selection boxes (for this step, these don't matter, we only just want to show the sidebar).
 * In the sidebar, click on the "Import with Pattern" button
-* Select the pattern that you used to generate the export, upload your file and click import.
+* Select a pattern, upload your file and click import.
 * A "Pattern file" is created, and its job along with it. Depending on the success or failure of the job, you
   will receive a red/green notification on your window. You can check the details in the appropriate Import/Export menu.
 
 Or:
 
 * Access the Import wizard through the Import/Export menu
-* Select the Pattern that you want to use
+* Select a pattern
 * Click on the "Import" button
+
+
+Import syntax
+-------------
+
+One of the strength of pattern_import_export module is the ability to
+reference records by natural keys (business keys) instead of technical keys (xmlid or database id).
+
+One or more columns can be the natural key of the record to find and update or to create a new record.
+Each column in the natural key has to be suffixed by "#key".
+
+One or more columns can be used as foreign keys can be accessed with "|" syntax.  (for instance on partner: country_id|code )
+
 
 Example
 -------

@@ -13,6 +13,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.pattern_config_m2m.export_format = "json"
+        cls.pattern_config_o2m.export_format = "json"
         cls.pattern_config.export_format = "json"
 
     def run_pattern_file(self, pattern_file):
@@ -229,6 +230,44 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertFalse(records)
         self.assertEqual(unique_name, self.user3.name)
 
+    def test_update_with_muli_cols_pkey(self):
+        """ensure we identify the row to update
+        based on multiple columns with
+        different depths
+        """
+        unique_name = str(uuid4())
+        data = [
+            {
+                "partner_id#key|email": self.user3.partner_id.email,
+                "partner_id#key|name": self.user3.partner_id.name,
+                "partner_id#key|country_id|code": self.user3.partner_id.country_id.code,
+                "name": unique_name,
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
+        self.assertEqual(unique_name, self.user3.name)
+
+        # same test with ambigus key
+        # the record should not be updated because the key
+        # returns more than 1 record
+        ambigus = self.user3.search(
+            [["country_id.code", "=", self.user3.partner_id.country_id.code]]
+        )
+        self.assertTrue(len(ambigus) > 1, "Verify conditions")
+        unique_name_2 = str(uuid4())
+        data = [
+            {
+                "partner_id#key|country_id|code": self.user3.partner_id.country_id.code,
+                "name": unique_name_2,
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
+        self.assertEqual(unique_name, self.user3.name, "Ensure value not updated")
+
     def test_update_o2m_with_key(self):
         unique_name = str(uuid4())
         contact_1_name = str(uuid4())
@@ -272,6 +311,45 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         self.run_pattern_file(pattern_file)
         self.assertEqual(unique_name, self.partner_1.name)
+
+    def test_update_o2m_with_sub_keys(self):
+        unique_name = str(uuid4())
+
+        # state_ie_27,ie,"Antrim","AM"
+        # there is multiple state with code = AM
+        # in demo data, but only one with Currency = euro
+
+        # ensure we picked a reference to only one record
+        only_one_rec = self.env["res.country"].search(
+            [["state_ids.code", "=", "AM"], ["currency_id.symbol", "=", "€"]]
+        )
+        self.assertEqual(len(only_one_rec), 1, "Ensure data for test valid")
+        previous_country = self.partner_1.country_id
+        new_country = only_one_rec
+        data = [
+            {
+                "email#key": self.partner_1.email,
+                "phone#key": self.partner_1.phone,
+                "name": unique_name,
+                "country_id|currency_id|symbol": "€",
+                "country_id|state_ids|code": "AM",
+                "title|name": "Professor",
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config_o2m, "import", data)
+        self.run_pattern_file(pattern_file)
+        self.assertNotEqual(previous_country.id, new_country.id)
+        self.assertEqual(
+            unique_name, self.partner_1.name, "direct field has been updated"
+        )
+        self.assertEqual(
+            new_country.id,
+            self.partner_1.country_id.id,
+            "relation field has been updated",
+        )
+        self.assertEqual(
+            "Professor", self.partner_1.title.name, "relation field has been updated"
+        )
 
     @mute_logger("odoo.sql_db")
     def test_wrong_import(self):
