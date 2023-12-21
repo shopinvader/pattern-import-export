@@ -42,9 +42,7 @@ def migrate(env, version):
              {p[flush_step]},
              id
         FROM ir_exports WHERE is_pattern IS TRUE
-        """.format(
-            p=params
-        )
+        """.format(p=params)
     )
 
     env.cr.execute(
