@@ -16,7 +16,7 @@ odoo_version: 16.0
 org_name: Shopinvader
 org_slug: shopinvader
 rebel_module_groups: []
-repo_description: null
+repo_description: Easy, reproductible and reliable imports and exports
 repo_name: Pattern Import Export
 repo_slug: pattern-import-export
 repo_website: https://github.com/Shopinvader/pattern-import-export
