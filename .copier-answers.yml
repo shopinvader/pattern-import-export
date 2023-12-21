@@ -1,8 +1,9 @@
 # Do NOT update manually; changes here will be overwritten by Copier
-_commit: v1.17.1
+_commit: v1.20
 _src_path: https://github.com/OCA/oca-addons-repo-template
+additional_ruff_rules: []
 ci: GitHub
-dependency_installation_mode: PIP
+convert_readme_fragments_to_markdown: false
 generate_requirements_txt: true
 github_check_license: false
 github_ci_extra_env: {}
@@ -16,10 +17,10 @@ odoo_version: 14.0
 org_name: Shopinvader
 org_slug: shopinvader
 rebel_module_groups: []
-repo_description: null
+repo_description: Easy, reproductible and reliable imports and exports
 repo_name: Pattern Import Export
 repo_slug: pattern-import-export
 repo_website: https://github.com/Shopinvader/pattern-import-export
-travis_apt_packages: []
-travis_apt_sources: []
+use_pyproject_toml: false
+use_ruff: true
 
