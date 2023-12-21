@@ -19,7 +19,8 @@ class TestPatternImportCsv(ExportPatternCsvCommon):
         super().setUpClass()
         cls.env = cls.env(
             context=dict(
-                cls.env.context, test_queue_job_no_delay=True  # no jobs thanks
+                cls.env.context,
+                test_queue_job_no_delay=True,  # no jobs thanks
             )
         )
         cls.pattern_config_partner = cls.env["pattern.config"].create(
