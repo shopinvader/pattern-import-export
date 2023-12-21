@@ -62,9 +62,7 @@ class PatternFile(models.Model):
         if self.state == "failed":
             self.env.user.notify_danger(
                 message=_(
-                    "{} job has failed. \nFor more details: {}".format(
-                        import_or_export, details
-                    )
+                    f"{import_or_export} job has failed. \nFor more details: {details}"
                 ),
                 sticky=True,
             )
@@ -126,8 +124,7 @@ class PatternFile(models.Model):
 
     def _parse_data_json(self, data):
         items = json.loads(data.decode("utf-8"))
-        for idx, item in enumerate(items):
-            yield idx + 1, item
+        yield from enumerate(items, start=1)
 
     def _prepare_chunk(self, start_idx, stop_idx, data):
         return {

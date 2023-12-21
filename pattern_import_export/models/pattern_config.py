@@ -115,9 +115,13 @@ class PatternConfig(models.Model):
         headers = []
         if self.header_format == "description_and_tech":
             headers.append(
-                dict(zip(tech_header, self._get_header(use_description=True)))
+                dict(
+                    zip(
+                        tech_header, self._get_header(use_description=True), strict=True
+                    )
+                )
             )
-        headers.append(dict(zip(tech_header, tech_header)))
+        headers.append(dict(zip(tech_header, tech_header, strict=True)))
         return headers
 
     def _get_header(self, use_description=False):
@@ -225,7 +229,7 @@ class PatternConfig(models.Model):
         pattern_file_exports = self.env["pattern.file"]
         all_data = self._generate_with_records(records)
         if all_data and self.env.context.get("export_as_attachment", True):
-            for export, attachment_data in zip(self, all_data):
+            for export, attachment_data in zip(self, all_data, strict=True):
                 pattern_file_exports |= export._create_pattern_file_export(
                     attachment_data
                 )
@@ -238,7 +242,7 @@ class PatternConfig(models.Model):
         @return: ir.attachment recordset
         """
         self.ensure_one()
-        name = "{name}.{format}".format(name=self.name, format=self.export_format)
+        name = f"{self.name}.{self.export_format}"
         return self.env["pattern.file"].create(
             {
                 "name": name,

@@ -16,12 +16,12 @@ def migrate(env, version):
         ("export_format", "NULL"),
     ]:
         if openupgrade.column_exists(env.cr, "ir_exports", field):
-            params[field] = '"{}"'.format(field)
+            params[field] = f'"{field}"'
         else:
             params[field] = default_value
 
     env.cr.execute(
-        """
+        f"""
         INSERT INTO pattern_config (
              use_description,
              pattern_file,
@@ -34,15 +34,15 @@ def migrate(env, version):
         )
         SELECT
              use_description,
-             {p[pattern_file]},
-             {p[pattern_file_name]},
-             {p[pattern_last_generation_date]},
-             {p[export_format]},
-             {p[partial_commit]},
-             {p[flush_step]},
+             {params["pattern_file"]},
+             {params["pattern_file_name"]},
+             {params["pattern_last_generation_date"]},
+             {params["export_format"]},
+             {params["partial_commit"]},
+             {params["flush_step"]},
              id
         FROM ir_exports WHERE is_pattern IS TRUE
-        """.format(p=params)
+        """
     )
 
     env.cr.execute(

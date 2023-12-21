@@ -3,8 +3,7 @@
 import json
 from base64 import b64encode
 from contextlib import contextmanager
-
-from mock import Mock
+from unittest.mock import Mock
 
 from odoo.tests import new_test_user
 

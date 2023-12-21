@@ -4,10 +4,8 @@
 
 import ast
 
-from odoo import _, api, Command, models
+from odoo import Command, _, api, models
 from odoo.osv import expression
-
-from odoo.addons.base.models import ir_fields
 
 from .common import IDENTIFIER_SUFFIX
 
@@ -29,9 +27,7 @@ class IrFieldsConverter(models.AbstractModel):
                 cleanned[field] = vals
             converted = fn(cleanned, log)
             for field in keyfields:
-                converted["{}{}".format(field, IDENTIFIER_SUFFIX)] = converted.pop(
-                    field
-                )
+                converted[f"{field}{IDENTIFIER_SUFFIX}"] = converted.pop(field)
             return converted
 
         return fn_with_key_support
@@ -155,7 +151,7 @@ class IrFieldsConverter(models.AbstractModel):
 
     @api.model
     def _str_to_boolean(self, model, field, value):
-        if isinstance(value, (int, float)):
+        if isinstance(value, (int | float)):
             return bool(value), []
         if isinstance(value, bool):
             return value, []

@@ -46,7 +46,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         @return:
         """
         unique_name = str(uuid4())
-        data = [{"id": self.user3.get_external_id().get(self.user3.id), "name": unique_name}]
+        data = [
+            {"id": self.user3.get_external_id().get(self.user3.id), "name": unique_name}
+        ]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
@@ -134,9 +136,13 @@ class TestPatternImport(PatternCommon, SavepointCase):
             {
                 "id": self.partner_1.get_external_id().get(self.partner_1.id),
                 "name": unique_name,
-                "child_ids|1|id": self.partner_2.get_external_id().get(self.partner_2.id),
+                "child_ids|1|id": self.partner_2.get_external_id().get(
+                    self.partner_2.id
+                ),
                 "child_ids|1|name": partner2_name,
-                "child_ids|2|id": self.partner_3.get_external_id().get(self.partner_3.id),
+                "child_ids|2|id": self.partner_3.get_external_id().get(
+                    self.partner_3.id
+                ),
                 "child_ids|2|name": partner3_name,
             }
         ]
@@ -172,8 +178,12 @@ class TestPatternImport(PatternCommon, SavepointCase):
                 "category_id|2|id": self.partner_cat2.get_external_id().get(
                     self.partner_cat2.id
                 ),
-                "country_id|id": self.country_be.get_external_id().get(self.country_be.id),
-                "child_ids|1|id": self.partner_2.get_external_id().get(self.partner_2.id),
+                "country_id|id": self.country_be.get_external_id().get(
+                    self.country_be.id
+                ),
+                "child_ids|1|id": self.partner_2.get_external_id().get(
+                    self.partner_2.id
+                ),
                 "child_ids|1|name": user1_name,
                 "child_ids|1|industry_id|id": self.industry1.get_external_id().get(
                     self.industry1.id
@@ -187,7 +197,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
                 "child_ids|1|category_id|2|id": self.partner_cat2.get_external_id().get(
                     self.partner_cat2.id
                 ),
-                "child_ids|2|id": self.partner_3.get_external_id().get(self.partner_3.id),
+                "child_ids|2|id": self.partner_3.get_external_id().get(
+                    self.partner_3.id
+                ),
                 "child_ids|2|name": user2_name,
                 "child_ids|2|industry_id|id": self.industry2.get_external_id().get(
                     self.industry2.id
@@ -535,9 +547,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         unique_name = str(uuid4())
         data = {"name": unique_name}
         for idx in range(1, 15):
-            categ_name = "partner_categ_{}".format(idx)
+            categ_name = f"partner_categ_{idx}"
             self.env["res.partner.category"].create({"name": categ_name})
-            data["category_id|{}|name".format(idx)] = categ_name
+            data[f"category_id|{idx}|name"] = categ_name
         pattern_file = self.create_pattern(self.pattern_config, "import", [data])
         partner = self.run_pattern_file(pattern_file)
         self.assertEqual(len(partner), 1)
