@@ -71,7 +71,9 @@ class PatternConfig(models.Model):
             for state in ("failed", "pending", "done"):
                 field_name = "count_pattern_file_" + state
                 count = len(
-                    rec.pattern_file_ids.filtered(lambda r: r.state == state).ids
+                    rec.pattern_file_ids.filtered(
+                        lambda r, state=state: r.state == state
+                    ).ids
                 )
                 setattr(rec, field_name, count)
 
