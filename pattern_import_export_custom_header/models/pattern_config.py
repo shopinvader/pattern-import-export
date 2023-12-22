@@ -19,7 +19,7 @@ class PatternConfig(models.Model):
 
     def _map_with_custom_header(self, data):
         return {
-            item.name: data.get(item.initial_header_name)
+            item.name: data.get(item.initial_header_name) or item.export_default_value
             for item in self.custom_header_ids
         }
 
@@ -72,6 +72,8 @@ class PatternCustomHeader(models.Model):
     custom_name = fields.Char(string="Custom Header Name")
     initial_header_name = fields.Char(string="Initial Header Name")
     pattern_id = fields.Many2one("pattern.config", required=True)
+    import_default_value = fields.Char(string="Import default Value")
+    export_default_value = fields.Char(string="Export default Value")
 
     def _compute_name(self):
         for record in self:
