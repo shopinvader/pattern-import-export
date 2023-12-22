@@ -40,6 +40,8 @@ class PatternFile(models.Model):
                 record.progress = (record.nbr_error + record.nbr_success) * 100.0 / todo
             else:
                 record.progress = 0
+            if record.nbr_error and record.state != "failed":
+                record.state = "failed"
 
     @api.model_create_multi
     def create(self, vals):
@@ -142,7 +144,7 @@ class PatternFile(models.Model):
     def _should_create_chunk(self, items, next_item):
         """Customise this code if you want to add some additionnal
         item after reaching the limit"""
-        return len(items) > self.pattern_config_id.chunk_size
+        return len(items) >= self.pattern_config_id.chunk_size
 
     def _create_chunk(self, start_idx, stop_idx, data):
         vals = self._prepare_chunk(start_idx, stop_idx, data)
@@ -158,7 +160,7 @@ class PatternFile(models.Model):
         self.chunk_ids.unlink()
         try:
             items = []
-            start_idx = 1
+            start_idx = self.pattern_config_id.nr_of_header_rows + 1
             previous_idx = None
             # idx is the index position in the original file
             # we can have empty line that can be skipped

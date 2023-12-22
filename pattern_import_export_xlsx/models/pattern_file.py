@@ -70,23 +70,24 @@ class PatternFile(models.Model):
         infile = BytesIO(base64.b64decode(self.datas))
         wb = openpyxl.load_workbook(filename=infile)
         ws = self._get_worksheet(wb)
+        ws.column_dimensions["A"].hidden = False
 
         # we clear the error col if exist
         if ws["A1"].value == _("#Error"):
             ws.delete_cols(1)
         ws.insert_cols(1)
         ws.cell(1, 1, value=_("#Error"))
-        last_row_idx = 0
-        for chunk in self.chunk_ids:
+        for chunk in self.chunk_ids.filtered(lambda c: c.nbr_error > 0):
             for message in chunk.messages:
                 if "rows" in message:
-                    last_row_idx = message["rows"]["to"]
-                    ws.cell(message["rows"]["to"], 1, value=message["message"].strip())
+                    ws.cell(message["rows"]["from"], 1, value=message["message"])
                 else:
                     # If no row are specify, this is a global message
                     # that should be applied until the end of the chunk
-                    for idx in range(last_row_idx, chunk.stop_idx + 1):
-                        ws.cell(idx, 1, value=message["message"].strip())
+                    for idx in range(chunk.start_idx, chunk.stop_idx + 1):
+                        if self.pattern_config_id.nr_of_header_rows == 2 and idx == 2:
+                            idx = idx + 1
+                        ws.cell(idx, 1, value=message["message"])
         output = BytesIO()
         wb.save(output)
         self.datas = base64.b64encode(output.getvalue())

@@ -75,7 +75,15 @@ class PatternChunk(models.Model):
                     "state": "failed",
                 }
             )
-            self.with_delay().check_last()
+            if not self.messages:
+                self.messages = {"message": e.args[0]}
+            next_chunk = self.get_next_chunk()
+            if next_chunk:
+                config = self.pattern_file_id.pattern_config_id
+                priority = config.job_priority
+                next_chunk.with_delay(priority=priority).run()
+            else:
+                self.with_delay().check_last()
         return "OK"
 
     def _prepare_chunk_result(self, res):
