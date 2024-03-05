@@ -38,6 +38,15 @@
             <field name="name">Partner with contact</field>
             <field name="resource">res.partner</field>
         </record>
+        <record id="demo_export_currency" model="ir.exports">
+            <field name="name">Currency</field>
+            <field name="resource">res.currency</field>
+        </record>
+        <record id="demo_export_currency_rate" model="ir.exports">
+            <field name="name">Currency Rate</field>
+            <field name="resource">res.currency.rate</field>
+        </record>
+
         <record id="demo_pattern_config" model="pattern.config">
             <field name="export_id" ref="pattern_import_export.demo_export" />
         </record>
@@ -46,6 +55,15 @@
         </record>
         <record id="demo_pattern_config_o2m" model="pattern.config">
             <field name="export_id" ref="pattern_import_export.demo_export_o2m" />
+        </record>
+        <record id="demo_pattern_config_currency" model="pattern.config">
+            <field name="export_id" ref="pattern_import_export.demo_export_currency" />
+        </record>
+        <record id="demo_pattern_config_currency_rate" model="pattern.config">
+            <field
+                name="export_id"
+                ref="pattern_import_export.demo_export_currency_rate"
+            />
         </record>
 
         <!--Export lines-->
@@ -107,5 +125,23 @@
             <field name="tab_filter_id" ref="demo_filter_countries_1" />
             <field name="add_select_tab" eval="True" />
         </record>
+        <record id="demo_export_currency_rate_ids" model="ir.exports.line">
+            <field name="name">rate_ids</field>
+            <field name="export_id" ref="demo_export_currency" />
+            <field name="number_occurence">3</field>
+            <field
+                name="sub_pattern_config_id"
+                ref="demo_pattern_config_currency_rate"
+            />
+        </record>
+        <record id="demo_export_currency_rate_name" model="ir.exports.line">
+            <field name="name">name</field>
+            <field name="export_id" ref="demo_export_currency_rate" />
+        </record>
+        <record id="demo_export_currency_rate_rate" model="ir.exports.line">
+            <field name="name">rate</field>
+            <field name="export_id" ref="demo_export_currency_rate" />
+        </record>
+
     </data>
 </odoo>

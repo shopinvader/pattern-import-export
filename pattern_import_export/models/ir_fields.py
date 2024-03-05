@@ -178,7 +178,4 @@ class IrFieldsConverter(models.AbstractModel):
             # raising an error with the split
             # see original method called by super
             records[0][".id"] = str(records[0][".id"])
-        commands, warnings = super()._str_to_one2many(model, field, records)
-        if self._context.get("pattern_config", {}).get("purge_one2many"):
-            commands.insert(0, (5, 0, 0))
-        return commands, warnings
+        return super()._str_to_one2many(model, field, records)
