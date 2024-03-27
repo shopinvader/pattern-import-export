@@ -258,10 +258,10 @@ class Base(models.AbstractModel):
         for dbid, xid, record, info in super()._convert_records(records, log=log):
             # Note the log method is equal to messages.append
             # so log.__self__ return the messages list
-            messages = log.__self__
-            if messages and messages[-1]["rows"] == info["rows"]:
-                # we have a message for this item so we skip it from conversion
-                # so the record will be not imported
-                continue
-            else:
-                yield dbid, xid, record, info
+            if self._context.get("pattern_config"):
+                messages = log.__self__
+                if messages and messages[-1]["rows"] == info["rows"]:
+                    # we have a message for this item so we skip it from conversion
+                    # so the record will be not imported
+                    continue
+            yield dbid, xid, record, info
