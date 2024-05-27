@@ -7,7 +7,7 @@
         web_icon="pattern_import_export,static/description/icon.png"
         active="True"
         sequence="100"
-        groups="base.group_user"
+        groups="pattern_import_export.group_pattern_user"
     />
 
     <record model="ir.actions.act_window" id="act_open_pattern_config_view">
@@ -23,7 +23,7 @@
         name="Patterns"
         parent="import_export_menu_root"
         sequence="1"
-        groups="base.group_user"
+        groups="pattern_import_export.group_pattern_user"
         action="act_open_pattern_config_view"
     />
 
@@ -49,7 +49,7 @@
         name="Pattern files (imports)"
         parent="import_export_menu_root"
         sequence="3"
-        groups="base.group_user"
+        groups="pattern_import_export.group_pattern_user"
         action="action_pattern_file_imports"
     />
 
@@ -58,7 +58,7 @@
         name="Pattern files (exports)"
         parent="import_export_menu_root"
         sequence="4"
-        groups="base.group_user"
+        groups="pattern_import_export.group_pattern_user"
         action="action_pattern_file_exports"
     />
 </odoo>
