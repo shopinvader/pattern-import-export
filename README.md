@@ -21,7 +21,7 @@ addon | version | maintainers | summary
 --- | --- | --- | ---
 [pattern_import_export](pattern_import_export/) | 12.0.6.2.0 |  | Pattern for import or export
 [pattern_import_export_csv](pattern_import_export_csv/) | 12.0.4.0.0 |  | Pattern for import or export from to CSV files
-[pattern_import_export_synchronize](pattern_import_export_synchronize/) | 12.0.4.2.0 | [![kevinkhao](https://github.com/kevinkhao.png?size=30px)](https://github.com/kevinkhao) [![sebastienbeau](https://github.com/sebastienbeau.png?size=30px)](https://github.com/sebastienbeau) | Attachment Synchronize using patterns
+[pattern_import_export_synchronize](pattern_import_export_synchronize/) | 12.0.4.2.0 | <a href='https://github.com/kevinkhao'><img src='https://github.com/kevinkhao.png' width='32' height='32' style='border-radius:50%;' alt='kevinkhao'/></a> <a href='https://github.com/sebastienbeau'><img src='https://github.com/sebastienbeau.png' width='32' height='32' style='border-radius:50%;' alt='sebastienbeau'/></a> | Attachment Synchronize using patterns
 [pattern_import_export_xlsx](pattern_import_export_xlsx/) | 12.0.5.0.0 |  | Pattern for import or export from to XLSX files
 
 [//]: # (end addons)
