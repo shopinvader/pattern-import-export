@@ -4,7 +4,7 @@
 
 {
     "name": "Pattern export custom header",
-    "summary": "Allow to use custom headers names in export files",
+    "summary": "Allow to use custom headers names in export or import files",
     "version": "14.0.1.0.1",
     "category": "Extra Tools",
     "website": "https://github.com/Shopinvader/pattern-import-export",

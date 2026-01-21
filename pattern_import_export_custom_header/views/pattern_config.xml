@@ -30,6 +30,8 @@
                                 name="custom_name"
                                 attrs="{'required': [('initial_header_name', '=', False)]}"
                             />
+                            <field name="import_default_value" />
+                            <field name="export_default_value" />
                         </tree>
                     </field>
                 </page>
