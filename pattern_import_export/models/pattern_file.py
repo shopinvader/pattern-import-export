@@ -30,6 +30,13 @@ class PatternFile(models.Model):
     chunk_ids = fields.One2many("pattern.chunk", "pattern_file_id", "Chunk")
     date_done = fields.Datetime()
 
+    company_id = fields.Many2one(
+        comodel_name="res.company",
+        default=lambda self: self.env.company.id,
+        required=False,
+        string="Company",
+    )
+
     @api.depends("chunk_ids.nbr_error", "chunk_ids.nbr_success")
     def _compute_stat(self):
         for record in self:

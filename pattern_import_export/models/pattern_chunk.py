@@ -45,6 +45,7 @@ class PatternChunk(models.Model):
                 }
             )
             .env[model]
+            .with_company(self.pattern_file_id.company_id)
             .load([], self.data)
         )
         self.write(self._prepare_chunk_result(res))
