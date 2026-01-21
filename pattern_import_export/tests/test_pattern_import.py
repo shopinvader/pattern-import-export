@@ -15,6 +15,10 @@ class TestPatternImport(PatternCommon, SavepointCase):
         cls.pattern_config_m2m.export_format = "json"
         cls.pattern_config_o2m.export_format = "json"
         cls.pattern_config.export_format = "json"
+        cls.pattern_config_currency = cls.env.ref(
+            "pattern_import_export.demo_pattern_config_currency"
+        )
+        cls.pattern_config_currency.export_format = "json"
 
     def run_pattern_file(self, pattern_file):
         model = self.env[pattern_file.pattern_config_id.model_id.model].with_context(
@@ -409,7 +413,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertEqual(partners[0].name, unique_name)
         self.assertEqual(partners[0].child_ids, partners[1])
 
-    def _helper_o2m_update(self):
+    def _case_o2m_update_no_delete_cascade(self):
         unique_name = str(uuid4())
         partner = self.env["res.partner"].create(
             {
@@ -437,19 +441,53 @@ class TestPatternImport(PatternCommon, SavepointCase):
         self.assertPatternDone(pattern_file)
         return partner, child_1, child_2
 
-    def test_o2m_update_with_purge(self):
+    def _case_o2m_update_with_delete_cascade(self):
+        currency = self.env.ref("base.EUR")
+        currency.write(
+            {
+                "rate_ids": [
+                    (5, 0, 0),
+                    (0, 0, {"name": "1999-12-02", "rate": 1}),
+                    (0, 0, {"name": "2000-01-30", "rate": 2}),
+                ]
+            }
+        )
+        data = [
+            {
+                ".id": currency.id,
+                "rate_ids|1|name#key": "1999-12-02",
+                "rate_ids|1|rate": 1.5,
+                "rate_ids|2|name#key": "2022-01-01",
+                "rate_ids|2|rate": 3,
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config_currency, "import", data)
+        self.run_pattern_file(pattern_file)
+        self.assertPatternDone(pattern_file)
+        return currency
+
+    def test_o2m_update_with_purge_no_delete_cascade(self):
         self.pattern_config.purge_one2many = True
-        partner, child_1, child_2 = self._helper_o2m_update()
+        partner, child_1, child_2 = self._case_o2m_update_no_delete_cascade()
         self.assertEqual(len(partner.child_ids), 3)
         self.assertIn(child_1, partner.child_ids)
         self.assertNotIn(child_2, partner.child_ids)
 
     def test_o2m_update_without_purge(self):
         self.pattern_config.purge_one2many = False
-        partner, child_1, child_2 = self._helper_o2m_update()
+        partner, child_1, child_2 = self._case_o2m_update_no_delete_cascade()
         self.assertEqual(len(partner.child_ids), 4)
         self.assertIn(child_1, partner.child_ids)
         self.assertIn(child_2, partner.child_ids)
+
+    def test_o2m_update_with_purge_with_delete_cascade(self):
+        self.pattern_config_currency.purge_one2many = True
+        currency = self._case_o2m_update_with_delete_cascade()
+        self.assertEqual(len(currency.rate_ids), 2)
+
+    def test_o2m_update_without_purge_with_delete_cascade(self):
+        currency = self._case_o2m_update_with_delete_cascade()
+        self.assertEqual(len(currency.rate_ids), 3)
 
     def test_empty_m2m_with_o2m(self):
         unique_name = str(uuid4())
