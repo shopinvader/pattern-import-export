@@ -43,6 +43,7 @@ class PatternConfig(models.Model):
         for row, lines in enumerate(self._get_output_headers(), start=1):
             for col, header in enumerate(lines.values(), start=1):
                 main_sheet.cell(row=row, column=col, value=header)
+        main_sheet.column_dimensions["A"].hidden = True
         return main_sheet
 
     def _populate_main_sheet_rows(self, main_sheet, records):
@@ -83,7 +84,7 @@ class PatternConfig(models.Model):
             formula_range_src = "=" + quote_sheetname(tab_name) + "!" + range_src
             validation = DataValidation(type="list", formula1=formula_range_src)
             for idx_col in tab["idx_col_validator"]:
-                col_letter_dst = get_column_letter(idx_col)
+                col_letter_dst = get_column_letter(idx_col + 1)
                 range_dst = "${}${}:${}${}".format(
                     col_letter_dst,
                     str(self.row_start_records),
