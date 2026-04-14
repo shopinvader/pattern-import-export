@@ -59,10 +59,14 @@ class IrExportsLine(models.Model):
             path = path + "/"
         field, path = path.split("/", 1)
         if path:
-            next_model = self.env[model]._fields[field]._related_comodel_name
-            next_field = path.split("/", 1)[0]
-            if self.env[next_model]._fields[next_field]._related_comodel_name:
-                return self._get_last_relation_field(next_model, path, level=level + 1)
+            field_obj = self.env[model]._fields.get(field)
+            if field_obj:
+                next_model = getattr(field_obj, "_related_comodel_name", False)
+                if next_model and next_model in self.env:
+                    next_field = path.split("/", 1)[0]
+                    next_field_obj = self.env[next_model]._fields.get(next_field)
+                    if next_field_obj and getattr(next_field_obj, "_related_comodel_name", False):
+                        return self._get_last_relation_field(next_model, path, level=level + 1)
         return field, model, level
 
     @api.depends("name", "add_select_tab")
@@ -78,30 +82,54 @@ class IrExportsLine(models.Model):
                 "tab_filter_id",
                 "add_select_tab",
             ]
-            if record.name:
-                required = []
-                field, model, level = self._get_last_relation_field(
-                    record.model1_id.model, record.name
-                )
-                ftype = self.env[model]._fields[field].type
-                if ftype in ["many2one", "many2many"]:
-                    level += 1
-                    hidden_fields.remove("add_select_tab")
-                for idx in range(2, level + 1):
-                    required.append(f"field{idx}_id")
-                if ftype in ["one2many", "many2many"]:
-                    required.append("number_occurence")
-                if ftype in "one2many":
-                    required.append("sub_pattern_config_id")
-                record.required_fields = ",".join(required)
-                if record.add_select_tab:
-                    # this field is optionnal
-                    required.append("tab_filter_id")
-                hidden_fields = list(set(hidden_fields) - set(required))
-                record.hidden_fields = ",".join(hidden_fields)
-            else:
+
+            if not record.name:
                 record.required_fields = ""
                 record.hidden_fields = ""
+                continue
+
+            required = []
+
+            field, model, level = self._get_last_relation_field(
+                record.model1_id.model, record.name
+            )
+
+            if model not in self.env:
+                record.required_fields = ""
+                record.hidden_fields = ",".join(hidden_fields)
+                continue
+
+            model_obj = self.env[model]
+
+            field_obj = model_obj._fields.get(field)
+            if not field_obj:
+                record.required_fields = ""
+                record.hidden_fields = ",".join(hidden_fields)
+                continue
+
+            ftype = field_obj.type
+
+            if ftype in ["many2one", "many2many"]:
+                level += 1
+                if "add_select_tab" in hidden_fields:
+                    hidden_fields.remove("add_select_tab")
+
+            for idx in range(2, level + 1):
+                required.append(f"field{idx}_id")
+
+            if ftype in ["one2many", "many2many"]:
+                required.append("number_occurence")
+
+            if ftype == "one2many":
+                required.append("sub_pattern_config_id")
+
+            if record.add_select_tab:
+                required.append("tab_filter_id")
+
+            record.required_fields = ",".join(required)
+
+            hidden_fields = list(set(hidden_fields) - set(required))
+            record.hidden_fields = ",".join(hidden_fields)
 
     def _inverse_name(self):
         super()._inverse_name()

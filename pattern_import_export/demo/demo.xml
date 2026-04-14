@@ -21,6 +21,12 @@
         <field name="model_id">res.company</field>
         <field name="user_id" />
     </record>
+    <record id="demo_filter_categories" model="ir.filters">
+        <field name="name">Main category</field>
+        <field name="domain">[("active", "=", True)]</field>
+        <field name="model_id">res.partner.category</field>
+        <field name="user_id" />
+    </record>
 
     <!--Exports-->
     <record id="demo_export" model="ir.exports">
@@ -68,6 +74,7 @@
         <field name="name">category_id/name</field>
         <field name="export_id" ref="pattern_import_export.demo_export" />
         <field name="add_select_tab" eval="True" />
+        <field name="tab_filter_id" ref="demo_filter_categories" />
     </record>
     <record id="demo_export_m2m_line_1" model="ir.exports.line">
         <field name="name">id</field>

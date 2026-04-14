@@ -393,7 +393,9 @@ class PatternTestExport(PatternCommon, SavepointCase, PatternCaseExport):
         tab_country_name = (
             f"({self.filter_countries_1.id}) {self.filter_countries_1.name}"
         )
-        self.assertEqual(list(tabs.keys()), [tab_country_name, "Tags"])
+        filter_categories = self.env.ref("pattern_import_export.demo_filter_categories")
+        tab_category_name = f"({filter_categories.id}) {filter_categories.name}"
+        self.assertEqual(list(tabs.keys()), [tab_country_name, tab_category_name])
         self.assertEqual(
             tabs[tab_country_name],
             {
@@ -403,7 +405,7 @@ class PatternTestExport(PatternCommon, SavepointCase, PatternCaseExport):
             },
         )
         self.assertEqual(
-            tabs["Tags"],
+            tabs[tab_category_name],
             {
                 "headers": ["name"],
                 "data": [
