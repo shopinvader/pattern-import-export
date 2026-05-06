@@ -20,7 +20,7 @@ class CommonPatternExportExcel(PatternCommon, SavepointCase):
             attr_name_tab = "tab_name_" + el
             attr_name_filter = "filter_" + el
             filter_id = getattr(cls, attr_name_filter)
-            attr_val_tab = "({}) {}".format(filter_id.id, filter_id.name)
+            attr_val_tab = f"({filter_id.id}) {filter_id.name}"
             setattr(cls, attr_name_tab, attr_val_tab)
 
     @classmethod
@@ -39,8 +39,7 @@ class CommonPatternExportExcel(PatternCommon, SavepointCase):
             sheet = wb.worksheets[0]
         else:
             sheet = wb[sheet_name]
-        for idx, row in enumerate(sheet.rows):
-            yield idx, row
+        yield from enumerate(sheet.rows)
 
     def _get_header(self, pattern_config, use_description=False, sheet_name=None):
         if use_description:
@@ -58,7 +57,7 @@ class CommonPatternExportExcel(PatternCommon, SavepointCase):
             if idx == 0:
                 headers = vals
             elif any(vals):
-                data.append(dict(zip(headers, vals)))
+                data.append(dict(zip(headers, vals, strict=True)))
             else:
                 break
         return data

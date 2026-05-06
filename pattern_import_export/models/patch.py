@@ -22,8 +22,9 @@ def _convert_records(self, records, log=lambda a: None):
     :rtype: list((int|None, str|None, dict))
     """
     field_names = {name: field.string for name, field in self._fields.items()}
-    if self.env.lang:
-        field_names.update(self.env["ir.translation"].get_field_string(self._name))
+    #    if self.env.lang:
+    #        field._get_stored_translations
+    #        field_names.update(self.env["ir.translation"].get_field_string(self._name))
 
     convert = self.env["ir.fields.converter"].for_model(self)
 

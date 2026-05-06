@@ -39,7 +39,9 @@ class PatternChunk(models.Model):
                 pattern_config={
                     "model": model,
                     "record_ids": [],
-                    "purge_one2many": self.pattern_file_id.pattern_config_id.purge_one2many,
+                    "purge_one2many": (
+                        self.pattern_file_id.pattern_config_id.purge_one2many
+                    ),
                 }
             )
             .env[model]

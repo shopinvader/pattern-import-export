@@ -103,15 +103,22 @@ class Base(models.AbstractModel):
                 res[key.replace(IDENTIFIER_SUFFIX, "")] = res.pop(key)
 
     def _convert_value_to_domain(self, field_name, value):
+        # fieldname may be None
+        # todo: rename field_name to prefix
         if isinstance(value, dict):
             domain = []
+            subdom = []
             for key, val in value.items():
                 if key == ".id":
                     # .id is internal db id, so we rename it
                     key = "id"
-                domain.append(("{}.{}".format(field_name, key), "=", val))
+                # field_name may be None
+                # then key = value directly
+                dom_key = f"{field_name}.{key}" if field_name else key
+                subdom += self._convert_value_to_domain(dom_key, val)
+            domain = subdom
         else:
-            domain = [(field_name, "=", value)]
+            domain = [[field_name, "=", value]]
         return domain
 
     def _get_domain_from_identifier_key(self, res):
@@ -120,9 +127,7 @@ class Base(models.AbstractModel):
         for key in list(res.keys()):
             if key.endswith(IDENTIFIER_SUFFIX):
                 field_name = key.replace(IDENTIFIER_SUFFIX, "")
-                domain = expression.AND(
-                    [domain, self._convert_value_to_domain(field_name, res[key])]
-                )
+                domain += self._convert_value_to_domain(field_name, res[key])
                 ident_keys.append(key)
         return domain, ident_keys
 
@@ -232,6 +237,12 @@ class Base(models.AbstractModel):
                 yield self._pattern_format2json(row), {"rows": {"from": idx, "to": idx}}
 
                 # WARNING: complex code
+                # This feature has been inactivated for v16
+                # it's not something easy to do
+                # and need to be carefully done
+                #
+                # it's about allowing to import working lines
+                # and reporting lines in error
                 # As we are in an generator the following code is executed
                 # after the "for id, xid, record, info in converted:" in model.py:1090
                 # the idea is to call the flush manually for the last line
@@ -243,8 +254,9 @@ class Base(models.AbstractModel):
                 # in V15 we should propose a refactor of load method
                 if data[-1][0] == idx:
                     self._context["import_flush"]()
-                    self._cr.execute("RELEASE SAVEPOINT model_load")
-                    self._cr.execute("SAVEPOINT model_load")
+                    # https://github.com/odoo/odoo/pull/76243
+                    # self._cr.execute("RELEASE SAVEPOINT model_load")
+                    # self._cr.execute("SAVEPOINT model_load")
         else:
             yield from super()._extract_records(fields_, data, log=log, limit=limit)
 

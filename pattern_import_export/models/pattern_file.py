@@ -12,6 +12,7 @@ class PatternFile(models.Model):
     _name = "pattern.file"
     _inherits = {"ir.attachment": "attachment_id"}
     _description = "Attachment with pattern file metadata"
+    _order = "id desc"
 
     attachment_id = fields.Many2one("ir.attachment", required=True, ondelete="cascade")
     state = fields.Selection(
@@ -61,9 +62,7 @@ class PatternFile(models.Model):
         if self.state == "failed":
             self.env.user.notify_danger(
                 message=_(
-                    "{} job has failed. \nFor more details: {}".format(
-                        import_or_export, details
-                    )
+                    f"{import_or_export} job has failed. \nFor more details: {details}"
                 ),
                 sticky=True,
             )
@@ -125,8 +124,7 @@ class PatternFile(models.Model):
 
     def _parse_data_json(self, data):
         items = json.loads(data.decode("utf-8"))
-        for idx, item in enumerate(items):
-            yield idx + 1, item
+        yield from enumerate(items, start=1)
 
     def _prepare_chunk(self, start_idx, stop_idx, data):
         return {
@@ -170,6 +168,11 @@ class PatternFile(models.Model):
                 previous_idx = idx
             if items:
                 self._create_chunk(start_idx, idx, items)
+            else:
+                # document has an header and no data lines
+                # valid document. So create a dummy chunk
+                # to have progression and status
+                self._create_chunk(-1, -1, [])
         except Exception as e:
             self.state = "failed"
             self.info = _("Failed to create the chunk: %s") % e

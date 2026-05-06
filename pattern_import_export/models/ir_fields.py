@@ -4,10 +4,8 @@
 
 import ast
 
-from odoo import _, api, models
+from odoo import Command, _, api, models
 from odoo.osv import expression
-
-from odoo.addons.base.models import ir_fields
 
 from .common import IDENTIFIER_SUFFIX
 
@@ -29,9 +27,7 @@ class IrFieldsConverter(models.AbstractModel):
                 cleanned[field] = vals
             converted = fn(cleanned, log)
             for field in keyfields:
-                converted["{}{}".format(field, IDENTIFIER_SUFFIX)] = converted.pop(
-                    field
-                )
+                converted[f"{field}{IDENTIFIER_SUFFIX}"] = converted.pop(field)
             return converted
 
         return fn_with_key_support
@@ -110,9 +106,9 @@ class IrFieldsConverter(models.AbstractModel):
                 warnings.extend(ws)
 
         if self._context.get("update_many2many"):
-            return [ir_fields.LINK_TO(id) for id in ids], warnings
+            return [Command.link(id) for id in ids], warnings
         else:
-            return [ir_fields.REPLACE_WITH(ids)], warnings
+            return [Command.set(ids)], warnings
 
     @api.model
     def _str_to_many2many(self, model, field, value):
@@ -127,12 +123,35 @@ class IrFieldsConverter(models.AbstractModel):
     def _str_to_many2one(self, model, field, value):
         if isinstance(value, dict):
             # odoo expect a list with one item
-            value = [value]
+            if len(value) == 1:
+                one_value = [value]
+                return super()._str_to_many2one(model, field, one_value)
+            else:
+                domain = model._convert_value_to_domain(None, value)
+                tosearch = field._related_comodel_name
+                record = self.env[tosearch].search(domain)
+                if len(record) > 1:
+                    # TODO improve here
+                    raise self._format_import_error(
+                        ValueError,
+                        _("%s Too many records found for %s in field '%s'"),
+                        (_(record._description), domain, tosearch),
+                    )
+                if len(record) == 0:
+                    raise self._format_import_error(
+                        ValueError,
+                        _("%s No matching record found for %s in field '%s'"),
+                        (_(record._description), domain, tosearch),
+                    )
+
+                # call core function to be sure not to miss something
+                an_id, donotcare, w2 = self.db_id_for(model, field, ".id", record.id)
+                return an_id, [] + w2
         return super()._str_to_many2one(model, field, value)
 
     @api.model
     def _str_to_boolean(self, model, field, value):
-        if isinstance(value, (int, float)):
+        if isinstance(value, (int | float)):
             return bool(value), []
         if isinstance(value, bool):
             return value, []

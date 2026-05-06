@@ -71,7 +71,9 @@ class PatternConfig(models.Model):
             for state in ("failed", "pending", "done"):
                 field_name = "count_pattern_file_" + state
                 count = len(
-                    rec.pattern_file_ids.filtered(lambda r: r.state == state).ids
+                    rec.pattern_file_ids.filtered(
+                        lambda r, state=state: r.state == state
+                    ).ids
                 )
                 setattr(rec, field_name, count)
 
@@ -113,9 +115,13 @@ class PatternConfig(models.Model):
         headers = []
         if self.header_format == "description_and_tech":
             headers.append(
-                dict(zip(tech_header, self._get_header(use_description=True)))
+                dict(
+                    zip(
+                        tech_header, self._get_header(use_description=True), strict=True
+                    )
+                )
             )
-        headers.append(dict(zip(tech_header, tech_header)))
+        headers.append(dict(zip(tech_header, tech_header, strict=True)))
         return headers
 
     def _get_header(self, use_description=False):
@@ -127,7 +133,7 @@ class PatternConfig(models.Model):
         self.ensure_one()
         header = []
         for export_line in self.export_fields:
-            header.extend(export_line._get_header(use_description))
+            header.extend(export_line.sudo()._get_header(use_description))
         return header
 
     def generate_pattern(self):
@@ -223,7 +229,7 @@ class PatternConfig(models.Model):
         pattern_file_exports = self.env["pattern.file"]
         all_data = self._generate_with_records(records)
         if all_data and self.env.context.get("export_as_attachment", True):
-            for export, attachment_data in zip(self, all_data):
+            for export, attachment_data in zip(self, all_data, strict=True):
                 pattern_file_exports |= export._create_pattern_file_export(
                     attachment_data
                 )
@@ -236,18 +242,22 @@ class PatternConfig(models.Model):
         @return: ir.attachment recordset
         """
         self.ensure_one()
-        name = "{name}.{format}".format(name=self.name, format=self.export_format)
-        return self.env["pattern.file"].create(
-            {
-                "name": name,
-                "type": "binary",
-                "res_id": self.id,
-                "res_model": "pattern.config",
-                "datas": attachment_datas,
-                "kind": "export",
-                "state": "done",
-                "pattern_config_id": self.id,
-            }
+        name = f"{self.name}.{self.export_format}"
+        return (
+            self.env["pattern.file"]
+            .sudo()
+            .create(
+                {
+                    "name": name,
+                    "type": "binary",
+                    "res_id": self.id,
+                    "res_model": "pattern.config",
+                    "datas": attachment_datas,
+                    "kind": "export",
+                    "state": "done",
+                    "pattern_config_id": self.id,
+                }
+            )
         )
 
     def _add_update_tabs(self, result, tab_name, tab_vals):

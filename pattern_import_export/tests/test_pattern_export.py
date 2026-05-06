@@ -168,7 +168,7 @@ class PatternCaseExport:
                 "category_id|1|name": "Consulting Services",
             },
         ]
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export2(self):
@@ -185,7 +185,7 @@ class PatternCaseExport:
             }
         ]
         results = self._get_data(self.pattern_config_m2m, self.env.user)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export3(self):
@@ -208,7 +208,7 @@ class PatternCaseExport:
             }
         ]
         results = self._get_data(self.pattern_config_m2m, self.env.user)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export4(self):
@@ -283,7 +283,7 @@ class PatternCaseExport:
             },
         ]
         results = self._get_data(self.pattern_config_o2m, self.partners)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export5(self):
@@ -360,7 +360,7 @@ class PatternCaseExport:
         ]
 
         results = self._get_data(self.pattern_config_o2m, self.partners)
-        for result, expected_result in zip(results, expected_results):
+        for result, expected_result in zip(results, expected_results, strict=True):
             self.assertDictEqual(expected_result, result)
 
     def test_get_data_to_export_is_key1(self):
@@ -393,7 +393,9 @@ class PatternTestExport(PatternCommon, SavepointCase, PatternCaseExport):
         tab_country_name = (
             f"({self.filter_countries_1.id}) {self.filter_countries_1.name}"
         )
-        self.assertEqual(list(tabs.keys()), [tab_country_name, "Tags"])
+        filter_categories = self.env.ref("pattern_import_export.demo_filter_categories")
+        tab_category_name = f"({filter_categories.id}) {filter_categories.name}"
+        self.assertEqual(list(tabs.keys()), [tab_country_name, tab_category_name])
         self.assertEqual(
             tabs[tab_country_name],
             {
@@ -403,7 +405,7 @@ class PatternTestExport(PatternCommon, SavepointCase, PatternCaseExport):
             },
         )
         self.assertEqual(
-            tabs["Tags"],
+            tabs[tab_category_name],
             {
                 "headers": ["name"],
                 "data": [

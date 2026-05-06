@@ -20,7 +20,7 @@
         <field name="mode">primary</field>
         <field name="inherit_id" ref="base_export_manager.ir_exports_form_view" />
         <field name="arch" type="xml">
-            <xpath expr="//form/group[1]" position="before">
+            <xpath expr="//form/sheet[1]" position="before">
                 <header>
                     <button
                         name="%(import_pattern_wizard_action)d"
@@ -36,6 +36,8 @@
                         type="object"
                     />
                 </header>
+            </xpath>
+            <xpath expr="//form/sheet[1]" position="inside">
                 <div class="oe_button_box" name="button_box">
                     <button
                         name="button_open_pattern_file_failed"
@@ -92,16 +94,19 @@
 
             </xpath>
 
-            <xpath expr="//form/group[1]" position="after">
-                <group name="general_info">
-                    <field name="export_format" required="True" />
-                    <field name="pattern_file" filename="pattern_file_name" />
-                    <field name="pattern_file_name" invisible="1" />
-                    <field name="id" invisible="1" />
-                    <field name="header_format" />
-                </group>
+            <xpath expr="//form/sheet/notebook[1]/page" position="after">
+                <page string="general info">
+                    <group name="general_info">
+                        <field name="export_format" required="True" />
+                        <field name="pattern_file" filename="pattern_file_name" />
+                        <field name="pattern_file_name" invisible="1" />
+                        <field name="id" invisible="1" />
+                        <field name="header_format" />
+                    </group>
+                </page>
             </xpath>
-             <xpath expr="//form/group[@name='general_info']" position="after">
+
+            <xpath expr="//form//group[@name='general_info']" position="after">
                 <notebook>
                     <page string="Export Fields" name="export_fields" />
                     <page string="Configuration" name="config">

@@ -13,6 +13,7 @@ class TestPatternImport(PatternCommon, SavepointCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.pattern_config_m2m.export_format = "json"
+        cls.pattern_config_o2m.export_format = "json"
         cls.pattern_config.export_format = "json"
 
     def run_pattern_file(self, pattern_file):
@@ -45,7 +46,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         @return:
         """
         unique_name = str(uuid4())
-        data = [{"id": self.user3.get_xml_id().get(self.user3.id), "name": unique_name}]
+        data = [
+            {"id": self.user3.get_external_id().get(self.user3.id), "name": unique_name}
+        ]
         pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
@@ -131,11 +134,15 @@ class TestPatternImport(PatternCommon, SavepointCase):
         partner3_name = str(uuid4())
         data = [
             {
-                "id": self.partner_1.get_xml_id().get(self.partner_1.id),
+                "id": self.partner_1.get_external_id().get(self.partner_1.id),
                 "name": unique_name,
-                "child_ids|1|id": self.partner_2.get_xml_id().get(self.partner_2.id),
+                "child_ids|1|id": self.partner_2.get_external_id().get(
+                    self.partner_2.id
+                ),
                 "child_ids|1|name": partner2_name,
-                "child_ids|2|id": self.partner_3.get_xml_id().get(self.partner_3.id),
+                "child_ids|2|id": self.partner_3.get_external_id().get(
+                    self.partner_3.id
+                ),
                 "child_ids|2|name": partner3_name,
             }
         ]
@@ -163,38 +170,44 @@ class TestPatternImport(PatternCommon, SavepointCase):
         user2_name = str(uuid4())
         data = [
             {
-                "id": self.partner_1.get_xml_id().get(self.partner_1.id),
+                "id": self.partner_1.get_external_id().get(self.partner_1.id),
                 "name": unique_name,
-                "category_id|1|id": self.partner_cat1.get_xml_id().get(
+                "category_id|1|id": self.partner_cat1.get_external_id().get(
                     self.partner_cat1.id
                 ),
-                "category_id|2|id": self.partner_cat2.get_xml_id().get(
+                "category_id|2|id": self.partner_cat2.get_external_id().get(
                     self.partner_cat2.id
                 ),
-                "country_id|id": self.country_be.get_xml_id().get(self.country_be.id),
-                "child_ids|1|id": self.partner_2.get_xml_id().get(self.partner_2.id),
-                "child_ids|1|name": user1_name,
-                "child_ids|1|industry_id|id": self.industry1.get_xml_id().get(
-                    self.industry1.id
-                ),
-                "child_ids|1|country_id|id": self.country_be.get_xml_id().get(
+                "country_id|id": self.country_be.get_external_id().get(
                     self.country_be.id
                 ),
-                "child_ids|1|category_id|1|id": self.partner_cat1.get_xml_id().get(
+                "child_ids|1|id": self.partner_2.get_external_id().get(
+                    self.partner_2.id
+                ),
+                "child_ids|1|name": user1_name,
+                "child_ids|1|industry_id|id": self.industry1.get_external_id().get(
+                    self.industry1.id
+                ),
+                "child_ids|1|country_id|id": self.country_be.get_external_id().get(
+                    self.country_be.id
+                ),
+                "child_ids|1|category_id|1|id": self.partner_cat1.get_external_id().get(
                     self.partner_cat1.id
                 ),
-                "child_ids|1|category_id|2|id": self.partner_cat2.get_xml_id().get(
+                "child_ids|1|category_id|2|id": self.partner_cat2.get_external_id().get(
                     self.partner_cat2.id
                 ),
-                "child_ids|2|id": self.partner_3.get_xml_id().get(self.partner_3.id),
+                "child_ids|2|id": self.partner_3.get_external_id().get(
+                    self.partner_3.id
+                ),
                 "child_ids|2|name": user2_name,
-                "child_ids|2|industry_id|id": self.industry2.get_xml_id().get(
+                "child_ids|2|industry_id|id": self.industry2.get_external_id().get(
                     self.industry2.id
                 ),
-                "child_ids|2|country_id|id": self.country_us.get_xml_id().get(
+                "child_ids|2|country_id|id": self.country_us.get_external_id().get(
                     self.country_us.id
                 ),
-                "child_ids|2|category_id|1|id": self.partner_cat2.get_xml_id().get(
+                "child_ids|2|category_id|1|id": self.partner_cat2.get_external_id().get(
                     self.partner_cat2.id
                 ),
             }
@@ -228,6 +241,44 @@ class TestPatternImport(PatternCommon, SavepointCase):
         records = self.run_pattern_file(pattern_file)
         self.assertFalse(records)
         self.assertEqual(unique_name, self.user3.name)
+
+    def test_update_with_muli_cols_pkey(self):
+        """ensure we identify the row to update
+        based on multiple columns with
+        different depths
+        """
+        unique_name = str(uuid4())
+        data = [
+            {
+                "partner_id#key|email": self.user3.partner_id.email,
+                "partner_id#key|name": self.user3.partner_id.name,
+                "partner_id#key|country_id|code": self.user3.partner_id.country_id.code,
+                "name": unique_name,
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
+        self.assertEqual(unique_name, self.user3.name)
+
+        # same test with ambigus key
+        # the record should not be updated because the key
+        # returns more than 1 record
+        ambigus = self.user3.search(
+            [["country_id.code", "=", self.user3.partner_id.country_id.code]]
+        )
+        self.assertTrue(len(ambigus) > 1, "Verify conditions")
+        unique_name_2 = str(uuid4())
+        data = [
+            {
+                "partner_id#key|country_id|code": self.user3.partner_id.country_id.code,
+                "name": unique_name_2,
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config_m2m, "import", data)
+        records = self.run_pattern_file(pattern_file)
+        self.assertFalse(records)
+        self.assertEqual(unique_name, self.user3.name, "Ensure value not updated")
 
     def test_update_o2m_with_key(self):
         unique_name = str(uuid4())
@@ -272,6 +323,45 @@ class TestPatternImport(PatternCommon, SavepointCase):
         pattern_file = self.create_pattern(self.pattern_config, "import", data)
         self.run_pattern_file(pattern_file)
         self.assertEqual(unique_name, self.partner_1.name)
+
+    def test_update_o2m_with_sub_keys(self):
+        unique_name = str(uuid4())
+
+        # state_ie_27,ie,"Antrim","AM"
+        # there is multiple state with code = AM
+        # in demo data, but only one with Currency = euro
+
+        # ensure we picked a reference to only one record
+        only_one_rec = self.env["res.country"].search(
+            [["state_ids.code", "=", "AM"], ["currency_id.symbol", "=", "€"]]
+        )
+        self.assertEqual(len(only_one_rec), 1, "Ensure data for test valid")
+        previous_country = self.partner_1.country_id
+        new_country = only_one_rec
+        data = [
+            {
+                "email#key": self.partner_1.email,
+                "phone#key": self.partner_1.phone,
+                "name": unique_name,
+                "country_id|currency_id|symbol": "€",
+                "country_id|state_ids|code": "AM",
+                "title|name": "Professor",
+            }
+        ]
+        pattern_file = self.create_pattern(self.pattern_config_o2m, "import", data)
+        self.run_pattern_file(pattern_file)
+        self.assertNotEqual(previous_country.id, new_country.id)
+        self.assertEqual(
+            unique_name, self.partner_1.name, "direct field has been updated"
+        )
+        self.assertEqual(
+            new_country.id,
+            self.partner_1.country_id.id,
+            "relation field has been updated",
+        )
+        self.assertEqual(
+            "Professor", self.partner_1.title.name, "relation field has been updated"
+        )
 
     @mute_logger("odoo.sql_db")
     def test_wrong_import(self):
@@ -457,9 +547,9 @@ class TestPatternImport(PatternCommon, SavepointCase):
         unique_name = str(uuid4())
         data = {"name": unique_name}
         for idx in range(1, 15):
-            categ_name = "partner_categ_{}".format(idx)
+            categ_name = f"partner_categ_{idx}"
             self.env["res.partner.category"].create({"name": categ_name})
-            data["category_id|{}|name".format(idx)] = categ_name
+            data[f"category_id|{idx}|name"] = categ_name
         pattern_file = self.create_pattern(self.pattern_config, "import", [data])
         partner = self.run_pattern_file(pattern_file)
         self.assertEqual(len(partner), 1)
