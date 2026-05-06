@@ -65,8 +65,12 @@ class IrExportsLine(models.Model):
                 if next_model and next_model in self.env:
                     next_field = path.split("/", 1)[0]
                     next_field_obj = self.env[next_model]._fields.get(next_field)
-                    if next_field_obj and getattr(next_field_obj, "_related_comodel_name", False):
-                        return self._get_last_relation_field(next_model, path, level=level + 1)
+                    if next_field_obj and getattr(
+                        next_field_obj, "_related_comodel_name", False
+                    ):
+                        return self._get_last_relation_field(
+                            next_model, path, level=level + 1
+                        )
         return field, model, level
 
     @api.depends("name", "add_select_tab")
@@ -219,7 +223,7 @@ class IrExportsLine(models.Model):
                     header += IDENTIFIER_SUFFIX
                 headers.append(header)
             else:
-                last_relation_field = record[f"field{record.level}_id"]
+                last_relation_field = record.sudo()[f"field{record.level}_id"]
                 if last_relation_field.ttype == "many2one":
                     headers.append(
                         record._build_header(record.level + 1, use_description)

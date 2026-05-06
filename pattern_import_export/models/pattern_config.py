@@ -133,7 +133,7 @@ class PatternConfig(models.Model):
         self.ensure_one()
         header = []
         for export_line in self.export_fields:
-            header.extend(export_line._get_header(use_description))
+            header.extend(export_line.sudo()._get_header(use_description))
         return header
 
     def generate_pattern(self):
@@ -243,17 +243,21 @@ class PatternConfig(models.Model):
         """
         self.ensure_one()
         name = f"{self.name}.{self.export_format}"
-        return self.env["pattern.file"].create(
-            {
-                "name": name,
-                "type": "binary",
-                "res_id": self.id,
-                "res_model": "pattern.config",
-                "datas": attachment_datas,
-                "kind": "export",
-                "state": "done",
-                "pattern_config_id": self.id,
-            }
+        return (
+            self.env["pattern.file"]
+            .sudo()
+            .create(
+                {
+                    "name": name,
+                    "type": "binary",
+                    "res_id": self.id,
+                    "res_model": "pattern.config",
+                    "datas": attachment_datas,
+                    "kind": "export",
+                    "state": "done",
+                    "pattern_config_id": self.id,
+                }
+            )
         )
 
     def _add_update_tabs(self, result, tab_name, tab_vals):

@@ -23,11 +23,15 @@ class IrActions(models.Model):
         # when we append the action in res["action"] it's added in the dict
         # and as the dict is mutuable the value is cached is updated
         # so we need to be careful to not add it again and again
-        if res == {}:
-            res["action"] = []
+        res.setdefault("action", [])
         if self.env.user.has_group("pattern_import_export.group_pattern_user"):
             for xml_id in xml_ids:
-                patimpex = self.env.ref(xml_id)
-                if patimpex.id not in [act.get("id") for act in res["action"]]:
-                    res["action"].append({"id": patimpex.id, "name": patimpex.name})
+                action_id = self.env["ir.model.data"].sudo()._xmlid_to_res_id(xml_id)
+                if not action_id:
+                    continue
+                if action_id not in [act.get("id") for act in res["action"]]:
+                    action = self.env["ir.actions.actions"].sudo().browse(action_id)
+                    res["action"].append(
+                        {"id": action.id, "name": action.name, "type": action.type}
+                    )
         return res
